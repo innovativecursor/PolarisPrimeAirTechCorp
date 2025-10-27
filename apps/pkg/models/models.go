@@ -8,3 +8,5 @@ import (
 type Migrator interface {
 	Migrate(db *mongo.Database) error
 }
+
+//test
