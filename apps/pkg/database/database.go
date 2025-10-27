@@ -3,12 +3,16 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/config"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/models"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var db *mongo.Database // Declare db at the package level
@@ -78,4 +82,63 @@ func InitDB() (*mongo.Database, error) {
 // GetDB returns the initialized MongoDB database
 func GetDB() *mongo.Database {
 	return db
+}
+
+func SeedSuperAdmin(db *mongo.Database) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	usersCol := db.Collection("user")
+	rolesCol := db.Collection("role")
+
+	cfg, err := config.Env()
+	if err != nil {
+		return err
+	}
+
+	// Ensure "superadmin" role exists
+	var superRole models.Role
+	err = rolesCol.FindOne(ctx, bson.M{"name": "superadmin"}).Decode(&superRole)
+	if err != nil {
+		superRole = models.Role{Name: "superadmin"}
+		insertResult, err := rolesCol.InsertOne(ctx, superRole)
+		if err != nil {
+			return fmt.Errorf("failed to create superadmin role: %v", err)
+		}
+		superRole.ID = insertResult.InsertedID.(primitive.ObjectID)
+	}
+
+	// Loop through all seed super admins
+	for _, admin := range cfg.Seed.SuperAdmins {
+		if admin.Email == "" || admin.Password == "" {
+			continue
+		}
+
+		var existing models.User
+		err = usersCol.FindOne(ctx, bson.M{"email": admin.Email}).Decode(&existing)
+		if err == nil {
+			// already exists, ensure IsSuperAdmin = true
+			if !existing.IsSuperAdmin {
+				_, _ = usersCol.UpdateOne(ctx, bson.M{"_id": existing.ID}, bson.M{"$set": bson.M{"isSuperAdmin": true}})
+			}
+			continue
+		}
+
+		hash, _ := bcrypt.GenerateFromPassword([]byte(admin.Password), bcrypt.DefaultCost)
+		user := models.User{
+			Email:        admin.Email,
+			Password:     string(hash),
+			Roles:        superRole.ID,
+			IsSuperAdmin: true,
+		}
+
+		_, err = usersCol.InsertOne(ctx, user)
+		if err != nil {
+			log.Printf("Failed to insert super admin %s: %v", admin.Email, err)
+		} else {
+			log.Printf("Seeded super admin: %s", admin.Email)
+		}
+	}
+
+	return nil
 }
