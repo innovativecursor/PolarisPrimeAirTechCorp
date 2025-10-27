@@ -15,6 +15,9 @@ type Config struct {
 		ConnectionString string `yaml:"connectionString"`
 		Database         string `yaml:"database"`
 	} `yaml:"mongo"`
+	JWT struct {
+		Secret string `yaml:"secret"`
+	} `yaml:"jwt"`
 }
 
 func Env() (Config, error) {
