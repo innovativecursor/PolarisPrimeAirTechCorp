@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/database"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/auth"
 )
 
 func main() {
@@ -16,29 +19,31 @@ func main() {
 
 	_ = dbConn
 
-	// // Initialize JWT middleware
-	// jwtMiddleware := jwtmiddleware.JWTMiddleware(dbConn)
+	if err := database.SeedSuperAdmin(dbConn); err != nil {
+		log.Printf("Super admin seeding failed or already exists: %v", err)
+	} else {
+		log.Println("Super admin seeded successfully")
+	}
+	var serviceName string
 
-	// _ = jwtMiddleware
+	// Check if the SERVICE_NAME environment variable is set
+	if envServiceName := os.Getenv("SERVICE_NAME"); envServiceName != "" {
+		serviceName = envServiceName
+	} else {
+		// Check if a command-line argument is provided
+		if len(os.Args) < 2 {
+			fmt.Println("Service name not provided")
+			return
+		}
+		serviceName = os.Args[1]
+	}
 
-	// var serviceName string
-
-	// // Check if the SERVICE_NAME environment variable is set
-	// if envServiceName := os.Getenv("SERVICE_NAME"); envServiceName != "" {
-	// 	serviceName = envServiceName
-	// } else {
-	// 	// Check if a command-line argument is provided
-	// 	if len(os.Args) < 2 {
-	// 		fmt.Println("Service name not provided")
-	// 		return
-	// 	}
-	// 	serviceName = os.Args[1]
-	// }
-
-	// switch serviceName {
-	// case "organization":
-	// 	enterprise.Organization(dbConn)
-	// default:
-	// 	fmt.Println("Invalid service name")
-	// }
+	switch serviceName {
+	case "polaris":
+		auth.Auth(dbConn)
+		// case "pharmacist":
+		// 	pharmacist.Pharmacist(dbConn)
+		// case "user":
+		// 	user.User(dbConn)
+	}
 }

@@ -15,6 +15,15 @@ type Config struct {
 		ConnectionString string `yaml:"connectionString"`
 		Database         string `yaml:"database"`
 	} `yaml:"mongo"`
+	JWT struct {
+		Secret string `yaml:"secret"`
+	} `yaml:"jwt"`
+	Seed struct {
+		SuperAdmins []struct {
+			Email    string `yaml:"email"`
+			Password string `yaml:"password"`
+		} `yaml:"superAdmins"`
+	} `yaml:"seed"`
 }
 
 func Env() (Config, error) {
