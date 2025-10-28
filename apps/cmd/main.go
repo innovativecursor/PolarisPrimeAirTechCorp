@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/database"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/auth"
 )
@@ -20,7 +19,7 @@ func main() {
 
 	_ = dbConn
 
-	if err := database.SeedSuperAdmin(c*gin.Context, dbConn); err != nil {
+	if err := database.SeedSuperAdmin(dbConn); err != nil {
 		log.Printf("Super admin seeding failed or already exists: %v", err)
 	} else {
 		log.Println("Super admin seeded successfully")

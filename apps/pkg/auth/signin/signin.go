@@ -29,6 +29,11 @@ func SignIn(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
+	if user.Status == "suspended" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Your account is deactivated. Please contact admin."})
+		return
+	}
+
 	// Compare password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginData.Password)); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})

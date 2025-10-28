@@ -117,26 +117,26 @@ func SeedSuperAdmin(db *mongo.Database) error {
 		var existing models.User
 		err = usersCol.FindOne(ctx, bson.M{"email": admin.Email}).Decode(&existing)
 		if err == nil {
-			// already exists, ensure IsSuperAdmin = true
-			if !existing.IsSuperAdmin {
-				_, _ = usersCol.UpdateOne(ctx, bson.M{"_id": existing.ID}, bson.M{"$set": bson.M{"isSuperAdmin": true}})
-			}
+			// User already exists — do NOT change their role or superadmin status
+			log.Printf("Skipping existing user: %s (not modifying existing role)", admin.Email)
 			continue
 		}
 
+		// Create new superadmin if not found
 		hash, _ := bcrypt.GenerateFromPassword([]byte(admin.Password), bcrypt.DefaultCost)
 		user := models.User{
 			Email:        admin.Email,
 			Password:     string(hash),
 			Roles:        superRole.ID,
 			IsSuperAdmin: true,
+			Status:       "active",
 		}
 
 		_, err = usersCol.InsertOne(ctx, user)
 		if err != nil {
 			log.Printf("Failed to insert super admin %s: %v", admin.Email, err)
 		} else {
-			log.Printf("Seeded super admin: %s", admin.Email)
+			log.Printf("Seeded new super admin: %s", admin.Email)
 		}
 	}
 

@@ -78,7 +78,7 @@ func GetAllUsers(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	// SuperAdmin only
+	// Only SuperAdmins can view all users
 	if !currentUser.IsSuperAdmin {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 		return
@@ -86,8 +86,51 @@ func GetAllUsers(c *gin.Context, db *mongo.Database) {
 
 	userCol := db.Collection("user")
 	pendingCol := db.Collection("pendinguser")
+	roleCol := db.Collection("role")
 
 	var allUsers []bson.M
+
+	// Helper function to convert role ID → role name
+	getRoleName := func(roleID interface{}) string {
+		if roleID == nil {
+			return "N/A"
+		}
+
+		var role bson.M
+		var err error
+
+		switch v := roleID.(type) {
+		case primitive.ObjectID:
+			err = roleCol.FindOne(c, bson.M{"_id": v}).Decode(&role)
+		case string:
+			oid, errConv := primitive.ObjectIDFromHex(v)
+			if errConv == nil {
+				err = roleCol.FindOne(c, bson.M{"_id": oid}).Decode(&role)
+			}
+		default:
+			return "N/A"
+		}
+
+		if err == nil {
+			if name, ok := role["name"].(string); ok {
+				return name
+			}
+		}
+		return "N/A"
+	}
+
+	processUsers := func(users []bson.M) {
+		for _, u := range users {
+			delete(u, "password") // Remove password for security
+
+			// Replace role ObjectID with role name
+			roleName := getRoleName(u["roles"])
+			u["role"] = roleName
+			delete(u, "roles")
+
+			allUsers = append(allUsers, u)
+		}
+	}
 
 	// Fetch approved users
 	userCursor, err := userCol.Find(c, bson.M{})
@@ -95,23 +138,21 @@ func GetAllUsers(c *gin.Context, db *mongo.Database) {
 		defer userCursor.Close(c)
 		var approvedUsers []bson.M
 		if err := userCursor.All(c, &approvedUsers); err == nil {
-			allUsers = append(allUsers, approvedUsers...)
+			processUsers(approvedUsers)
 		}
 	}
 
-	// Fetch pending users
-	pendingCursor, err := pendingCol.Find(c, bson.M{})
+	// Fetch pending users (exclude already approved ones)
+	pendingCursor, err := pendingCol.Find(c, bson.M{"status": bson.M{"$ne": "approved"}})
 	if err == nil {
 		defer pendingCursor.Close(c)
 		var pendingUsers []bson.M
 		if err := pendingCursor.All(c, &pendingUsers); err == nil {
-			allUsers = append(allUsers, pendingUsers...)
+			processUsers(pendingUsers)
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"users": allUsers,
-	})
+	c.JSON(http.StatusOK, gin.H{"users": allUsers})
 }
 
 func ApproveOrUpdateUser(c *gin.Context, db *mongo.Database) {
