@@ -9,6 +9,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signup"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/middleware"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/getapiroutes"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -50,6 +51,22 @@ func Auth(db *mongo.Database) {
 
 	apiV1.POST("/auth/update-user-roles", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		signup.ApproveOrUpdateUser(c, db)
+	})
+
+	apiV1.POST("/project", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		project.CreateProject(c, db)
+	})
+	apiV1.GET("/project", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		project.GetAllProjects(c, db)
+	})
+	apiV1.GET("/project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		project.GetProjectByID(c, db)
+	})
+	// apiV1.PUT("/project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	project.UpdateProject(c, db)
+	// })
+	apiV1.DELETE("project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		project.DeleteProject(c, db)
 	})
 
 	// Listen and serve on defined port

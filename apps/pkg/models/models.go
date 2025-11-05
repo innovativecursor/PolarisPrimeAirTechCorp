@@ -33,3 +33,21 @@ type User struct {
 	IsSuperAdmin bool               `bson:"isSuperAdmin,omitempty" json:"isSuperAdmin,omitempty"`
 	Status       string             `bson:"status" json:"status"` // e.g. "active", "suspended"
 }
+
+type Project struct {
+	ID                   primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
+	ProjectName          string               `bson:"project_name" json:"project_name"`
+	CustomerID           primitive.ObjectID   `bson:"customer_id,omitempty" json:"customer_id"`
+	AddressID            primitive.ObjectID   `bson:"address_id,omitempty" json:"address_id"`
+	CustomerOrganization string               `bson:"customer_organization,omitempty" json:"customer_organization"` // read-only field
+	SalesInvoiceID       primitive.ObjectID   `bson:"sales_invoice_id,omitempty" json:"sales_invoice_id"`
+	SupplierPOIDs        []primitive.ObjectID `bson:"supplier_po_ids,omitempty" json:"supplier_po_ids"`
+	CustomerPOID         primitive.ObjectID   `bson:"customer_po_id,omitempty" json:"customer_po_id"`
+	QuotationID          primitive.ObjectID   `bson:"quotation_id,omitempty" json:"quotation_id"`
+	IsQuotationApproved  bool                 `bson:"is_quotation_approved" json:"is_quotation_approved"`
+	SupplierIDs          []primitive.ObjectID `bson:"supplier_ids,omitempty" json:"supplier_ids"`
+	SkuIDs               []primitive.ObjectID `bson:"sku_ids,omitempty" json:"sku_ids"`
+	SupplierReceiptID    primitive.ObjectID   `bson:"supplier_receipt_id,omitempty" json:"supplier_receipt_id"`
+	CreatedAt            int64                `bson:"created_at,omitempty" json:"created_at"`
+	UpdatedAt            int64                `bson:"updated_at,omitempty" json:"updated_at"`
+}
