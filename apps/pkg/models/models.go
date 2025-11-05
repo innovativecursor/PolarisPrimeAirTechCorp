@@ -51,3 +51,9 @@ type Project struct {
 	CreatedAt            int64                `bson:"created_at,omitempty" json:"created_at"`
 	UpdatedAt            int64                `bson:"updated_at,omitempty" json:"updated_at"`
 }
+
+type Customer struct {
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	CustomerName string             `bson:"customername" json:"customername"`
+	Address      string             `bson:"address" json:"address"`
+}
