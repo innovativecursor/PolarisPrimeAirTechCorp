@@ -58,15 +58,15 @@ func Auth(db *mongo.Database) {
 	apiV1.POST("/project", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.CreateProject(c, db)
 	})
-	apiV1.GET("/project", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/get-project", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.GetAllProjects(c, db)
 	})
-	apiV1.GET("/project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/get-project-by/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.GetProjectByID(c, db)
 	})
-	// apiV1.PUT("/project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
-	// 	project.UpdateProject(c, db)
-	// })
+	apiV1.PUT("/project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		project.UpdateProject(c, db)
+	})
 	apiV1.DELETE("project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.DeleteProject(c, db)
 	})

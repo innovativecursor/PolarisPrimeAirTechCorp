@@ -40,10 +40,8 @@ func CreateProject(c *gin.Context, db *mongo.Database) {
 		CustomerID:           req.CustomerID,
 		AddressID:            req.AddressID,
 		CustomerOrganization: req.CustomerOrganization,
-		//QuotationID:          req.QuotationID,
-		//IsQuotationApproved:  req.IsQuotationApproved,
-		CreatedAt: time.Now().Unix(),
-		UpdatedAt: time.Now().Unix(),
+		CreatedAt:            time.Now().Unix(),
+		UpdatedAt:            time.Now().Unix(),
 	}
 
 	projectCol := db.Collection("project")
@@ -88,7 +86,7 @@ func GetAllProjects(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": projects})
+	c.JSON(http.StatusOK, gin.H{"projects": projects})
 }
 
 // GetProjectByID retrieves a single project record based on its ID.
@@ -121,68 +119,68 @@ func GetProjectByID(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": project})
+	c.JSON(http.StatusOK, gin.H{"project": project})
 }
 
 // UpdateProject updates an existing project document in the database.
 // It supports partial updates using the fields provided in the payload.
-// func UpdateProject(c *gin.Context, db *mongo.Database) {
-// 	user, exists := c.Get("user")
-// 	if !exists {
-// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-// 		return
-// 	}
-// 	_, ok := user.(*models.User)
-// 	if !ok {
-// 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
-// 		return
-// 	}
-// 	id := c.Param("id")
+func UpdateProject(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+	id := c.Param("id")
 
-// 	// Convert the string ID to ObjectID
-// 	objID, err := primitive.ObjectIDFromHex(id)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
-// 		return
-// 	}
+	// Convert the string ID to ObjectID
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
 
-// 	var req config.UpdateProjectRequest
+	var req config.UpdateProjectRequest
 
-// 	// Bind and validate the incoming JSON payload
-// 	if err := c.ShouldBindJSON(&req); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
+	// Bind and validate the incoming JSON payload
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-// 	projectCol := db.Collection("project")
-// 	// Build the update document with the provided fields
-// 	update := bson.M{
-// 		"$set": bson.M{
-// 			"project_name":          req.ProjectName,
-// 			"customer_id":           req.CustomerID,
-// 			"address_id":            req.AddressID,
-// 			"customer_organization": req.CustomerOrganization,
-// 			"quotation_id":          req.QuotationID,
-// 			"is_quotation_approved": req.IsQuotationApproved,
-// 			"supplier_ids":          req.SupplierIDs,
-// 			"sku_ids":               req.SkuIDs,
-// 			"supplier_po_ids":       req.SupplierPOIDs,
-// 			"customer_po_id":        req.CustomerPOID,
-// 			"supplier_receipt_id":   req.SupplierReceiptID,
-// 			"sales_invoice_id":      req.SalesInvoiceID,
-// 			"updated_at":            time.Now().Unix(),
-// 		},
-// 	}
+	projectCol := db.Collection("project")
+	// Build the update document with the provided fields
+	update := bson.M{
+		"$set": bson.M{
+			"project_name": req.ProjectName,
+			"updated_at":   time.Now().Unix(),
+			// "customer_id":           req.CustomerID,
+			// "address_id":            req.AddressID,
+			// "customer_organization": req.CustomerOrganization,
+			// "quotation_id":          req.QuotationID,
+			// "is_quotation_approved": req.IsQuotationApproved,
+			// "supplier_ids":          req.SupplierIDs,
+			// "sku_ids":               req.SkuIDs,
+			// "supplier_po_ids":       req.SupplierPOIDs,
+			// "customer_po_id":        req.CustomerPOID,
+			// "supplier_receipt_id":   req.SupplierReceiptID,
+			// "sales_invoice_id":      req.SalesInvoiceID,
+		},
+	}
 
-// 	// Update the project document
-// 	_, err = projectCol.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
-// 	if err != nil {
-// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
-// 		return
-// 	}
+	// Update the project document
+	_, err = projectCol.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
+		return
+	}
 
-// 	c.JSON(http.StatusOK, gin.H{"message": "Project updated successfully"})
-// }
+	c.JSON(http.StatusOK, gin.H{"message": "Project updated successfully"})
+}
 
 // DeleteProject removes a project record from the database
 // based on the provided project ID.
