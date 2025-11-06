@@ -11,6 +11,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/customer"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/middleware"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/quotation"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/getapiroutes"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -82,6 +83,23 @@ func Auth(db *mongo.Database) {
 
 	apiV1.DELETE("/customer/delete-customer", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		customer.DeleteCustomer(c, db)
+	})
+
+	//quotation
+	apiV1.POST("/quotation/upsert", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		quotation.UpsertQuotation(c, db)
+	})
+	apiV1.POST("/quotation/toggle-status", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		quotation.ToggleQuotationStatus(c, db)
+	})
+	apiV1.GET("/quotation/customer-quotations/:customerId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		quotation.GetQuotationsByCustomer(c, db)
+	})
+	apiV1.GET("/quotation/get-quotation-by-id/:quotationId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		quotation.GetQuotationByID(c, db)
+	})
+	apiV1.DELETE("/quotation/delete-quotation/:quotationId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		quotation.DeleteQuotation(c, db)
 	})
 
 	// Listen and serve on defined port

@@ -57,3 +57,21 @@ type Customer struct {
 	CustomerName string             `bson:"customername" json:"customername"`
 	Address      string             `bson:"address" json:"address"`
 }
+
+type Quotation struct {
+	ID          primitive.ObjectID  `bson:"_id,omitempty" json:"id,omitempty"`
+	CustomerID  primitive.ObjectID  `bson:"customerId" json:"customerId"`
+	Items       []QuotationItem     `bson:"items" json:"items"`
+	TotalAmount float64             `bson:"totalAmount" json:"totalAmount"`
+	CreatedAt   time.Time           `bson:"createdAt" json:"createdAt"`
+	Status      string              `bson:"status" json:"status"` // "pending", "approved", "rejected"
+	ApprovedAt  *time.Time          `bson:"approvedAt,omitempty" json:"approvedAt,omitempty"`
+	ApprovedBy  *primitive.ObjectID `bson:"approvedBy,omitempty" json:"approvedBy,omitempty"` // user who approved
+}
+
+type QuotationItem struct {
+	Description string  `bson:"description" json:"description"`
+	Quantity    int     `bson:"quantity" json:"quantity"`
+	Rate        float64 `bson:"rate" json:"rate"`
+	Amount      float64 `bson:"amount" json:"amount"`
+}
