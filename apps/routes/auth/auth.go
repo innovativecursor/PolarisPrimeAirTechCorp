@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signup"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/customer"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/middleware"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/getapiroutes"
@@ -53,6 +54,7 @@ func Auth(db *mongo.Database) {
 		signup.ApproveOrUpdateUser(c, db)
 	})
 
+	//project
 	apiV1.POST("/project", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.CreateProject(c, db)
 	})
@@ -67,6 +69,19 @@ func Auth(db *mongo.Database) {
 	// })
 	apiV1.DELETE("project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.DeleteProject(c, db)
+	})
+
+	//customer
+	apiV1.POST("/customer/add-update-customer", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		customer.AddCustomer(c, db)
+	})
+
+	apiV1.GET("/customer/get-all-customer", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		customer.GetAllCustomers(c, db)
+	})
+
+	apiV1.DELETE("/customer/delete-customer", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		customer.DeleteCustomer(c, db)
 	})
 
 	// Listen and serve on defined port
