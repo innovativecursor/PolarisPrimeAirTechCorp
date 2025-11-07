@@ -75,3 +75,26 @@ type QuotationItem struct {
 	Rate        float64 `bson:"rate" json:"rate"`
 	Amount      float64 `bson:"amount" json:"amount"`
 }
+
+// SupplierPO represents a Purchase Order sent to a supplier
+type SupplierPO struct {
+	ID            primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
+	ProjectID     primitive.ObjectID   `bson:"projectId" json:"projectId"`
+	SupplierID    primitive.ObjectID   `bson:"supplierId" json:"supplierId"`
+	CustomerPOIDs []primitive.ObjectID `bson:"customerPoIds,omitempty" json:"customerPoIds,omitempty"` // linked Customer POs
+	Items         []SupplierPOItem     `bson:"items" json:"items"`
+	TotalAmount   float64              `bson:"totalAmount" json:"totalAmount"`
+	Status        string               `bson:"status" json:"status"` // draft, approved, sent, closed
+	CreatedAt     time.Time            `bson:"createdAt" json:"createdAt"`
+	UpdatedAt     *time.Time           `bson:"updatedAt,omitempty" json:"updatedAt,omitempty"`
+	ApprovedAt    *time.Time           `bson:"approvedAt,omitempty" json:"approvedAt,omitempty"`
+	ApprovedBy    *primitive.ObjectID  `bson:"approvedBy,omitempty" json:"approvedBy,omitempty"`
+}
+
+// SupplierPOItem represents a single item in a Supplier PO
+type SupplierPOItem struct {
+	Description string  `bson:"description" json:"description"`
+	Quantity    int     `bson:"quantity" json:"quantity"`
+	Rate        float64 `bson:"rate" json:"rate"`
+	Amount      float64 `bson:"amount" json:"amount"`
+}

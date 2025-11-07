@@ -12,6 +12,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/middleware"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/quotation"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierpo"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/getapiroutes"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -100,6 +101,27 @@ func Auth(db *mongo.Database) {
 	})
 	apiV1.DELETE("/quotation/delete-quotation/:quotationId", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		quotation.DeleteQuotation(c, db)
+	})
+
+	//Supplier Purchase order
+	apiV1.POST("/supplierpo/add", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.AddSupplierPO(c, db)
+	})
+
+	apiV1.PUT("/supplierpo/update", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.UpdateSupplierPO(c, db)
+	})
+
+	apiV1.GET("/supplierpo/supplier/:supplierId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.GetSupplierPOsBySupplier(c, db)
+	})
+
+	apiV1.GET("/supplierpo/:supplierPOId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.GetSupplierPOByID(c, db)
+	})
+
+	apiV1.PUT("/supplierpo/status", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.ToggleSupplierPOStatus(c, db)
 	})
 
 	// Listen and serve on defined port
