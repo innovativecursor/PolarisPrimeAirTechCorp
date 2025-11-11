@@ -81,7 +81,8 @@ type SupplierPO struct {
 	ID            primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
 	ProjectID     primitive.ObjectID   `bson:"projectId" json:"projectId"`
 	SupplierID    primitive.ObjectID   `bson:"supplierId" json:"supplierId"`
-	CustomerPOIDs []primitive.ObjectID `bson:"customerPoIds,omitempty" json:"customerPoIds,omitempty"` // linked Customer POs
+	SOID          *primitive.ObjectID  `bson:"soId,omitempty" json:"soId,omitempty"`                   // Added: for “Select SO” field
+	CustomerPOIDs []primitive.ObjectID `bson:"customerPoIds,omitempty" json:"customerPoIds,omitempty"` //need to confirm from fe
 	Items         []SupplierPOItem     `bson:"items" json:"items"`
 	TotalAmount   float64              `bson:"totalAmount" json:"totalAmount"`
 	Status        string               `bson:"status" json:"status"` // draft, approved, sent, closed
@@ -95,6 +96,7 @@ type SupplierPO struct {
 type SupplierPOItem struct {
 	Description string  `bson:"description" json:"description"`
 	Quantity    int     `bson:"quantity" json:"quantity"`
+	UOM         string  `bson:"uom" json:"uom"` // Added for “UOM” field
 	Rate        float64 `bson:"rate" json:"rate"`
 	Amount      float64 `bson:"amount" json:"amount"`
 }

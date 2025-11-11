@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// Add Supplier Purchase Order
 func AddSupplierPO(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
@@ -42,6 +43,16 @@ func AddSupplierPO(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
+	var soID *primitive.ObjectID
+	if payload.SOID != "" {
+		tmp, err := primitive.ObjectIDFromHex(payload.SOID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Sales Order ID"})
+			return
+		}
+		soID = &tmp
+	}
+
 	// Convert CustomerPOIDs to ObjectIDs
 	var customerPOIDs []primitive.ObjectID
 	for _, id := range payload.CustomerPOIDs {
@@ -53,14 +64,16 @@ func AddSupplierPO(c *gin.Context, db *mongo.Database) {
 		}
 	}
 
-	// Calculate total
+	// Build Items and Calculate Total
 	var items []models.SupplierPOItem
 	var total float64
+
 	for _, item := range payload.Items {
 		amount := float64(item.Quantity) * item.Rate
 		items = append(items, models.SupplierPOItem{
 			Description: item.Description,
 			Quantity:    item.Quantity,
+			UOM:         item.UOM,
 			Rate:        item.Rate,
 			Amount:      amount,
 		})
@@ -71,6 +84,7 @@ func AddSupplierPO(c *gin.Context, db *mongo.Database) {
 		ID:            primitive.NewObjectID(),
 		ProjectID:     projectID,
 		SupplierID:    supplierID,
+		SOID:          soID,
 		CustomerPOIDs: customerPOIDs,
 		Items:         items,
 		TotalAmount:   total,
@@ -84,9 +98,13 @@ func AddSupplierPO(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Supplier PO created successfully", "supplierPO": po})
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Supplier PO created successfully",
+		"supplierPO": po,
+	})
 }
 
+// Update Supplier Purchase Order
 func UpdateSupplierPO(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
@@ -119,13 +137,16 @@ func UpdateSupplierPO(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
+	// Rebuild Items and Calculate Total
 	var items []models.SupplierPOItem
 	var total float64
+
 	for _, item := range payload.Items {
 		amount := float64(item.Quantity) * item.Rate
 		items = append(items, models.SupplierPOItem{
 			Description: item.Description,
 			Quantity:    item.Quantity,
+			UOM:         item.UOM,
 			Rate:        item.Rate,
 			Amount:      amount,
 		})
@@ -141,8 +162,8 @@ func UpdateSupplierPO(c *gin.Context, db *mongo.Database) {
 		},
 	}
 
-	if _, err = collection.UpdateOne(c, bson.M{"_id": supplierPOID}, update); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update Supplier PO"})
+	if _, err := collection.UpdateOne(c, bson.M{"_id": supplierPOID}, update); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update Supplier PO", "details": err.Error()})
 		return
 	}
 
@@ -161,6 +182,7 @@ func GetSupplierPOsBySupplier(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
+
 	supplierIDParam := c.Param("supplierId")
 	supplierID, err := primitive.ObjectIDFromHex(supplierIDParam)
 	if err != nil {
@@ -169,9 +191,43 @@ func GetSupplierPOsBySupplier(c *gin.Context, db *mongo.Database) {
 	}
 
 	collection := db.Collection("supplier_purchase_orders")
-	cursor, err := collection.Find(c, bson.M{"supplierId": supplierID})
+
+	// Enrich data with related Project, Supplier, and SO details
+	pipeline := mongo.Pipeline{
+		{{Key: "$match", Value: bson.D{{Key: "supplierId", Value: supplierID}}}},
+		{{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "suppliers"},
+				{Key: "localField", Value: "supplierId"},
+				{Key: "foreignField", Value: "_id"},
+				{Key: "as", Value: "supplierDetails"},
+			},
+		}},
+		{{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "project"},
+				{Key: "localField", Value: "projectId"},
+				{Key: "foreignField", Value: "_id"},
+				{Key: "as", Value: "projectDetails"},
+			},
+		}},
+		{{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "sales_orders"},
+				{Key: "localField", Value: "soId"},
+				{Key: "foreignField", Value: "_id"},
+				{Key: "as", Value: "salesOrderDetails"},
+			},
+		}},
+		{{Key: "$sort", Value: bson.D{{Key: "createdAt", Value: -1}}}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Supplier POs"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Supplier POs", "details": err.Error()})
 		return
 	}
 	defer cursor.Close(c)
@@ -185,6 +241,8 @@ func GetSupplierPOsBySupplier(c *gin.Context, db *mongo.Database) {
 	c.JSON(http.StatusOK, gin.H{"supplierPOs": results})
 }
 
+// Get Single Supplier PO by ID
+
 func GetSupplierPOByID(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
@@ -196,6 +254,7 @@ func GetSupplierPOByID(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
+
 	poIDParam := c.Param("supplierPOId")
 	poID, err := primitive.ObjectIDFromHex(poIDParam)
 	if err != nil {
@@ -205,8 +264,36 @@ func GetSupplierPOByID(c *gin.Context, db *mongo.Database) {
 
 	collection := db.Collection("supplier_purchase_orders")
 
+	// Aggregate to bring all related info (Supplier, Project, SO, Linked Customer POs)
 	pipeline := mongo.Pipeline{
 		{{Key: "$match", Value: bson.D{{Key: "_id", Value: poID}}}},
+		{{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "suppliers"},
+				{Key: "localField", Value: "supplierId"},
+				{Key: "foreignField", Value: "_id"},
+				{Key: "as", Value: "supplierDetails"},
+			},
+		}},
+		{{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "project"},
+				{Key: "localField", Value: "projectId"},
+				{Key: "foreignField", Value: "_id"},
+				{Key: "as", Value: "projectDetails"},
+			},
+		}},
+		{{
+			Key: "$lookup",
+			Value: bson.D{
+				{Key: "from", Value: "sales_orders"},
+				{Key: "localField", Value: "soId"},
+				{Key: "foreignField", Value: "_id"},
+				{Key: "as", Value: "salesOrderDetails"},
+			},
+		}},
 		{{
 			Key: "$lookup",
 			Value: bson.D{
@@ -239,6 +326,7 @@ func GetSupplierPOByID(c *gin.Context, db *mongo.Database) {
 	c.JSON(http.StatusOK, gin.H{"supplierPO": results[0]})
 }
 
+// Not in use yet
 // Toggle Supplier PO Status
 func ToggleSupplierPOStatus(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
