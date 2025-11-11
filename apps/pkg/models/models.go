@@ -100,3 +100,32 @@ type SupplierPOItem struct {
 	Rate        float64 `bson:"rate" json:"rate"`
 	Amount      float64 `bson:"amount" json:"amount"`
 }
+
+type SalesOrder struct {
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	ProjectID   primitive.ObjectID `bson:"projectId,omitempty" json:"projectId,omitempty"`
+	CustomerID  primitive.ObjectID `bson:"customerId,omitempty" json:"customerId,omitempty"`
+	Items       []SalesOrderItem   `bson:"items" json:"items"`
+	TotalAmount float64            `bson:"totalAmount" json:"totalAmount"`
+	CreatedBy   primitive.ObjectID `bson:"createdBy,omitempty" json:"createdBy,omitempty"`
+	CreatedAt   time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt   time.Time          `bson:"updatedAt" json:"updatedAt"`
+	Status      string             `bson:"status" json:"status"` // e.g. "draft", "confirmed"
+}
+
+type SalesOrderItem struct {
+	AirconID primitive.ObjectID `bson:"airconId,omitempty" json:"airconId,omitempty"`
+	Qty      int                `bson:"qty" json:"qty"`
+	UOM      string             `bson:"uom" json:"uom"`
+	Price    float64            `bson:"price" json:"price"`
+	Subtotal float64            `bson:"subtotal" json:"subtotal"`
+}
+
+type Aircon struct {
+	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Name     string             `bson:"name" json:"name"`
+	Model    string             `bson:"model" json:"model"`
+	Brand    string             `bson:"brand" json:"brand"`
+	Capacity string             `bson:"capacity" json:"capacity"`
+	Price    float64            `bson:"price" json:"price"`
+}
