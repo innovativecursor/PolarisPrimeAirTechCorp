@@ -10,6 +10,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signup"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/customer"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/middleware"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/polarisinventory"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/quotation"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierpo"
@@ -122,6 +123,27 @@ func Auth(db *mongo.Database) {
 
 	apiV1.PUT("/supplierpo/status", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierpo.ToggleSupplierPOStatus(c, db)
+	})
+
+	// Inventory
+	apiV1.POST("/inventory", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		polarisinventory.AddInventory(c, db)
+	})
+
+	apiV1.GET("/inventory", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		polarisinventory.GetAllInventory(c, db)
+	})
+
+	apiV1.GET("/inventory/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		polarisinventory.GetInventoryByID(c, db)
+	})
+
+	apiV1.PUT("/inventory/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		polarisinventory.UpdateInventory(c, db)
+	})
+
+	apiV1.DELETE("/inventory/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		polarisinventory.DeleteInventory(c, db)
 	})
 
 	// Listen and serve on defined port

@@ -100,3 +100,19 @@ type SupplierPOItem struct {
 	Rate        float64 `bson:"rate" json:"rate"`
 	Amount      float64 `bson:"amount" json:"amount"`
 }
+
+// PolarisInventory represents an item in Polaris warehouse inventory.
+type PolarisInventory struct {
+	ID                primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	SKU               string             `bson:"sku" json:"sku"`                             // Unique item SKU
+	Barcode           string             `bson:"barcode,omitempty" json:"barcode,omitempty"` // Optional: for scanned code
+	AirconModelNumber string             `bson:"aircon_model_number" json:"aircon_model_number"`
+	AirconName        string             `bson:"aircon_name" json:"aircon_name"`
+	HP                string             `bson:"hp" json:"hp"`
+	TypeOfAircon      string             `bson:"type_of_aircon" json:"type_of_aircon"`           // Split, Window, Cassette, etc.
+	IndoorOutdoorUnit string             `bson:"indoor_outdoor_unit" json:"indoor_outdoor_unit"` // Indoor or Outdoor
+	Quantity          int                `bson:"quantity" json:"quantity"`                       // Optional: for stock tracking
+	CreatedBy         primitive.ObjectID `bson:"created_by,omitempty" json:"created_by,omitempty"`
+	CreatedAt         time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt         time.Time          `bson:"updated_at" json:"updated_at"`
+}
