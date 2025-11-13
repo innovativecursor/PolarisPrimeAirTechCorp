@@ -101,31 +101,18 @@ type SupplierPOItem struct {
 	Amount      float64 `bson:"amount" json:"amount"`
 }
 
-type SalesOrder struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	ProjectID   primitive.ObjectID `bson:"projectId,omitempty" json:"projectId,omitempty"`
-	CustomerID  primitive.ObjectID `bson:"customerId,omitempty" json:"customerId,omitempty"`
-	Items       []SalesOrderItem   `bson:"items" json:"items"`
-	TotalAmount float64            `bson:"totalAmount" json:"totalAmount"`
-	CreatedBy   primitive.ObjectID `bson:"createdBy,omitempty" json:"createdBy,omitempty"`
-	CreatedAt   time.Time          `bson:"createdAt" json:"createdAt"`
-	UpdatedAt   time.Time          `bson:"updatedAt" json:"updatedAt"`
-	Status      string             `bson:"status" json:"status"` // e.g. "draft", "confirmed"
-}
-
-type SalesOrderItem struct {
-	AirconID primitive.ObjectID `bson:"airconId,omitempty" json:"airconId,omitempty"`
-	Qty      int                `bson:"qty" json:"qty"`
-	UOM      string             `bson:"uom" json:"uom"`
-	Price    float64            `bson:"price" json:"price"`
-	Subtotal float64            `bson:"subtotal" json:"subtotal"`
-}
-
-type Aircon struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Name     string             `bson:"name" json:"name"`
-	Model    string             `bson:"model" json:"model"`
-	Brand    string             `bson:"brand" json:"brand"`
-	Capacity string             `bson:"capacity" json:"capacity"`
-	Price    float64            `bson:"price" json:"price"`
+// PolarisInventory represents an item in Polaris warehouse inventory.
+type PolarisInventory struct {
+	ID                primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	SKU               string             `bson:"sku" json:"sku"`                             // Unique item SKU
+	Barcode           string             `bson:"barcode,omitempty" json:"barcode,omitempty"` // Optional: for scanned code
+	AirconModelNumber string             `bson:"aircon_model_number" json:"aircon_model_number"`
+	AirconName        string             `bson:"aircon_name" json:"aircon_name"`
+	HP                string             `bson:"hp" json:"hp"`
+	TypeOfAircon      string             `bson:"type_of_aircon" json:"type_of_aircon"`           // Split, Window, Cassette, etc.
+	IndoorOutdoorUnit string             `bson:"indoor_outdoor_unit" json:"indoor_outdoor_unit"` // Indoor or Outdoor
+	Quantity          int                `bson:"quantity" json:"quantity"`                       // Optional: for stock tracking
+	CreatedBy         primitive.ObjectID `bson:"created_by,omitempty" json:"created_by,omitempty"`
+	CreatedAt         time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt         time.Time          `bson:"updated_at" json:"updated_at"`
 }
