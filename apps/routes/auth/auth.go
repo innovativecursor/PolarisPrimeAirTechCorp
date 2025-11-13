@@ -13,6 +13,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/polarisinventory"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/quotation"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/salesorder"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierpo"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/getapiroutes"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -144,6 +145,31 @@ func Auth(db *mongo.Database) {
 
 	apiV1.DELETE("/inventory/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		polarisinventory.DeleteInventory(c, db)
+	})
+
+	//sales order
+	apiV1.POST("/salesorder/create-sales-order", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesorder.CreateSalesOrder(c, db)
+	})
+
+	apiV1.PUT("/salesorder/edit-sales-order", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesorder.EditSalesOrder(c, db)
+	})
+
+	apiV1.GET("/salesorder/get-all-sales-order", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesorder.GetAllSalesOrders(c, db)
+	})
+	apiV1.GET("/salesorder/get-sales-order-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesorder.GetSalesOrderByID(c, db)
+	})
+	apiV1.DELETE("/salesorder/delete-sales-order", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesorder.DeleteSalesOrder(c, db)
+	})
+	apiV1.POST("/salesorder/add-aircon", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesorder.CreateAircon(c, db)
+	})
+	apiV1.GET("/salesorder/get-aircon", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesorder.GetAllAircon(c, db)
 	})
 
 	// Listen and serve on defined port
