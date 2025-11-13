@@ -13,7 +13,6 @@ import (
 )
 
 func AddCustomer(c *gin.Context, db *mongo.Database) {
-	// Get authenticated user from context
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
@@ -25,7 +24,6 @@ func AddCustomer(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	// Bind JSON payload
 	var payload config.CustomerData
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
@@ -40,28 +38,39 @@ func AddCustomer(c *gin.Context, db *mongo.Database) {
 	if payload.ID != "" {
 		objID, err := primitive.ObjectIDFromHex(payload.ID)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid customer ID"})
 			return
 		}
 		filter = bson.M{"_id": objID}
 		customer.ID = objID
 	} else {
-		filter = bson.M{}
+		filter = bson.M{
+			"customername": payload.CustomerName,
+			"tinnumber":    payload.TINNumber,
+		}
 	}
 
 	customer.CustomerName = payload.CustomerName
 	customer.Address = payload.Address
+	customer.TINNumber = payload.TINNumber
 
 	update := bson.M{"$set": customer}
 	opts := options.Update().SetUpsert(true)
 
-	_, err := collection.UpdateOne(c, filter, update, opts)
+	res, err := collection.UpdateOne(c, filter, update, opts)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upsert customer", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save customer", "details": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Customer saved successfully", "customer": customer})
+	if res.UpsertedID != nil {
+		customer.ID = res.UpsertedID.(primitive.ObjectID)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":  "Customer saved successfully",
+		"customer": customer,
+	})
 }
 
 func GetAllCustomers(c *gin.Context, db *mongo.Database) {
