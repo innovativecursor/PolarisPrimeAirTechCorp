@@ -426,6 +426,16 @@ func CreateAircon(c *gin.Context, db *mongo.Database) {
 }
 
 func GetAllAircon(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
 	collection := db.Collection("aircon")
 
 	cursor, err := collection.Find(c, bson.M{})

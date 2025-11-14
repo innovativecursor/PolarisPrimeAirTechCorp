@@ -162,3 +162,21 @@ type InvoiceItem struct {
 	Qty       int    `bson:"qty" json:"qty"`
 	UOM       string `bson:"uom" json:"uom"`
 }
+
+type SupplierDeliveryReceipt struct {
+	ID              primitive.ObjectID            `bson:"_id,omitempty" json:"id,omitempty"`
+	SupplierID      primitive.ObjectID            `bson:"supplier_id" json:"supplier_id"`
+	Date            time.Time                     `bson:"date" json:"date"`
+	SupplierDRNo    string                        `bson:"supplier_dr_no" json:"supplier_dr_no"`
+	SupplierInvoice string                        `bson:"supplier_invoice" json:"supplier_invoice"`
+	YourPONo        string                        `bson:"your_po_no" json:"your_po_no"` // Polaris PO No.
+	Items           []SupplierDeliveryReceiptItem `bson:"items" json:"items"`
+	ReceivedBy      primitive.ObjectID            `bson:"received_by" json:"received_by"`
+	CreatedAt       time.Time                     `bson:"created_at" json:"created_at"`
+}
+
+type SupplierDeliveryReceiptItem struct {
+	Description string `bson:"description" json:"description"`
+	Qty         int    `bson:"qty" json:"qty"`
+	Unit        string `bson:"unit" json:"unit"`
+}
