@@ -58,7 +58,7 @@ func CreateSupplierDR(c *gin.Context, db *mongo.Database) {
 		CreatedAt:       time.Now(),
 	}
 
-	_, err = db.Collection("supplier_delivery_receipt").InsertOne(c, dr)
+	_, err = db.Collection("supplierdeliveryreceipt").InsertOne(c, dr)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create supplier DR"})
 		return
@@ -78,7 +78,7 @@ func GetAllSupplierDR(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
-	cursor, err := db.Collection("supplier_delivery_receipt").Find(c, bson.M{})
+	cursor, err := db.Collection("supplierdeliveryreceipt").Find(c, bson.M{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch DR"})
 		return
@@ -111,7 +111,7 @@ func GetSupplierDRByID(c *gin.Context, db *mongo.Database) {
 	}
 
 	var dr models.SupplierDeliveryReceipt
-	err = db.Collection("supplier_delivery_receipt").FindOne(c, bson.M{"_id": objID}).Decode(&dr)
+	err = db.Collection("supplierdeliveryreceipt").FindOne(c, bson.M{"_id": objID}).Decode(&dr)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "DR not found"})
 		return
@@ -161,7 +161,7 @@ func EditSupplierDR(c *gin.Context, db *mongo.Database) {
 		},
 	}
 
-	_, err := db.Collection("supplier_delivery_receipt").
+	_, err := db.Collection("supplierdeliveryreceipt").
 		UpdateOne(c, bson.M{"_id": objID}, update)
 
 	if err != nil {
@@ -190,7 +190,7 @@ func DeleteSupplierDR(c *gin.Context, db *mongo.Database) {
 
 	objID, _ := primitive.ObjectIDFromHex(payload.ID)
 
-	_, err := db.Collection("supplier_delivery_receipt").
+	_, err := db.Collection("supplierdeliveryreceipt").
 		DeleteOne(c, bson.M{"_id": objID})
 
 	if err != nil {

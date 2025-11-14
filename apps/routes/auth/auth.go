@@ -195,27 +195,6 @@ func Auth(db *mongo.Database) {
 		invoices.DeleteInvoice(c, db)
 	})
 
-	//Invoices
-	apiV1.POST("/invoices", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.CreateInvoice(c, db)
-	})
-
-	apiV1.GET("/invoices", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.GetAllInvoices(c, db)
-	})
-
-	apiV1.GET("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.GetInvoiceByID(c, db)
-	})
-
-	apiV1.PUT("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.UpdateInvoice(c, db)
-	})
-
-	apiV1.DELETE("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.DeleteInvoice(c, db)
-	})
-
 	//supplier dr
 	apiV1.POST("/supplier/delivery-r-create", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierdr.CreateSupplierDR(c, db)
