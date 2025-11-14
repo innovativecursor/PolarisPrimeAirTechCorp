@@ -128,23 +128,23 @@ func Auth(db *mongo.Database) {
 	})
 
 	// Inventory
-	apiV1.POST("/inventory", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.POST("/inventory/add", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		polarisinventory.AddInventory(c, db)
 	})
 
-	apiV1.GET("/inventory", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/inventory/get", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		polarisinventory.GetAllInventory(c, db)
 	})
 
-	apiV1.GET("/inventory/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/inventory/get-by/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		polarisinventory.GetInventoryByID(c, db)
 	})
 
-	apiV1.PUT("/inventory/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.PUT("/inventory/update/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		polarisinventory.UpdateInventory(c, db)
 	})
 
-	apiV1.DELETE("/inventory/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.DELETE("/inventory/delete/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		polarisinventory.DeleteInventory(c, db)
 	})
 
@@ -174,23 +174,23 @@ func Auth(db *mongo.Database) {
 	})
 
 	//Invoices
-	apiV1.POST("/invoices", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.POST("/invoices/add", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		invoices.CreateInvoice(c, db)
 	})
 
-	apiV1.GET("/invoices", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/invoices/get", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		invoices.GetAllInvoices(c, db)
 	})
 
-	apiV1.GET("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/invoices/get-by/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		invoices.GetInvoiceByID(c, db)
 	})
 
-	apiV1.PUT("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.PUT("/invoices/update/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		invoices.UpdateInvoice(c, db)
 	})
 
-	apiV1.DELETE("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.DELETE("/invoices/delete/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		invoices.DeleteInvoice(c, db)
 	})
 
