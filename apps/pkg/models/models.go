@@ -56,6 +56,7 @@ type Customer struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	CustomerName string             `bson:"customername" json:"customername"`
 	Address      string             `bson:"address" json:"address"`
+	TINNumber    string             `bson:"tinnumber" json:"tinnumber"`
 }
 
 type Quotation struct {
@@ -115,6 +116,35 @@ type PolarisInventory struct {
 	CreatedBy         primitive.ObjectID `bson:"created_by,omitempty" json:"created_by,omitempty"`
 	CreatedAt         time.Time          `bson:"created_at" json:"created_at"`
 	UpdatedAt         time.Time          `bson:"updated_at" json:"updated_at"`
+}
+
+type SalesOrder struct {
+	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	ProjectID   primitive.ObjectID `bson:"projectId,omitempty" json:"projectId,omitempty"`
+	CustomerID  primitive.ObjectID `bson:"customerId,omitempty" json:"customerId,omitempty"`
+	Items       []SalesOrderItem   `bson:"items" json:"items"`
+	TotalAmount float64            `bson:"totalAmount" json:"totalAmount"`
+	CreatedBy   primitive.ObjectID `bson:"createdBy,omitempty" json:"createdBy,omitempty"`
+	CreatedAt   time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt   time.Time          `bson:"updatedAt" json:"updatedAt"`
+	Status      string             `bson:"status" json:"status"`
+}
+
+type SalesOrderItem struct {
+	AirconID primitive.ObjectID `bson:"airconId,omitempty" json:"airconId,omitempty"`
+	Qty      int                `bson:"qty" json:"qty"`
+	UOM      string             `bson:"uom" json:"uom"`
+	Price    float64            `bson:"price" json:"price"`
+	Subtotal float64            `bson:"subtotal" json:"subtotal"`
+}
+
+type Aircon struct {
+	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Name     string             `bson:"name" json:"name"`
+	Model    string             `bson:"model" json:"model"`
+	Brand    string             `bson:"brand" json:"brand"`
+	Capacity string             `bson:"capacity" json:"capacity"`
+	Price    float64            `bson:"price" json:"price"`
 }
 
 type Invoice struct {
