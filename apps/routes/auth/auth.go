@@ -14,6 +14,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/quotation"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/salesorder"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierdr"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierpo"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/getapiroutes"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -172,6 +173,23 @@ func Auth(db *mongo.Database) {
 		salesorder.GetAllAircon(c, db)
 	})
 
+	//supplier dr
+	apiV1.POST("/supplier/delivery-r-create", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierdr.CreateSupplierDR(c, db)
+	})
+
+	apiV1.GET("/supplier/dr/get-all", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierdr.GetAllSupplierDR(c, db)
+	})
+	apiV1.GET("/supplier/dr-get-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierdr.GetSupplierDRByID(c, db)
+	})
+	apiV1.PUT("/supplier/dr-edit", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierdr.EditSupplierDR(c, db)
+	})
+	apiV1.DELETE("/supplier/dr-delete", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierdr.DeleteSupplierDR(c, db)
+	})
 	// Listen and serve on defined port
 	log.Printf("Application started, Listening on Port %s", port)
 	router.Run(":" + port)
