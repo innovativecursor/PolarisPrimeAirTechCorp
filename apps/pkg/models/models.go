@@ -146,3 +146,19 @@ type Aircon struct {
 	Capacity string             `bson:"capacity" json:"capacity"`
 	Price    float64            `bson:"price" json:"price"`
 }
+
+type Invoice struct {
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	ProjectID    primitive.ObjectID `bson:"projectId" json:"projectId"`
+	CustomerID   primitive.ObjectID `bson:"customerId" json:"customerId"`
+	SalesOrderID primitive.ObjectID `bson:"salesOrderId" json:"salesOrderId"`
+	Items        []InvoiceItem      `bson:"items" json:"items"`
+	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt    time.Time          `bson:"updated_at" json:"updated_at"`
+}
+
+type InvoiceItem struct {
+	SKUNumber string `bson:"sku_number" json:"sku_number"`
+	Qty       int    `bson:"qty" json:"qty"`
+	UOM       string `bson:"uom" json:"uom"`
+}
