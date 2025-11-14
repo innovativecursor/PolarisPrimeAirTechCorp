@@ -9,6 +9,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signup"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/customer"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/invoices"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/middleware"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/polarisinventory"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
@@ -171,6 +172,48 @@ func Auth(db *mongo.Database) {
 	})
 	apiV1.GET("/salesorder/get-aircon", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		salesorder.GetAllAircon(c, db)
+	})
+
+	//Invoices
+	apiV1.POST("/invoices", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.CreateInvoice(c, db)
+	})
+
+	apiV1.GET("/invoices", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.GetAllInvoices(c, db)
+	})
+
+	apiV1.GET("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.GetInvoiceByID(c, db)
+	})
+
+	apiV1.PUT("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.UpdateInvoice(c, db)
+	})
+
+	apiV1.DELETE("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.DeleteInvoice(c, db)
+	})
+
+	//Invoices
+	apiV1.POST("/invoices", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.CreateInvoice(c, db)
+	})
+
+	apiV1.GET("/invoices", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.GetAllInvoices(c, db)
+	})
+
+	apiV1.GET("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.GetInvoiceByID(c, db)
+	})
+
+	apiV1.PUT("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.UpdateInvoice(c, db)
+	})
+
+	apiV1.DELETE("/invoices/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		invoices.DeleteInvoice(c, db)
 	})
 
 	//supplier dr
