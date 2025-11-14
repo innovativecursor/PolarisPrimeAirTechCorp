@@ -88,6 +88,7 @@ func UpdateInvoice(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
+	// update fields value
 	update := bson.M{
 		"$set": bson.M{
 			"projectId":    payload.ProjectID,
