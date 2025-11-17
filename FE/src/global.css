@@ -1,0 +1,12 @@
+:root {
+  --storm: #0b1b2f;
+  --midnight: #122b47;
+  --aqua: #24b0c7;
+  --ice: #e0f8ff;
+  --mist: #9ec7d1;
+  --accent: #f0b35f;
+  --panel: rgba(10, 22, 36, 0.6);
+  --border: rgba(255, 255, 255, 0.12);
+  --bg-primary: #030a16;
+  --text-primary: #f2f5f7;
+}
