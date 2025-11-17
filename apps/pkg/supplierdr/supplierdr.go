@@ -48,14 +48,13 @@ func CreateSupplierDR(c *gin.Context, db *mongo.Database) {
 	}
 
 	dr := models.SupplierDeliveryReceipt{
-		SupplierID:      supplierID,
-		SupplierDRNo:    payload.SupplierDRNo,
-		SupplierInvoice: payload.SupplierInvoice,
-		YourPONo:        payload.YourPONo,
-		Items:           items,
-		Date:            dateParsed,
-		ReceivedBy:      authUser.ID,
-		CreatedAt:       time.Now(),
+		SupplierID:   supplierID,
+		SupplierDRNo: payload.SupplierDRNo,
+		YourPONo:     payload.YourPONo,
+		Items:        items,
+		Date:         dateParsed,
+		ReceivedBy:   authUser.ID,
+		CreatedAt:    time.Now(),
 	}
 
 	_, err = db.Collection("supplierdeliveryreceipt").InsertOne(c, dr)
@@ -152,12 +151,11 @@ func EditSupplierDR(c *gin.Context, db *mongo.Database) {
 
 	update := bson.M{
 		"$set": bson.M{
-			"supplier_id":      supplierID,
-			"supplier_dr_no":   payload.SupplierDRNo,
-			"supplier_invoice": payload.SupplierInvoice,
-			"your_po_no":       payload.YourPONo,
-			"items":            items,
-			"date":             dateParsed,
+			"supplier_id":    supplierID,
+			"supplier_dr_no": payload.SupplierDRNo,
+			"your_po_no":     payload.YourPONo,
+			"items":          items,
+			"date":           dateParsed,
 		},
 	}
 
