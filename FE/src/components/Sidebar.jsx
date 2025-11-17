@@ -78,7 +78,11 @@ const Sidebar = ({
                 >
                   <ul id={`${item.key}-sublist`} className="nav-sublist">
                     {item.children.map((subItem) => (
-                      <li key={subItem.key} className="nav-subitem">
+                      <li
+                        key={subItem.key}
+                        className="nav-subitem"
+                        onClick={() => onSelect?.(subItem.key)}
+                      >
                         {subItem.label}
                       </li>
                     ))}

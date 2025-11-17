@@ -9,6 +9,12 @@ import PipelinePanel from "./components/PipelinePanel";
 import ProjectsPanel from "./components/ProjectsPanel";
 import CustomersPanel from "./components/CustomersPanel";
 import SalesOrderPanel from "./components/SalesOrderPanel";
+import PurchaseOrderPanel from "./components/PurchaseOrderPanel";
+import ReceivingReportPanel from "./components/ReceivingReportPanel";
+import InvoicePanel from "./components/InvoicePanel";
+import DeliveryReceiptPanel from "./components/DeliveryReceiptPanel";
+import InventoryCreatePanel from "./components/InventoryCreatePanel";
+import SupplierPanel from "./components/SupplierPanel";
 import RowActions from "./components/RowActions";
 import "./App.css";
 
@@ -18,26 +24,101 @@ const insights = [
   { label: "Avg. response", value: "12m" },
 ];
 
+const inventoryItems = [
+  {
+    sku: "SKU-001-AC",
+    model: "MX-1200",
+    name: "1.5HP Window aircon",
+    hp: "1.5",
+    type: "Window",
+    unit: "Indoor",
+  },
+  {
+    sku: "SKU-002-AC",
+    model: "DX-2200",
+    name: "2.0HP Ducted split",
+    hp: "2.0",
+    type: "Ducted",
+    unit: "Indoor",
+  },
+  {
+    sku: "SKU-003-AC",
+    model: "VRF-4500",
+    name: "4.5HP VRF module",
+    hp: "4.5",
+    type: "VRF",
+    unit: "Outdoor",
+  },
+];
+
+const suppliersData = [
+  {
+    code: "SUP-1001",
+    name: "Metro Supply Co.",
+    tin: "123-456-789-012",
+    organization: "MetroCool Group",
+    location: "APAC",
+  },
+  {
+    code: "SUP-1002",
+    name: "Polar Source Trading",
+    tin: "234-567-890-123",
+    organization: "Polar Nexus Holdings",
+    location: "EMEA",
+  },
+  {
+    code: "SUP-1003",
+    name: "Skyline Engineering Partners",
+    tin: "345-678-901-234",
+    organization: "Skyline Retail Group",
+    location: "Americas",
+  },
+];
+
+const deliveryReceiptsData = [
+  {
+    code: "DR-7001",
+    project: "Manila Airport retrofit",
+    salesOrder: "SO-1001",
+    invoice: "INV-5001",
+    status: "Ready",
+  },
+  {
+    code: "DR-7002",
+    project: "MetroCool retail rollout",
+    salesOrder: "SO-1002",
+    invoice: "INV-5002",
+    status: "Issued",
+  },
+];
+
+const supplierInvoices = ["INV-9001", "INV-9002", "INV-9010"];
+
+const invoicesData = [
+  {
+    code: "INV-5001",
+    project: "Manila Airport retrofit",
+    customer: "AeroCool Logistics",
+    salesOrder: "SO-1001",
+    amount: "₱1.42M",
+  },
+  {
+    code: "INV-5002",
+    project: "MetroCool retail rollout",
+    customer: "MetroCool Services",
+    salesOrder: "SO-1002",
+    amount: "₱980K",
+  },
+];
+
 const navItems = [
   { label: "Dashboard", key: "dashboard", icon: "grid" },
   { label: "Projects", key: "projects", icon: "layers" },
   { label: "Customers", key: "customers", icon: "users" },
   { label: "Sales Order", key: "sales-order", icon: "tag" },
   { label: "Purchase Order", key: "purchase-order", icon: "cart" },
-  {
-    label: "Warehousing",
-    key: "warehousing",
-    icon: "warehouse",
-    children: [
-      { label: "Receiving report", key: "receiving-report" },
-      { label: "Inventory", key: "inventory" },
-      { label: "Add supplier", key: "add-supplier" },
-      { label: "Sales invoice", key: "wh-sales-invoice" },
-      { label: "Delivery receipt", key: "wh-delivery-receipt" },
-    ],
-  },
-  { label: "Sales Invoice", key: "sales-invoice", icon: "invoice" },
-  { label: "Delivery Receipt", key: "delivery-receipt", icon: "ship" },
+  { label: "Warehousing", key: "warehousing", icon: "warehouse" },
+  { label: "Accounts Receivable", key: "accounts-receivable", icon: "invoice" },
 ];
 
 const clients = [
@@ -182,13 +263,124 @@ const salesOrdersData = [
   },
 ];
 
+const purchaseOrdersData = [
+  {
+    code: "PO-2001",
+    supplier: "Metro Supply Co.",
+    project: "Manila Airport retrofit",
+    salesOrder: "SO-1001",
+    status: "Pending",
+  },
+  {
+    code: "PO-2002",
+    supplier: "Polar Source Trading",
+    project: "MetroCool retail rollout",
+    salesOrder: "SO-1002",
+    status: "Approved",
+  },
+];
+
+const receivingReportsData = [
+  {
+    code: "RR-3001",
+    delivery: "DR-001",
+    purchaseOrder: "PO-2001",
+    salesOrder: "SO-1001",
+    invoice: "INV-5001",
+    status: "Draft",
+  },
+  {
+    code: "RR-3002",
+    delivery: "DR-002",
+    purchaseOrder: "PO-2002",
+    salesOrder: "SO-1002",
+    invoice: "INV-5002",
+    status: "Posted",
+  },
+];
+
 const getInitialSection = () => {
   if (typeof window === "undefined") return "dashboard";
   const path = window.location.pathname;
   if (path === "/projects") return "projects";
   if (path === "/customers") return "customers";
+  if (path === "/sales-order") return "sales-order";
+  if (path === "/purchase-order") return "purchase-order";
+  if (path === "/receiving-report") return "receiving-report";
+  if (path === "/accounts-receivable") return "accounts-receivable";
+  if (path === "/sales-invoice") return "sales-invoice";
+  if (path === "/delivery-receipt") return "delivery-receipt";
   return "dashboard";
 };
+
+const warehousingSections = [
+  {
+    key: "receiving-report",
+    title: "Receiving Report",
+    copy: "Log deliveries as they arrive at the depot.",
+    accent: "accent-aqua",
+    icon: "M4 6h16v11H4z M4 10h16",
+    statLabel: "Total logged",
+    statValue: "148",
+  },
+  {
+    key: "inventory",
+    title: "Inventory",
+    copy: "Review on-hand stock across locations.",
+    accent: "accent-amber",
+    icon: "M6 5h12v14H6z M6 9h12 M6 13h12",
+    statLabel: "Units on hand",
+    statValue: "4,382",
+  },
+  {
+    key: "add-supplier",
+    title: "Add Supplier",
+    copy: "Register a new vendor for purchasing.",
+    accent: "accent-lilac",
+    icon: "M5 12h14M7 9V5h10v4M8 15l4 4 4-4",
+    statLabel: "Active suppliers",
+    statValue: "62",
+  },
+  {
+    key: "sales-invoice",
+    title: "Sales Invoice",
+    copy: "Prepare invoices from the warehouse.",
+    accent: "accent-coral",
+    icon: "M7 4h10l3 4v12H7z M7 8h13",
+    statLabel: "Invoices sent",
+    statValue: "214",
+  },
+  {
+    key: "delivery-receipt",
+    title: "Delivery Receipt",
+    copy: "Track items released from the warehouse.",
+    accent: "accent-mint",
+    icon: "M4 6h16l-2 10H6z M8 16v4h8v-4",
+    statLabel: "Receipts issued",
+    statValue: "189",
+  },
+];
+
+const accountsReceivableSections = [
+  {
+    key: "sales-invoice",
+    title: "Sales Invoice",
+    copy: "Issue invoices against fulfilled orders.",
+    accent: "accent-coral",
+    icon: "M7 4h10l3 4v12H7z M7 8h13",
+    statLabel: "Invoices sent",
+    statValue: "214",
+  },
+  {
+    key: "delivery-receipt",
+    title: "Delivery Receipt",
+    copy: "Confirm shipments handed to customers.",
+    accent: "accent-mint",
+    icon: "M4 6h16l-2 10H6z M8 16v4h8v-4",
+    statLabel: "Receipts issued",
+    statValue: "189",
+  },
+];
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -197,6 +389,12 @@ function App() {
   const [projectsMode, setProjectsMode] = useState("list");
   const [customersMode, setCustomersMode] = useState("list");
   const [salesOrderMode, setSalesOrderMode] = useState("list");
+  const [purchaseOrderMode, setPurchaseOrderMode] = useState("list");
+  const [receivingReportMode, setReceivingReportMode] = useState("list");
+  const [invoiceMode, setInvoiceMode] = useState("list");
+  const [deliveryReceiptMode, setDeliveryReceiptMode] = useState("list");
+  const [inventoryMode, setInventoryMode] = useState("list");
+  const [supplierMode, setSupplierMode] = useState("list");
   const projectId = useMemo(
     () => `PRJ-${Math.floor(Math.random() * 9000 + 1000)}`,
     []
@@ -219,8 +417,7 @@ function App() {
     }));
   };
 
-  const handleNavSelect = (key) => {
-    setActiveSection(key);
+  const applySectionDefaults = (key) => {
     if (key === "projects") {
       setProjectsMode("list");
     }
@@ -230,6 +427,33 @@ function App() {
     if (key === "sales-order") {
       setSalesOrderMode("list");
     }
+    if (key === "purchase-order") {
+      setPurchaseOrderMode("list");
+    }
+    if (key === "inventory") {
+      setInventoryMode("list");
+    }
+    if (key === "add-supplier") {
+      setSupplierMode("list");
+    }
+    if (key === "receiving-report") {
+      setReceivingReportMode("list");
+    }
+    if (key === "sales-invoice") {
+      setInvoiceMode("list");
+    }
+    if (key === "delivery-receipt") {
+      setDeliveryReceiptMode("list");
+    }
+  };
+
+  const navigateToSection = (key) => {
+    applySectionDefaults(key);
+    setActiveSection(key);
+  };
+
+  const handleNavSelect = (key) => {
+    navigateToSection(key);
   };
 
   const handleLogout = () => {
@@ -248,6 +472,12 @@ function App() {
     if (activeSection === "projects") nextPath = "/projects";
     if (activeSection === "customers") nextPath = "/customers";
     if (activeSection === "sales-order") nextPath = "/sales-order";
+    if (activeSection === "purchase-order") nextPath = "/purchase-order";
+    if (activeSection === "receiving-report") nextPath = "/receiving-report";
+    if (activeSection === "accounts-receivable")
+      nextPath = "/accounts-receivable";
+    if (activeSection === "sales-invoice") nextPath = "/sales-invoice";
+    if (activeSection === "delivery-receipt") nextPath = "/delivery-receipt";
     window.history.replaceState({}, "", nextPath);
   }, [activeSection, isAuthenticated]);
 
@@ -268,8 +498,8 @@ function App() {
 
       <main className="dashboard-main">
         <DashboardHeader
-          title="HVAC Distribution Control Center"
-          userName="Ma'am J"
+          title="Polaris Airtech Prime Corporation"
+          userName="Ma'am Che"
         />
 
         {activeSection === "projects" && projectsMode === "list" && (
@@ -429,6 +659,427 @@ function App() {
         {activeSection === "sales-order" && salesOrderMode === "create" && (
           <SalesOrderPanel />
         )}
+
+        {activeSection === "purchase-order" && purchaseOrderMode === "list" && (
+          <section className="panel-card wide">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Purchase Orders</p>
+                <h3>Purchase Order Registry</h3>
+              </div>
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={() => setPurchaseOrderMode("create")}
+              >
+                Create purchase order
+              </button>
+            </div>
+            <div className="entity-table-wrapper">
+              <table className="entity-table">
+                <thead>
+                  <tr>
+                    <th>Purchase Order ID</th>
+                    <th>Supplier</th>
+                    <th>Project name</th>
+                    <th>Sales order</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {purchaseOrdersData.map((po) => (
+                    <tr key={po.code}>
+                      <td>{po.code}</td>
+                      <td>{po.supplier}</td>
+                      <td>{po.project}</td>
+                      <td>{po.salesOrder}</td>
+                      <td>
+                        <span
+                          className={`status-pill status-pill--${po.status.toLowerCase()}`}
+                        >
+                          {po.status}
+                        </span>
+                      </td>
+                      <td>
+                        <RowActions />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {activeSection === "purchase-order" &&
+          purchaseOrderMode === "create" && <PurchaseOrderPanel />}
+
+        {activeSection === "inventory" && inventoryMode === "list" && (
+          <section className="panel-card wide">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Warehousing</p>
+                <h3>Inventory Registry</h3>
+              </div>
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={() => setInventoryMode("create")}
+              >
+                Add inventory
+              </button>
+            </div>
+            <div className="entity-table-wrapper">
+              <table className="entity-table">
+                <thead>
+                  <tr>
+                    <th>SKU</th>
+                    <th>Model number</th>
+                    <th>Aircon name</th>
+                    <th>HP</th>
+                    <th>Type</th>
+                    <th>Unit</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inventoryItems.map((item) => (
+                    <tr key={item.sku}>
+                      <td>{item.sku}</td>
+                      <td>{item.model}</td>
+                      <td>{item.name}</td>
+                      <td>{item.hp}</td>
+                      <td>{item.type}</td>
+                      <td>{item.unit}</td>
+                      <td>
+                        <RowActions />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {activeSection === "inventory" && inventoryMode === "create" && (
+          <InventoryCreatePanel onClose={() => setInventoryMode("list")} />
+        )}
+
+        {activeSection === "add-supplier" && supplierMode === "list" && (
+          <section className="panel-card wide">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Warehousing</p>
+                <h3>Supplier Registry</h3>
+              </div>
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={() => setSupplierMode("create")}
+              >
+                Add supplier
+              </button>
+            </div>
+            <div className="entity-table-wrapper">
+              <table className="entity-table">
+                <thead>
+                  <tr>
+                    <th>Supplier code</th>
+                    <th>Supplier name</th>
+                    <th>TIN number</th>
+                    <th>Organization</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {suppliersData.map((supplier) => (
+                    <tr key={supplier.code}>
+                      <td>{supplier.code}</td>
+                      <td>{supplier.name}</td>
+                      <td>{supplier.tin}</td>
+                      <td>{supplier.organization}</td>
+                      <td>{supplier.location}</td>
+                      <td>
+                        <RowActions />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {activeSection === "add-supplier" && supplierMode === "create" && (
+          <SupplierPanel onClose={() => setSupplierMode("list")} />
+        )}
+
+        {activeSection === "receiving-report" &&
+          receivingReportMode === "list" && (
+            <section className="panel-card wide">
+              <div className="panel-header">
+                <div>
+                  <p className="eyebrow">Warehousing</p>
+                  <h3>Receiving Report Registry</h3>
+                </div>
+                <button
+                  type="button"
+                  className="primary-btn"
+                  onClick={() => setReceivingReportMode("create")}
+                >
+                  Create receiving report
+                </button>
+              </div>
+              <div className="entity-table-wrapper">
+                <table className="entity-table">
+                  <thead>
+                    <tr>
+                      <th>Receiving Report ID</th>
+                      <th>Delivery receipt</th>
+                      <th>Purchase order</th>
+                      <th>Sales order</th>
+                      <th>Supplier invoice</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {receivingReportsData.map((report) => (
+                      <tr key={report.code}>
+                        <td>{report.code}</td>
+                        <td>{report.delivery}</td>
+                        <td>{report.purchaseOrder}</td>
+                        <td>{report.salesOrder}</td>
+                        <td>{report.invoice}</td>
+                        <td>{report.status}</td>
+                        <td>
+                          <RowActions />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+        {activeSection === "receiving-report" &&
+          receivingReportMode === "create" && (
+            <ReceivingReportPanel
+              deliveryReceipts={deliveryReceiptsData}
+              purchaseOrders={purchaseOrdersData}
+              salesOrders={salesOrdersData}
+              supplierInvoices={supplierInvoices}
+              onClose={() => setReceivingReportMode("list")}
+            />
+          )}
+
+        {activeSection === "warehousing" && (
+          <section className="panel-card wide">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Warehousing</p>
+                <h3>Warehouse Operations</h3>
+              </div>
+            </div>
+            <div className="warehousing-hub">
+              {warehousingSections.map((section) => (
+                <button
+                  key={section.key}
+                  type="button"
+                  className={`warehousing-card ${section.accent}`}
+                  onClick={() => navigateToSection(section.key)}
+                >
+                  <div className="warehousing-card__content">
+                    <span className="warehousing-card__icon" aria-hidden="true">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      >
+                        <path
+                          d={section.icon}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <div className="warehousing-card__copy">
+                      <h4>{section.title}</h4>
+                      <p>{section.copy}</p>
+                    </div>
+                  </div>
+                  <div className="warehousing-card__stat">
+                    <p>{section.statLabel}</p>
+                    <strong>{section.statValue}</strong>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {activeSection === "accounts-receivable" && (
+          <section className="panel-card wide">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Accounts Receivable</p>
+                <h3>Billing & Dispatch</h3>
+              </div>
+            </div>
+            <div className="warehousing-hub">
+              {accountsReceivableSections.map((section) => (
+                <button
+                  key={section.key}
+                  type="button"
+                  className={`warehousing-card ${section.accent}`}
+                  onClick={() => navigateToSection(section.key)}
+                >
+                  <div className="warehousing-card__content">
+                    <span className="warehousing-card__icon" aria-hidden="true">
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      >
+                        <path
+                          d={section.icon}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <div className="warehousing-card__copy">
+                      <h4>{section.title}</h4>
+                      <p>{section.copy}</p>
+                    </div>
+                  </div>
+                  <div className="warehousing-card__stat">
+                    <p>{section.statLabel}</p>
+                    <strong>{section.statValue}</strong>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {activeSection === "sales-invoice" && invoiceMode === "list" && (
+          <section className="panel-card wide">
+            <div className="panel-header">
+              <div>
+                <p className="eyebrow">Accounts Receivable</p>
+                <h3>Sales Invoice Registry</h3>
+              </div>
+              <button
+                type="button"
+                className="primary-btn"
+                onClick={() => setInvoiceMode("create")}
+              >
+                Create invoice
+              </button>
+            </div>
+            <div className="entity-table-wrapper">
+              <table className="entity-table">
+                <thead>
+                  <tr>
+                    <th>Invoice ID</th>
+                    <th>Project</th>
+                    <th>Customer</th>
+                    <th>Sales order</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoicesData.map((invoice) => (
+                    <tr key={invoice.code}>
+                      <td>{invoice.code}</td>
+                      <td>{invoice.project}</td>
+                      <td>{invoice.customer}</td>
+                      <td>{invoice.salesOrder}</td>
+                      <td>{invoice.amount}</td>
+                      <td>
+                        <RowActions />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        {activeSection === "sales-invoice" && invoiceMode === "create" && (
+          <InvoicePanel
+            projects={projectsData}
+            salesOrders={salesOrdersData}
+            onClose={() => setInvoiceMode("list")}
+          />
+        )}
+
+        {activeSection === "delivery-receipt" &&
+          deliveryReceiptMode === "list" && (
+            <section className="panel-card wide">
+              <div className="panel-header">
+                <div>
+                  <h3>Delivery Receipt Registry</h3>
+                </div>
+                <button
+                  type="button"
+                  className="primary-btn"
+                  onClick={() => setDeliveryReceiptMode("create")}
+                >
+                  Create delivery receipt
+                </button>
+              </div>
+              <div className="entity-table-wrapper">
+                <table className="entity-table">
+                  <thead>
+                    <tr>
+                      <th>Delivery Receipt ID</th>
+                      <th>Project</th>
+                      <th>Sales order</th>
+                      <th>Sales invoice</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deliveryReceiptsData.map((receipt) => (
+                      <tr key={receipt.code}>
+                        <td>{receipt.code}</td>
+                        <td>{receipt.project}</td>
+                        <td>{receipt.salesOrder}</td>
+                        <td>{receipt.invoice}</td>
+                        <td>{receipt.status}</td>
+                        <td>
+                          <RowActions />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+        {activeSection === "delivery-receipt" &&
+          deliveryReceiptMode === "create" && (
+            <DeliveryReceiptPanel
+              projects={projectsData}
+              salesOrders={salesOrdersData}
+              invoices={invoicesData}
+              customers={customersData}
+              onClose={() => setDeliveryReceiptMode("list")}
+            />
+          )}
+
         {activeSection === "dashboard" && (
           <>
             <StatsGrid cards={summaryCards} />
