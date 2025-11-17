@@ -180,3 +180,29 @@ type SupplierDeliveryReceiptItem struct {
 	Qty         int    `bson:"qty" json:"qty"`
 	Unit        string `bson:"unit" json:"unit"`
 }
+
+type SupplierInvoice struct {
+	ID              primitive.ObjectID    `bson:"_id,omitempty" json:"id,omitempty"`
+	SupplierID      primitive.ObjectID    `bson:"supplier_id" json:"supplier_id"`
+	InvoiceNo       string                `bson:"invoice_no" json:"invoice_no"`
+	InvoiceDate     time.Time             `bson:"invoice_date" json:"invoice_date"`
+	DeliveryNo      string                `bson:"delivery_no" json:"delivery_no"`
+	SAPRefNo        string                `bson:"sap_ref_no" json:"sap_ref_no"`
+	PurchaseOrderNo string                `bson:"purchase_order_no" json:"purchase_order_no"`
+	DueDate         time.Time             `bson:"due_date" json:"due_date"`
+	DeliveryAddress string                `bson:"delivery_address" json:"delivery_address"`
+	Items           []SupplierInvoiceItem `bson:"items" json:"items"`
+	TotalSales      float64               `bson:"total_sales" json:"total_sales"`
+	VAT             float64               `bson:"vat" json:"vat"`
+	GrandTotal      float64               `bson:"grand_total" json:"grand_total"`
+	CreatedAt       time.Time             `bson:"created_at" json:"created_at"`
+	CreatedBy       primitive.ObjectID    `bson:"created_by" json:"created_by"`
+}
+
+type SupplierInvoiceItem struct {
+	Description string  `bson:"description" json:"description"`
+	Qty         int     `bson:"qty" json:"qty"`
+	Unit        string  `bson:"unit" json:"unit"`
+	UnitPrice   float64 `bson:"unit_price" json:"unit_price"`
+	Amount      float64 `bson:"amount" json:"amount"`
+}
