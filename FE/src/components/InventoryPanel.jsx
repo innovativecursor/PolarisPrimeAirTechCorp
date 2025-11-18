@@ -9,11 +9,10 @@ const InventoryPanel = ({ products }) => (
         <article key={product.label} className="inventory-item">
           <p className="inventory-label">{product.label}</p>
           <strong>{product.quantity} units</strong>
-          <small>{product.committed} committed</small>
         </article>
       ))}
     </div>
-    <button className="text-link" type="button">
+    <button className="text-link inventory-panel__cta" type="button">
       View full inventory
     </button>
   </article>

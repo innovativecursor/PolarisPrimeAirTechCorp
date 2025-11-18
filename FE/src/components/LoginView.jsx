@@ -1,4 +1,4 @@
-const LoginView = ({ insights, onSubmit }) => (
+const LoginView = ({ onSubmit }) => (
   <div className="login-page">
     <div className="login-shell">
       <section className="brand-panel" aria-labelledby="brand-heading">
@@ -10,14 +10,6 @@ const LoginView = ({ insights, onSubmit }) => (
           Track procurement, warehouse levels, and service inventory from one
           secure workspace designed for HVAC distributors.
         </p>
-        <div className="insights" aria-label="Operational highlights">
-          {insights.map((item) => (
-            <div key={item.label} className="insight">
-              <span>{item.value}</span>
-              <p>{item.label}</p>
-            </div>
-          ))}
-        </div>
         <div className="support-card">
           <strong>Need access?</strong>
           <p>

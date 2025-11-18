@@ -96,6 +96,16 @@ const Sidebar = ({
     </nav>
     <div className="nav-footer">
       <button className="nav-settings" type="button">
+        <svg
+          className="nav-settings__icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm6.1 3.5a5.7 5.7 0 0 1-.2 1.5l1.9 1.6-1.2 2.2-2-.6a5.5 5.5 0 0 1-1.2 1l.2 2.3h-2.4L13 18a6 6 0 0 1-1.5.1l-.4 2.2H8l.2-2.3a5.3 5.3 0 0 1-1.2-1l-2 .6-1.2-2.2 1.9-1.6a5.9 5.9 0 0 1-.2-1.5 5.9 5.9 0 0 1 .2-1.5L3.5 9.9l1.2-2.2 2 .6c.3-.3.6-.6 1-1l-.2-2.3h2.4L10 6a6 6 0 0 1 1.5-.1l.4-2.2h2.4l-.2 2.3c.4.1.8.3 1.2.6l2-.6 1.2 2.2-1.9 1.6c.1.5.1 1 .2 1.5z"
+            fill="white"
+          />
+        </svg>
         Settings
       </button>
       <button className="nav-logout" type="button" onClick={onLogout}>

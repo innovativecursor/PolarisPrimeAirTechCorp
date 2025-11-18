@@ -1,9 +1,10 @@
-const RowActions = () => (
+const RowActions = ({ onEdit, onDelete }) => (
   <div className="table-actions">
     <button
       type="button"
       className="table-action-btn table-action-btn--ghost"
       aria-label="Edit row"
+      onClick={onEdit}
     >
       <svg
         className="table-action-icon"
@@ -29,6 +30,7 @@ const RowActions = () => (
       type="button"
       className="table-action-btn table-action-btn--danger"
       aria-label="Delete row"
+      onClick={onDelete}
     >
       <svg
         className="table-action-icon"

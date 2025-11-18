@@ -7,6 +7,7 @@ import InventoryPanel from "./components/InventoryPanel";
 import WarehousingPanel from "./components/WarehousingPanel";
 import PipelinePanel from "./components/PipelinePanel";
 import ProjectsPanel from "./components/ProjectsPanel";
+import ProjectCard from "./components/ProjectCard";
 import CustomersPanel from "./components/CustomersPanel";
 import SalesOrderPanel from "./components/SalesOrderPanel";
 import PurchaseOrderPanel from "./components/PurchaseOrderPanel";
@@ -17,12 +18,6 @@ import InventoryCreatePanel from "./components/InventoryCreatePanel";
 import SupplierPanel from "./components/SupplierPanel";
 import RowActions from "./components/RowActions";
 import "./App.css";
-
-const insights = [
-  { label: "Cold-chain uptime", value: "99.2%" },
-  { label: "Global depots", value: "43" },
-  { label: "Avg. response", value: "12m" },
-];
 
 const inventoryItems = [
   {
@@ -101,6 +96,7 @@ const invoicesData = [
     customer: "AeroCool Logistics",
     salesOrder: "SO-1001",
     amount: "₱1.42M",
+    status: "Posted",
   },
   {
     code: "INV-5002",
@@ -108,6 +104,7 @@ const invoicesData = [
     customer: "MetroCool Services",
     salesOrder: "SO-1002",
     amount: "₱980K",
+    status: "Issued",
   },
 ];
 
@@ -178,19 +175,19 @@ const warehousingUpdates = [
 
 const pipelineStages = [
   {
-    label: "Install-ready",
-    value: "38 projects",
-    detail: "76% materials staged",
+    label: "Sales Orders",
+    value: "38",
+    detail: "Approved",
   },
   {
     label: "Awaiting shipment",
-    value: "19 orders",
-    detail: "4 require compliance docs",
+    value: "19",
+    detail: "Pending",
   },
   {
     label: "Pending invoicing",
-    value: "11 deliveries",
-    detail: "ETA within 48h",
+    value: "11",
+    detail: "Pending",
   },
 ];
 
@@ -201,6 +198,7 @@ const projectsData = [
     client: "AeroCool Logistics",
     status: "Install-ready",
     region: "APAC",
+    notes: "Field team cleared for staging",
   },
   {
     code: "PRJ-0987",
@@ -208,6 +206,7 @@ const projectsData = [
     client: "MetroCool Services",
     status: "Awaiting shipment",
     region: "APAC",
+    notes: "Awaiting final customs clearance",
   },
   {
     code: "PRJ-0861",
@@ -215,6 +214,7 @@ const projectsData = [
     client: "Skyline Retail Group",
     status: "Pending invoicing",
     region: "EMEA",
+    notes: "Invoices routed to accounts receivable",
   },
 ];
 
@@ -395,6 +395,7 @@ function App() {
   const [deliveryReceiptMode, setDeliveryReceiptMode] = useState("list");
   const [inventoryMode, setInventoryMode] = useState("list");
   const [supplierMode, setSupplierMode] = useState("list");
+  const [selectedProjectCode, setSelectedProjectCode] = useState(null);
   const projectId = useMemo(
     () => `PRJ-${Math.floor(Math.random() * 9000 + 1000)}`,
     []
@@ -402,6 +403,26 @@ function App() {
   const customerId = useMemo(
     () => `CUST-${Math.floor(Math.random() * 9000 + 1000)}`,
     []
+  );
+  const projectInEdit = useMemo(
+    () => projectsData.find((project) => project.code === selectedProjectCode),
+    [selectedProjectCode]
+  );
+  const linkedInvoices = useMemo(
+    () =>
+      projectInEdit
+        ? invoicesData.filter(
+            (invoice) => invoice.project === projectInEdit.name
+          )
+        : [],
+    [projectInEdit]
+  );
+  const linkedPurchaseOrders = useMemo(
+    () =>
+      projectInEdit
+        ? purchaseOrdersData.filter((po) => po.project === projectInEdit.name)
+        : [],
+    [projectInEdit]
   );
 
   const handleSubmit = (event) => {
@@ -466,6 +487,21 @@ function App() {
     setCustomersMode("create");
   };
 
+  const showProjectsList = () => {
+    setProjectsMode("list");
+    setSelectedProjectCode(null);
+  };
+
+  const handleProjectEdit = (project) => {
+    setActiveSection("projects");
+    setProjectsMode("edit");
+    setSelectedProjectCode(project.code);
+  };
+
+  const handleExitEdit = () => {
+    showProjectsList();
+  };
+
   useEffect(() => {
     if (!isAuthenticated) return;
     let nextPath = "/";
@@ -482,7 +518,7 @@ function App() {
   }, [activeSection, isAuthenticated]);
 
   if (!isAuthenticated) {
-    return <LoginView insights={insights} onSubmit={handleSubmit} />;
+    return <LoginView onSubmit={handleSubmit} />;
   }
 
   return (
@@ -538,7 +574,7 @@ function App() {
                       <td>{project.status}</td>
                       <td>{project.region}</td>
                       <td>
-                        <RowActions />
+                        <RowActions onEdit={() => handleProjectEdit(project)} />
                       </td>
                     </tr>
                   ))}
@@ -553,8 +589,136 @@ function App() {
             projectId={projectId}
             clients={clients}
             onAddCustomer={handleAddCustomer}
+            onClose={showProjectsList}
           />
         )}
+
+        {activeSection === "projects" &&
+          projectsMode === "edit" &&
+          projectInEdit && (
+            <>
+              <ProjectsPanel
+                projectId={projectId}
+                project={projectInEdit}
+                mode="edit"
+                clients={clients}
+                onAddCustomer={handleAddCustomer}
+                onClose={handleExitEdit}
+              />
+              <section className="projects-linked-section">
+                <div className="panel-header">
+                  <div>
+                    <p className="eyebrow">Connected records</p>
+                    <h3>Project intelligence</h3>
+                  </div>
+                </div>
+                <div className="projects-linked-docs">
+                  <ProjectCard title="Project snapshot" eyebrow="Projects">
+                    <div className="project-snapshot-grid">
+                      <div className="project-snapshot-item">
+                        <span>Status</span>
+                        <strong>{projectInEdit.status}</strong>
+                      </div>
+                      <div className="project-snapshot-item">
+                        <span>Region</span>
+                        <strong>{projectInEdit.region}</strong>
+                      </div>
+                      <div className="project-snapshot-item project-snapshot-item--full">
+                        <span>Notes</span>
+                        <p>{projectInEdit.notes}</p>
+                      </div>
+                    </div>
+                  </ProjectCard>
+                  {linkedInvoices.length > 0 ? (
+                    linkedInvoices.map((invoice) => (
+                      <ProjectCard
+                        key={invoice.code}
+                        title={`Sales invoice ${invoice.code}`}
+                        eyebrow="Accounts receivable"
+                      >
+                        <div className="linked-doc-content">
+                          <div className="linked-doc-row">
+                            <span>Customer</span>
+                            <strong>{invoice.customer}</strong>
+                          </div>
+                          <div className="linked-doc-row">
+                            <span>Sales order</span>
+                            <strong>{invoice.salesOrder}</strong>
+                          </div>
+                          <div className="linked-doc-row">
+                            <span>Amount</span>
+                            <strong>{invoice.amount}</strong>
+                          </div>
+                          <div className="linked-doc-row">
+                            <span>Status</span>
+                            <strong>{invoice.status}</strong>
+                          </div>
+                        </div>
+                        <div className="linked-doc-actions">
+                          <button
+                            type="button"
+                            className="ghost-btn ghost-btn--subtle"
+                          >
+                            Open in AR
+                          </button>
+                        </div>
+                      </ProjectCard>
+                    ))
+                  ) : (
+                    <ProjectCard
+                      title="Sales invoice"
+                      eyebrow="Accounts receivable"
+                    >
+                      <p className="linked-doc-empty">
+                        No sales invoice has been created for this project yet.
+                      </p>
+                    </ProjectCard>
+                  )}
+                  {linkedPurchaseOrders.length > 0 ? (
+                    linkedPurchaseOrders.map((po) => (
+                      <ProjectCard
+                        key={po.code}
+                        title={`Purchase order ${po.code}`}
+                        eyebrow="Purchase Orders"
+                      >
+                        <div className="linked-doc-content">
+                          <div className="linked-doc-row">
+                            <span>Supplier</span>
+                            <strong>{po.supplier}</strong>
+                          </div>
+                          <div className="linked-doc-row">
+                            <span>Sales order</span>
+                            <strong>{po.salesOrder}</strong>
+                          </div>
+                          <div className="linked-doc-row">
+                            <span>Status</span>
+                            <strong>{po.status}</strong>
+                          </div>
+                        </div>
+                        <div className="linked-doc-actions">
+                          <button
+                            type="button"
+                            className="ghost-btn ghost-btn--subtle"
+                          >
+                            View PO
+                          </button>
+                        </div>
+                      </ProjectCard>
+                    ))
+                  ) : (
+                    <ProjectCard
+                      title="Purchase order"
+                      eyebrow="Purchase Orders"
+                    >
+                      <p className="linked-doc-empty">
+                        No purchase order has been linked yet.
+                      </p>
+                    </ProjectCard>
+                  )}
+                </div>
+              </section>
+            </>
+          )}
 
         {activeSection === "customers" && customersMode === "list" && (
           <section className="panel-card wide">
