@@ -104,18 +104,22 @@ type SupplierPOItem struct {
 
 // PolarisInventory represents an item in Polaris warehouse inventory.
 type PolarisInventory struct {
-	ID                primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	SKU               string             `bson:"sku" json:"sku"`                             // Unique item SKU
-	Barcode           string             `bson:"barcode,omitempty" json:"barcode,omitempty"` // Optional: for scanned code
-	AirconModelNumber string             `bson:"aircon_model_number" json:"aircon_model_number"`
-	AirconName        string             `bson:"aircon_name" json:"aircon_name"`
-	HP                string             `bson:"hp" json:"hp"`
-	TypeOfAircon      string             `bson:"type_of_aircon" json:"type_of_aircon"`           // Split, Window, Cassette, etc.
-	IndoorOutdoorUnit string             `bson:"indoor_outdoor_unit" json:"indoor_outdoor_unit"` // Indoor or Outdoor
-	Quantity          int                `bson:"quantity" json:"quantity"`                       // Optional: for stock tracking
-	CreatedBy         primitive.ObjectID `bson:"created_by,omitempty" json:"created_by,omitempty"`
-	CreatedAt         time.Time          `bson:"created_at" json:"created_at"`
-	UpdatedAt         time.Time          `bson:"updated_at" json:"updated_at"`
+	ID                primitive.ObjectID  `bson:"_id,omitempty" json:"id,omitempty"`
+	SKU               string              `bson:"sku" json:"sku"`                             // Unique item SKU
+	Barcode           string              `bson:"barcode,omitempty" json:"barcode,omitempty"` // Optional: for scanned code
+	AirconModelNumber string              `bson:"aircon_model_number" json:"aircon_model_number"`
+	AirconName        string              `bson:"aircon_name" json:"aircon_name"`
+	HP                string              `bson:"hp" json:"hp"`
+	TypeOfAircon      string              `bson:"type_of_aircon" json:"type_of_aircon"`           // Split, Window, Cassette, etc.
+	IndoorOutdoorUnit string              `bson:"indoor_outdoor_unit" json:"indoor_outdoor_unit"` // Indoor or Outdoor
+	Quantity          int                 `bson:"quantity" json:"quantity"`                       // Optional: for stock tracking
+	SupplierDRID      *primitive.ObjectID `bson:"supplier_dr_id,omitempty" json:"supplier_dr_id,omitempty"`
+	SupplierInvoiceID *primitive.ObjectID `bson:"supplier_invoice_id,omitempty" json:"supplier_invoice_id,omitempty"`
+	PurchaseOrderID   *primitive.ObjectID `bson:"purchase_order_id,omitempty" json:"purchase_order_id,omitempty"`
+	SalesOrderID      *primitive.ObjectID `bson:"sales_order_id,omitempty" json:"sales_order_id,omitempty"`
+	CreatedBy         primitive.ObjectID  `bson:"created_by,omitempty" json:"created_by,omitempty"`
+	CreatedAt         time.Time           `bson:"created_at" json:"created_at"`
+	UpdatedAt         time.Time           `bson:"updated_at" json:"updated_at"`
 }
 
 type SalesOrder struct {
@@ -205,4 +209,15 @@ type SupplierInvoiceItem struct {
 	Unit        string  `bson:"unit" json:"unit"`
 	UnitPrice   float64 `bson:"unit_price" json:"unit_price"`
 	Amount      float64 `bson:"amount" json:"amount"`
+}
+
+type Supplier struct {
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	SupplierCode string             `bson:"supplier_code" json:"supplier_code"`
+	SupplierName string             `bson:"supplier_name" json:"supplier_name"`
+	TINNumber    string             `bson:"tin_number" json:"tin_number"`
+	Organization string             `bson:"organization" json:"organization"`
+	Location     string             `bson:"location" json:"location"`
+	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
+	CreatedBy    primitive.ObjectID `bson:"created_by" json:"created_by"`
 }
