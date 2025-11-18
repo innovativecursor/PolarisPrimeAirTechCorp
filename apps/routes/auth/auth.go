@@ -15,6 +15,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/quotation"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/salesorder"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplier"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierdr"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierinvoice"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierpo"
@@ -214,6 +215,7 @@ func Auth(db *mongo.Database) {
 		supplierdr.DeleteSupplierDR(c, db)
 	})
 
+	//supplier invoice
 	apiV1.POST("/supplier/invoice-create", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierinvoice.CreateSupplierInvoice(c, db)
 	})
@@ -232,6 +234,44 @@ func Auth(db *mongo.Database) {
 
 	apiV1.DELETE("/supplier/invoice-delete", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierinvoice.DeleteSupplierInvoice(c, db)
+	})
+
+	//RR
+	apiV1.POST("/receiving-r/rr-create", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		polarisinventory.AddOrUpdateReceivingReportInventory(c, db)
+	})
+
+	apiV1.GET("/receiving-r/rr-get-all", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		polarisinventory.GetAllReceivingReportInventory(c, db)
+	})
+
+	apiV1.GET("/receiving-r/rr-get-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		polarisinventory.GetReceivingReportInventoryByID(c, db)
+	})
+
+	apiV1.DELETE("/receiving-r/rr-delete", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		polarisinventory.DeleteReceivingReportInventory(c, db)
+	})
+
+	//supplier
+	apiV1.POST("/supplier/add-supplier", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplier.CreateSupplier(c, db)
+	})
+
+	apiV1.GET("/supplier/get-all-suppliers", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplier.GetAllSuppliers(c, db)
+	})
+
+	apiV1.GET("/supplier/get-supplier-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplier.GetSupplierByID(c, db)
+	})
+
+	apiV1.PUT("/supplier/edit-supplier", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplier.EditSupplier(c, db)
+	})
+
+	apiV1.DELETE("/supplier/supplier-delete", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplier.DeleteSupplier(c, db)
 	})
 	// Listen and serve on defined port
 	log.Printf("Application started, Listening on Port %s", port)
