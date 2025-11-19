@@ -1,0 +1,304 @@
+package salesinvoice
+
+import (
+	"context"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/accountsreceivable/config"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/models"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+func GetCustomerByProjectID(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	projectID := c.Param("id")
+	objID, err := primitive.ObjectIDFromHex(projectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
+	var project models.Project
+	err = db.Collection("project").
+		FindOne(c, bson.M{"_id": objID}).
+		Decode(&project)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+		return
+	}
+
+	var customer models.Customer
+	err = db.Collection("customer").
+		FindOne(c, bson.M{"_id": project.CustomerID}).
+		Decode(&customer)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"project":  project,
+		"customer": customer,
+	})
+}
+
+func CreateSalesInvoice(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	var payload config.CreateInvoicePayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert string IDs to ObjectIDs
+	projectID, err := primitive.ObjectIDFromHex(payload.ProjectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+	customerID, err := primitive.ObjectIDFromHex(payload.CustomerID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid customer ID"})
+		return
+	}
+	salesOrderID, err := primitive.ObjectIDFromHex(payload.SalesOrderID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sales order ID"})
+		return
+	}
+
+	// Prepare invoice items
+	items := []models.InvoiceItemSales{}
+	total := 0.0
+
+	collectionInventory := db.Collection("polaris_inventory")
+
+	for _, pItem := range payload.Items {
+		var inv models.PolarisInventory
+		err := collectionInventory.FindOne(context.Background(), bson.M{"sku": pItem.SKU}).Decode(&inv)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "SKU not found", "sku": pItem.SKU})
+			return
+		}
+
+		amount := float64(pItem.Quantity) * inv.Price
+
+		items = append(items, models.InvoiceItemSales{
+			SKU:       inv.SKU,
+			Quantity:  pItem.Quantity,
+			UnitPrice: inv.Price,
+			Amount:    amount,
+		})
+
+		total += amount
+	}
+
+	invoice := models.SalesInvoice{
+		InvoiceID:    "INV-" + time.Now().Format("20060102150405"),
+		ProjectID:    projectID,
+		CustomerID:   customerID,
+		SalesOrderID: salesOrderID,
+		Items:        items,
+		TotalAmount:  total,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+	}
+
+	collectionInvoices := db.Collection("sales_invoices")
+	_, err = collectionInvoices.InsertOne(context.Background(), invoice)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create invoice"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Sales invoice created successfully",
+		"data":    invoice,
+	})
+}
+
+func GetAllSalesInvoices(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	cursor, err := db.Collection("sales_invoices").
+		Find(context.Background(), bson.M{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch invoices"})
+		return
+	}
+
+	var invoices []models.SalesInvoice
+	if err := cursor.All(context.Background(), &invoices); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse invoices"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": invoices})
+}
+
+func GetSalesInvoiceByID(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	invoiceID := c.Param("id")
+	objID, err := primitive.ObjectIDFromHex(invoiceID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid invoice ID"})
+		return
+	}
+
+	var invoice models.SalesInvoice
+	err = db.Collection("sales_invoices").
+		FindOne(context.Background(), bson.M{"_id": objID}).
+		Decode(&invoice)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": invoice})
+}
+
+func UpdateSalesInvoice(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	invoiceID := c.Param("id")
+	objID, err := primitive.ObjectIDFromHex(invoiceID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid invoice ID"})
+		return
+	}
+
+	var payload config.CreateInvoicePayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Prepare recalculated items
+	items := []models.InvoiceItemSales{}
+	total := 0.0
+
+	collectionInventory := db.Collection("polaris_inventory")
+
+	for _, pItem := range payload.Items {
+		var inv models.PolarisInventory
+		err := collectionInventory.FindOne(context.Background(), bson.M{"sku": pItem.SKU}).Decode(&inv)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "SKU not found", "sku": pItem.SKU})
+			return
+		}
+
+		amount := float64(pItem.Quantity) * inv.Price
+
+		items = append(items, models.InvoiceItemSales{
+			SKU:       inv.SKU,
+			Quantity:  pItem.Quantity,
+			UnitPrice: inv.Price,
+			Amount:    amount,
+		})
+
+		total += amount
+	}
+
+	update := bson.M{
+		"$set": bson.M{
+			"items":        items,
+			"total_amount": total,
+			"updated_at":   time.Now(),
+		},
+	}
+
+	_, err = db.Collection("sales_invoices").
+		UpdateOne(context.Background(), bson.M{"_id": objID}, update)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update invoice"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Invoice updated successfully"})
+}
+
+func DeleteSalesInvoice(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	invoiceID := c.Param("id")
+	objID, err := primitive.ObjectIDFromHex(invoiceID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid invoice ID"})
+		return
+	}
+
+	_, err = db.Collection("sales_invoices").
+		DeleteOne(context.Background(), bson.M{"_id": objID})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete invoice"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Invoice deleted successfully"})
+}

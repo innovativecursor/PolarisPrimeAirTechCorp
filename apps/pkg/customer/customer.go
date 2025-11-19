@@ -47,12 +47,14 @@ func AddCustomer(c *gin.Context, db *mongo.Database) {
 		filter = bson.M{
 			"customername": payload.CustomerName,
 			"tinnumber":    payload.TINNumber,
+			"customerorg":  payload.CustomerOrg,
 		}
 	}
 
 	customer.CustomerName = payload.CustomerName
 	customer.Address = payload.Address
 	customer.TINNumber = payload.TINNumber
+	customer.CustomerOrg = payload.CustomerOrg
 
 	update := bson.M{"$set": customer}
 	opts := options.Update().SetUpsert(true)

@@ -55,6 +55,7 @@ type Project struct {
 type Customer struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	CustomerName string             `bson:"customername" json:"customername"`
+	CustomerOrg  string             `bson:"customerorg" json:"customerorg"`
 	Address      string             `bson:"address" json:"address"`
 	TINNumber    string             `bson:"tinnumber" json:"tinnumber"`
 }
@@ -109,6 +110,7 @@ type PolarisInventory struct {
 	Barcode           string              `bson:"barcode,omitempty" json:"barcode,omitempty"` // Optional: for scanned code
 	AirconModelNumber string              `bson:"aircon_model_number" json:"aircon_model_number"`
 	AirconName        string              `bson:"aircon_name" json:"aircon_name"`
+	Price             float64             `bson:"price" json:"price"`
 	HP                string              `bson:"hp" json:"hp"`
 	TypeOfAircon      string              `bson:"type_of_aircon" json:"type_of_aircon"`           // Split, Window, Cassette, etc.
 	IndoorOutdoorUnit string              `bson:"indoor_outdoor_unit" json:"indoor_outdoor_unit"` // Indoor or Outdoor
@@ -220,4 +222,50 @@ type Supplier struct {
 	Location     string             `bson:"location" json:"location"`
 	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
 	CreatedBy    primitive.ObjectID `bson:"created_by" json:"created_by"`
+}
+type SalesInvoice struct {
+	ID           primitive.ObjectID `bson:"_id" json:"id"`
+	InvoiceID    string             `bson:"invoice_id" json:"invoice_id"`
+	ProjectID    primitive.ObjectID `bson:"project_id" json:"project_id"`
+	CustomerID   primitive.ObjectID `bson:"customer_id" json:"customer_id"`
+	SalesOrderID primitive.ObjectID `bson:"sales_order_id" json:"sales_order_id"`
+
+	Items []InvoiceItemSales `bson:"items" json:"items"`
+
+	TotalAmount float64   `bson:"total_amount" json:"total_amount"`
+	CreatedAt   time.Time `bson:"created_at" json:"created_at"`
+	UpdatedAt   time.Time `bson:"updated_at" json:"updated_at"`
+}
+
+type InvoiceItemSales struct {
+	SKU       string  `bson:"sku" json:"sku"`
+	Quantity  int     `bson:"quantity" json:"quantity"`
+	UnitPrice float64 `bson:"unit_price" json:"unit_price"`
+	Amount    float64 `bson:"amount" json:"amount"`
+}
+
+type DeliveryReceipt struct {
+	ID       primitive.ObjectID `bson:"_id" json:"id"`
+	DRNumber string             `bson:"dr_number" json:"dr_number"`
+
+	ProjectID      primitive.ObjectID `bson:"project_id" json:"project_id"`
+	CustomerID     primitive.ObjectID `bson:"customer_id" json:"customer_id"`
+	SalesOrderID   primitive.ObjectID `bson:"sales_order_id" json:"sales_order_id"`
+	SalesInvoiceID primitive.ObjectID `bson:"sales_invoice_id" json:"sales_invoice_id"`
+
+	CustomerName     string `bson:"customer_name" json:"customer_name"`
+	CustomerOrg      string `bson:"customer_org" json:"customer_org"`
+	CustomerTIN      string `bson:"customer_tin" json:"customer_tin"`
+	CustomerLocation string `bson:"customer_location" json:"customer_location"`
+
+	Items []DeliveryItem `bson:"items" json:"items"`
+
+	Status    string    `bson:"status" json:"status"` // Ready | Issued
+	CreatedAt time.Time `bson:"created_at" json:"created_at"`
+	UpdatedAt time.Time `bson:"updated_at" json:"updated_at"`
+}
+
+type DeliveryItem struct {
+	SKU      string `bson:"sku" json:"sku"`
+	Quantity int    `bson:"quantity" json:"quantity"`
 }

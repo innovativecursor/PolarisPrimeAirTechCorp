@@ -38,6 +38,7 @@ func AddInventory(c *gin.Context, db *mongo.Database) {
 		Barcode:           payload.Barcode,
 		AirconModelNumber: payload.AirconModelNumber,
 		AirconName:        payload.AirconName,
+		Price:             payload.Price,
 		HP:                payload.HP,
 		TypeOfAircon:      payload.TypeOfAircon,
 		IndoorOutdoorUnit: payload.IndoorOutdoorUnit,
@@ -153,6 +154,7 @@ func UpdateInventory(c *gin.Context, db *mongo.Database) {
 			"barcode":             payload.Barcode,
 			"aircon_model_number": payload.AirconModelNumber,
 			"aircon_name":         payload.AirconName,
+			"price":               payload.Price,
 			"hp":                  payload.HP,
 			"type_of_aircon":      payload.TypeOfAircon,
 			"indoor_outdoor_unit": payload.IndoorOutdoorUnit,
@@ -252,6 +254,7 @@ func AddOrUpdateReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 				"barcode":             payload.Barcode,
 				"aircon_model_number": payload.AirconModelNumber,
 				"aircon_name":         payload.AirconName,
+				"price":               payload.Price,
 				"hp":                  payload.HP,
 				"type_of_aircon":      payload.TypeOfAircon,
 				"indoor_outdoor_unit": payload.IndoorOutdoorUnit,
@@ -277,7 +280,6 @@ func AddOrUpdateReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 	}
 
 	item := models.PolarisInventory{
-		ID:                primitive.NewObjectID(),
 		SKU:               payload.SKU,
 		Barcode:           payload.Barcode,
 		AirconModelNumber: payload.AirconModelNumber,
@@ -286,6 +288,7 @@ func AddOrUpdateReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 		TypeOfAircon:      payload.TypeOfAircon,
 		IndoorOutdoorUnit: payload.IndoorOutdoorUnit,
 		Quantity:          payload.Quantity,
+		Price:             payload.Price,
 
 		SupplierDRID:      supplierDRID,
 		SupplierInvoiceID: supplierInvoiceID,

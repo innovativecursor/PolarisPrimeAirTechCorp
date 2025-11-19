@@ -3,6 +3,7 @@ package config
 type CustomerData struct {
 	ID           string `json:"id,omitempty"`
 	CustomerName string `json:"customername"`
+	CustomerOrg  string `json:"customerorg"`
 	Address      string `json:"address"`
 	TINNumber    string `json:"tinnumber"`
 }
