@@ -534,7 +534,7 @@ function App() {
 
       <main className="dashboard-main">
         <DashboardHeader
-          title="Polaris Airtech Prime Corporation"
+          title="Polaris  Prime Air Tech Corp"
           userName="Ma'am Che"
         />
 

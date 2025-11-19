@@ -2,7 +2,7 @@ const LoginView = ({ onSubmit }) => (
   <div className="login-page">
     <div className="login-shell">
       <section className="brand-panel" aria-labelledby="brand-heading">
-        <div className="badge">Polaris Air Tech Corp</div>
+        <div className="badge">Polaris Prime Air Tech Corp</div>
         <h1 id="brand-heading">
           End-to-end visibility for every air conditioner in your network.
         </h1>
