@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/accountsreceivable/deliveryreceipt"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/accountsreceivable/salesinvoice"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signup"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/customer"
@@ -273,6 +275,54 @@ func Auth(db *mongo.Database) {
 	apiV1.DELETE("/supplier/supplier-delete", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplier.DeleteSupplier(c, db)
 	})
+
+	// sales invoice
+	apiV1.POST("/sales-invoice/create-sales-invoice", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesinvoice.CreateSalesInvoice(c, db)
+	})
+
+	apiV1.GET("/sales-invoice/get-all-sales-invoice", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesinvoice.GetAllSalesInvoices(c, db)
+	})
+
+	apiV1.GET("/sales-invoice/get-sales-invoice-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesinvoice.GetSalesInvoiceByID(c, db)
+	})
+
+	apiV1.PUT("/sales-invoice/update-sales-invoice/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesinvoice.UpdateSalesInvoice(c, db)
+	})
+
+	apiV1.DELETE("/sales-invoice/delete-sales-invoice/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesinvoice.DeleteSalesInvoice(c, db)
+	})
+
+	// extra: get customer by project
+	apiV1.GET("/sales-invoice/customer-by-project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesinvoice.GetCustomerByProjectID(c, db)
+	})
+
+	// delivery receipt
+	apiV1.POST("/delivery-receipt/create-delivery-receipt", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		deliveryreceipt.CreateDeliveryReceipt(c, db)
+	})
+
+	apiV1.GET("/delivery-receipt/get-all-delivery-receipts", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		deliveryreceipt.GetAllDeliveryReceipts(c, db)
+	})
+
+	apiV1.GET("/delivery-receipt/get-delivery-receipt-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		deliveryreceipt.GetDeliveryReceiptByID(c, db)
+	})
+
+	apiV1.PUT("/delivery-receipt/update-delivery-receipt/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		deliveryreceipt.UpdateDeliveryReceipt(c, db)
+	})
+
+	apiV1.DELETE("/delivery-receipt/delete-delivery-receipt/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		deliveryreceipt.DeleteDeliveryReceipt(c, db)
+	})
+
 	// Listen and serve on defined port
 	log.Printf("Application started, Listening on Port %s", port)
 	router.Run(":" + port)
