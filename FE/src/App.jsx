@@ -17,6 +17,9 @@ import DeliveryReceiptPanel from "./components/DeliveryReceiptPanel";
 import InventoryCreatePanel from "./components/InventoryCreatePanel";
 import SupplierPanel from "./components/SupplierPanel";
 import RowActions from "./components/RowActions";
+import SalesChart from "./components/SalesChart";
+import RegionalChart from "./components/RegionalChart";
+import ReportsPanel from "./components/ReportsPanel";
 import "./App.css";
 
 const inventoryItems = [
@@ -116,6 +119,7 @@ const navItems = [
   { label: "Purchase Order", key: "purchase-order", icon: "cart" },
   { label: "Warehousing", key: "warehousing", icon: "warehouse" },
   { label: "Accounts Receivable", key: "accounts-receivable", icon: "invoice" },
+  { label: "Generate Reports", key: "generate-reports", icon: "report" },
 ];
 
 const clients = [
@@ -160,7 +164,7 @@ const inventoryProducts = [
 
 const warehousingUpdates = [
   {
-    title: "North hub receiving",
+    title: "Cavite receiving",
     detail: "12 condensing units checked in, 2 flagged for QA",
   },
   {
@@ -1248,13 +1252,30 @@ function App() {
           <>
             <StatsGrid cards={summaryCards} />
 
+            <section className="charts-grid">
+              <div className="panel-card">
+                <SalesChart />
+              </div>
+              <div className="panel-card">
+                <RegionalChart />
+              </div>
+            </section>
+
             <section className="panels-grid">
-              <InventoryPanel products={inventoryProducts} />
+              <InventoryPanel
+                products={inventoryProducts}
+                onViewFullInventory={() => {
+                  setActiveSection("inventory");
+                  setInventoryMode("list");
+                }}
+              />
               <WarehousingPanel updates={warehousingUpdates} />
               <PipelinePanel stages={pipelineStages} />
             </section>
           </>
         )}
+
+        {activeSection === "generate-reports" && <ReportsPanel />}
       </main>
     </div>
   );

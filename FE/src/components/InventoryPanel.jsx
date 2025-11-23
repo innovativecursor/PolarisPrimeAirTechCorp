@@ -1,4 +1,4 @@
-const InventoryPanel = ({ products }) => (
+const InventoryPanel = ({ products, onViewFullInventory }) => (
   <article className="panel-card">
     <div className="panel-header">
       <h3>Inventory position</h3>
@@ -12,7 +12,11 @@ const InventoryPanel = ({ products }) => (
         </article>
       ))}
     </div>
-    <button className="text-link inventory-panel__cta" type="button">
+    <button
+      className="text-link inventory-panel__cta"
+      type="button"
+      onClick={onViewFullInventory}
+    >
       View full inventory
     </button>
   </article>
