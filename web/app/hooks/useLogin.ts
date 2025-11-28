@@ -1,32 +1,36 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 export default function useLogin() {
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
 
-    const form = e.currentTarget;
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement)
-      .value;
-
     try {
-      const res = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      //
+      // const form = e.currentTarget;
+      // const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+      // const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+      //
+      // const res = await fetch("/api/auth/signin", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ email, password }),
+      // });
+      //
+      // if (!res.ok) throw new Error("Login failed");
+      // const data = await res.json();
+      // // save token, etc.
 
-      if (!res.ok) {
-        throw new Error("Invalid credentials");
-      }
+      // Fake tiny delay so the loading state is visible
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
-      const data = await res.json();
-      // handle token, redirect, whatever is in your current FE
+      router.push("/dashboard");
     } finally {
       setLoading(false);
     }
