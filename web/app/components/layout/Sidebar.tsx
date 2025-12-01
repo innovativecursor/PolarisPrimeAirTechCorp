@@ -40,23 +40,23 @@ export default function Sidebar() {
 
       <div
         className={`
-          fixed inset-y-0 left-0 z-30 w-64 transform bg-white dark:bg-slate-950
-          border-r border-slate-200 dark:border-slate-800 shadow-lg md:shadow-none
+          fixed inset-y-0 left-0 z-30 w-64 transform bg-white
+          border-r border-slate-200 shadow-lg md:shadow-none
           md:static md:translate-x-0 transition-transform duration-200
           ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
         `}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex items-center gap-2 px-6 pt-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-            <div className="h-8 w-8 rounded-lg bg-slate-900 dark:bg-slate-100 flex items-center justify-center text-xs font-black text-white dark:text-slate-900">
+          <div className="flex items-center gap-2 px-6 pt-6 pb-4 border-b border-slate-200">
+            <div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center text-xs font-black text-white">
               PL
             </div>
             <div className="flex flex-col">
               <span className="text-xs font-semibold tracking-[0.18em] uppercase text-slate-400">
                 Polaris
               </span>
-              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <span className="text-sm font-semibold text-slate-900">
                 Prime Air Tech
               </span>
             </div>
@@ -77,12 +77,11 @@ export default function Sidebar() {
                   transition-colors
                   ${
                     isActive(item.href)
-                      ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-600 hover:bg-slate-100"
                   }
                 `}
               >
-                {/* simple bullet; swap for icons later */}
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
                 <span>{item.label}</span>
               </button>
@@ -90,16 +89,16 @@ export default function Sidebar() {
           </nav>
 
           {/* Bottom actions */}
-          <div className="mt-auto border-t border-slate-100 dark:border-slate-800 px-4 py-4 space-y-2">
+          <div className="mt-auto border-t border-slate-200 px-4 py-4 space-y-2">
             <button
               type="button"
-              className="w-full inline-flex items-center justify-center rounded-xl bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-3 py-2 text-xs font-semibold shadow-sm hover:bg-slate-800 dark:hover:bg-slate-200"
+              className="w-full inline-flex items-center justify-center rounded-xl bg-slate-900 text-white px-3 py-2 text-xs font-semibold shadow-sm hover:bg-slate-800"
             >
               Settings
             </button>
             <button
               type="button"
-              className="w-full inline-flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900"
+              className="w-full inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100"
             >
               Logout
             </button>
