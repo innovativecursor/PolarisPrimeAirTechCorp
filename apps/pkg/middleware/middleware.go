@@ -35,6 +35,10 @@ func JWTMiddleware(db *mongo.Database) gin.HandlerFunc {
 			return
 		}
 
+		if len(tokenString) > 7 && tokenString[:7] == "Bearer " {
+			tokenString = tokenString[7:]
+		}
+
 		// Parse and validate the token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// Validate the signing method
