@@ -16,6 +16,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/polarisinventory"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/quotation"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/report"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/salesorder"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplier"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierdr"
@@ -323,6 +324,10 @@ func Auth(db *mongo.Database) {
 		deliveryreceipt.DeleteDeliveryReceipt(c, db)
 	})
 
+	//generate report
+	apiV1.POST("/generate-report/generate-report", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		report.GenerateReport(c, db)
+	})
 	// Listen and serve on defined port
 	log.Printf("Application started, Listening on Port %s", port)
 	router.Run(":" + port)

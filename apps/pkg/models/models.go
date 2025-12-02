@@ -58,6 +58,7 @@ type Customer struct {
 	CustomerOrg  string             `bson:"customerorg" json:"customerorg"`
 	Address      string             `bson:"address" json:"address"`
 	TINNumber    string             `bson:"tinnumber" json:"tinnumber"`
+	CreatedAt    time.Time          `bson:"createdat" json:"createdat"`
 }
 
 type Quotation struct {
@@ -125,15 +126,16 @@ type PolarisInventory struct {
 }
 
 type SalesOrder struct {
-	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	ProjectID   primitive.ObjectID `bson:"projectId,omitempty" json:"projectId,omitempty"`
-	CustomerID  primitive.ObjectID `bson:"customerId,omitempty" json:"customerId,omitempty"`
-	Items       []SalesOrderItem   `bson:"items" json:"items"`
-	TotalAmount float64            `bson:"totalAmount" json:"totalAmount"`
-	CreatedBy   primitive.ObjectID `bson:"createdBy,omitempty" json:"createdBy,omitempty"`
-	CreatedAt   time.Time          `bson:"createdAt" json:"createdAt"`
-	UpdatedAt   time.Time          `bson:"updatedAt" json:"updatedAt"`
-	Status      string             `bson:"status" json:"status"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	SalesOrderID string             `bson:"salesOrderId" json:"salesOrderId"`
+	ProjectID    primitive.ObjectID `bson:"projectId,omitempty" json:"projectId,omitempty"`
+	CustomerID   primitive.ObjectID `bson:"customerId,omitempty" json:"customerId,omitempty"`
+	Items        []SalesOrderItem   `bson:"items" json:"items"`
+	TotalAmount  float64            `bson:"totalAmount" json:"totalAmount"`
+	CreatedBy    primitive.ObjectID `bson:"createdBy,omitempty" json:"createdBy,omitempty"`
+	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
+	Status       string             `bson:"status" json:"status"`
 }
 
 type SalesOrderItem struct {
