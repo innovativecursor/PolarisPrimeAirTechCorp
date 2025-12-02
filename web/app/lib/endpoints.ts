@@ -4,7 +4,7 @@ const baseURLDev = "http://localhost:10001";
 const isLive = false;
 const baseUrl = isLive ? baseURLLive : baseURLDev;
 
-const apiPrefix = "/api/v1";
+const apiPrefix = "/v1";
 
 const full = (path: string) => `${baseUrl}${apiPrefix}${path}`;
 

@@ -14,6 +14,9 @@ import {
   fetchWithError,
 } from "../lib/fetchData";
 import endpoints from "../lib/endpoints";
+import { useAuth } from "../components/auth/AuthContext";
+import { useToast } from "../hooks/useToast";
+import { useConfirmToast } from "../hooks/useConfirmToast";
 
 /* ------------------------------------------------------------------ */
 /*  TYPES                                                              */
@@ -46,18 +49,23 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<ProjectRow | null>(null);
 
+  const { user } = useAuth();
+  const toast = useToast();
+  const confirmToast = useConfirmToast();
+  const displayName = user?.name || user?.email || "Admin";
   // ----------------- LOAD LIST -----------------
   const loadProjects = async () => {
     try {
       setLoading(true);
-      setError(null);
 
-      const apiData = await fetchDataGet<any[]>(endpoints.project.getAll);
+      const response = await fetchDataGet<{ projects: any[] }>(
+        endpoints.project.getAll
+      );
+      const apiData = response?.projects || [];
 
-      const rows: ProjectRow[] = (apiData || []).map((p: any) => ({
+      const rows: ProjectRow[] = apiData.map((p: any) => ({
         id: p._id || p.projectId || p.id || "",
         name: p.project_name || p.projectName || p.name || "",
         customer:
@@ -73,7 +81,7 @@ export default function ProjectsPage() {
 
       setProjects(rows);
     } catch (e: any) {
-      setError(e.message ?? "Failed to load projects");
+      toast.error(e.message ?? "Failed to load projects");
     } finally {
       setLoading(false);
     }
@@ -94,21 +102,27 @@ export default function ProjectsPage() {
     setMode("create");
   };
 
-  const handleDelete = async (row: ProjectRow) => {
-    const confirmed = window.confirm(
-      `Delete project "${row.name}" (${row.id})?`
-    );
-    if (!confirmed) return;
-
-    try {
-      setSaving(true);
-      await fetchDataDelete(endpoints.project.delete(row._raw?._id ?? row.id));
-      await loadProjects();
-    } catch (e: any) {
-      alert(e.message ?? "Failed to delete project");
-    } finally {
-      setSaving(false);
-    }
+  const handleDelete = (row: ProjectRow) => {
+    confirmToast.confirm({
+      title: "Delete Project",
+      message: `Are you sure you want to delete "${row.name}" (${row.id})? This action cannot be undone.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      onConfirm: async () => {
+        try {
+          setSaving(true);
+          await fetchDataDelete(
+            endpoints.project.delete(row._raw?._id ?? row.id)
+          );
+          await loadProjects();
+          toast.success("Project deleted successfully");
+        } catch (e: any) {
+          toast.error(e.message ?? "Failed to delete project");
+        } finally {
+          setSaving(false);
+        }
+      },
+    });
   };
 
   const handleCancelForm = () => {
@@ -119,7 +133,6 @@ export default function ProjectsPage() {
   const handleSubmitForm = async (values: ProjectFormValues) => {
     try {
       setSaving(true);
-      setError(null);
 
       // 🔑 Match backend keys exactly
       const payload = {
@@ -131,21 +144,31 @@ export default function ProjectsPage() {
 
       if (editing && editing._raw?._id) {
         // UPDATE (PUT)
-        await fetchWithError(endpoints.project.update(editing._raw._id), {
+        const updateUrl = endpoints.project.update(editing._raw._id);
+        console.log("🔄 Updating project:", {
+          id: editing._raw._id,
+          url: updateUrl,
+          payload,
+        });
+        await fetchWithError(updateUrl, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+        toast.success("Project updated successfully");
       } else {
         // CREATE (POST)
+        console.log("➕ Creating project:", { payload });
         await fetchDataPost(endpoints.project.create, payload);
+        toast.success("Project created successfully");
       }
 
       await loadProjects();
       setMode("list");
       setEditing(null);
     } catch (e: any) {
-      setError(e.message ?? "Failed to save project");
+      console.error("❌ Failed to save project:", e);
+      toast.error(e.message ?? "Failed to save project");
     } finally {
       setSaving(false);
     }
@@ -168,15 +191,9 @@ export default function ProjectsPage() {
             <p className="uppercase tracking-[0.16em] text-slate-400 mb-1">
               Welcome back
             </p>
-            <p className="font-medium text-slate-700">Ma&apos;am Che</p>
+            <p className="font-medium text-slate-700">{displayName}</p>
           </div>
         </header>
-
-        {error && (
-          <p className="text-xs font-medium text-rose-500 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2 inline-flex">
-            {error}
-          </p>
-        )}
 
         {mode === "list" ? (
           <ProjectsListCard
@@ -330,9 +347,9 @@ function CreateProjectCard({
   const [form, setForm] = useState<ProjectFormValues>(() => ({
     projectId: initialValues?.id || "PRJ-7122",
     projectName: initialValues?.name || "",
-    customerLocation: "",
-    customerOrganisation: "",
-    customerId: "",
+    customerLocation: initialValues?._raw?.address_id || "",
+    customerOrganisation: initialValues?._raw?.customer_organization || "",
+    customerId: initialValues?._raw?.customer_id || "",
     deploymentNotes: "",
   }));
 

@@ -1,8 +1,14 @@
+"use client";
+
+import { useAuth } from "../components/auth/AuthContext";
 import DonutChart from "../components/charts/DonutChart";
 import LineChart from "../components/charts/LineChart";
 import AppShell from "../components/layout/AppShell";
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const displayName = user?.name || user?.email || "Admin";
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -20,7 +26,7 @@ export default function DashboardPage() {
             <p className="uppercase tracking-[0.16em] text-slate-400 mb-1">
               Welcome back
             </p>
-            <p className="font-medium text-slate-700">Ma&apos;am Che</p>
+            <p className="font-medium text-slate-700">{displayName}</p>
           </div>
         </header>
 

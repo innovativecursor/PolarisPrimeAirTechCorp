@@ -84,6 +84,7 @@ export default function LoginView() {
                   type="email"
                   autoComplete="email"
                   placeholder="captain@polarisairtech.com"
+                  defaultValue="vaishnav.parte@gmail.com"
                   required
                   className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900"
                 />
@@ -103,6 +104,7 @@ export default function LoginView() {
                   type="password"
                   autoComplete="current-password"
                   placeholder="Enter your password"
+                  defaultValue="Admin@123"
                   required
                   className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900"
                 />
