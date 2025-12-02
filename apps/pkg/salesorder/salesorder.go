@@ -1,6 +1,7 @@
 package salesorder
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -12,6 +13,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+func GenerateSalesOrderID(count int64) string {
+	year := time.Now().Year()
+	return fmt.Sprintf("SO-%d-%05d", year, count+1)
+}
 func CreateSalesOrder(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
@@ -42,6 +47,7 @@ func CreateSalesOrder(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
+	// Build order items
 	var items []models.SalesOrderItem
 	var total float64
 
@@ -51,7 +57,9 @@ func CreateSalesOrder(c *gin.Context, db *mongo.Database) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Aircon ID"})
 			return
 		}
+
 		subtotal := float64(item.Qty) * item.Price
+
 		items = append(items, models.SalesOrderItem{
 			AirconID: airconID,
 			Qty:      item.Qty,
@@ -59,28 +67,46 @@ func CreateSalesOrder(c *gin.Context, db *mongo.Database) {
 			Price:    item.Price,
 			Subtotal: subtotal,
 		})
+
 		total += subtotal
 	}
 
-	salesOrder := models.SalesOrder{
-		ProjectID:   projectID,
-		CustomerID:  customerID,
-		Items:       items,
-		TotalAmount: total,
-		CreatedBy:   authUser.ID,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-		Status:      "notapproved",
+	collection := db.Collection("salesorder")
+
+	// Count existing sales orders for ID generation
+	count, err := collection.CountDocuments(c, bson.M{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed generating salesOrderID"})
+		return
 	}
 
-	collection := db.Collection("salesorder")
+	// Generate "SO-2025-00001"
+	salesOrderID := GenerateSalesOrderID(count)
+
+	// Create new order object
+	salesOrder := models.SalesOrder{
+		SalesOrderID: salesOrderID,
+		ProjectID:    projectID,
+		CustomerID:   customerID,
+		Items:        items,
+		TotalAmount:  total,
+		CreatedBy:    authUser.ID,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
+		Status:       "notapproved",
+	}
+
 	res, err := collection.InsertOne(c, salesOrder)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create sales order", "details": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Sales order created successfully", "id": res.InsertedID})
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Sales order created successfully",
+		"id":           res.InsertedID,
+		"salesOrderId": salesOrderID,
+	})
 }
 
 func EditSalesOrder(c *gin.Context, db *mongo.Database) {

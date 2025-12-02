@@ -2,6 +2,7 @@ package customer
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/customer/config"
@@ -55,6 +56,7 @@ func AddCustomer(c *gin.Context, db *mongo.Database) {
 	customer.Address = payload.Address
 	customer.TINNumber = payload.TINNumber
 	customer.CustomerOrg = payload.CustomerOrg
+	customer.CreatedAt = time.Now()
 
 	update := bson.M{"$set": customer}
 	opts := options.Update().SetUpsert(true)
