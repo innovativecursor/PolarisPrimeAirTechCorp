@@ -36,18 +36,19 @@ type User struct {
 
 type Project struct {
 	ID                   primitive.ObjectID   `bson:"_id,omitempty" json:"id"`
+	ProjectID            string               `bson:"project_id,omitempty" json:"project_id"`
 	ProjectName          string               `bson:"project_name" json:"project_name"`
 	CustomerID           primitive.ObjectID   `bson:"customer_id,omitempty" json:"customer_id"`
-	AddressID            primitive.ObjectID   `bson:"address_id,omitempty" json:"address_id"`
+	AddressCustomer      string               `bson:"addresscustomer" json:"addresscustomer"`
 	CustomerOrganization string               `bson:"customer_organization,omitempty" json:"customer_organization"` // read-only field
-	SalesInvoiceID       primitive.ObjectID   `bson:"sales_invoice_id,omitempty" json:"sales_invoice_id"`
+	SalesOrderID         primitive.ObjectID   `bson:"sales_order_id,omitempty" json:"sales_order_id"`
 	SupplierPOIDs        []primitive.ObjectID `bson:"supplier_po_ids,omitempty" json:"supplier_po_ids"`
-	CustomerPOID         primitive.ObjectID   `bson:"customer_po_id,omitempty" json:"customer_po_id"`
-	QuotationID          primitive.ObjectID   `bson:"quotation_id,omitempty" json:"quotation_id"`
-	IsQuotationApproved  bool                 `bson:"is_quotation_approved" json:"is_quotation_approved"`
-	SupplierIDs          []primitive.ObjectID `bson:"supplier_ids,omitempty" json:"supplier_ids"`
-	SkuIDs               []primitive.ObjectID `bson:"sku_ids,omitempty" json:"sku_ids"`
 	SupplierReceiptID    primitive.ObjectID   `bson:"supplier_receipt_id,omitempty" json:"supplier_receipt_id"`
+	SupplierInvoiceID    primitive.ObjectID   `bson:"supplier_invoice_id,omitempty" json:"supplier_invoice_id"`
+	SupplierIDs          []primitive.ObjectID `bson:"supplier_ids,omitempty" json:"supplier_ids"`
+	SalesInvoiceID       primitive.ObjectID   `bson:"sales_invoice_id,omitempty" json:"sales_invoice_id"`
+	SalesDrID            primitive.ObjectID   `bson:"sales_dr_id,omitempty" json:"sales_dr_id"`
+	Notes                string               `bson:"notes,omitempty" json:"notes"`
 	CreatedAt            int64                `bson:"created_at,omitempty" json:"created_at"`
 	UpdatedAt            int64                `bson:"updated_at,omitempty" json:"updated_at"`
 }
@@ -59,24 +60,6 @@ type Customer struct {
 	Address      string             `bson:"address" json:"address"`
 	TINNumber    string             `bson:"tinnumber" json:"tinnumber"`
 	CreatedAt    time.Time          `bson:"createdat" json:"createdat"`
-}
-
-type Quotation struct {
-	ID          primitive.ObjectID  `bson:"_id,omitempty" json:"id,omitempty"`
-	CustomerID  primitive.ObjectID  `bson:"customerId" json:"customerId"`
-	Items       []QuotationItem     `bson:"items" json:"items"`
-	TotalAmount float64             `bson:"totalAmount" json:"totalAmount"`
-	CreatedAt   time.Time           `bson:"createdAt" json:"createdAt"`
-	Status      string              `bson:"status" json:"status"` // "pending", "approved", "rejected"
-	ApprovedAt  *time.Time          `bson:"approvedAt,omitempty" json:"approvedAt,omitempty"`
-	ApprovedBy  *primitive.ObjectID `bson:"approvedBy,omitempty" json:"approvedBy,omitempty"` // user who approved
-}
-
-type QuotationItem struct {
-	Description string  `bson:"description" json:"description"`
-	Quantity    int     `bson:"quantity" json:"quantity"`
-	Rate        float64 `bson:"rate" json:"rate"`
-	Amount      float64 `bson:"amount" json:"amount"`
 }
 
 // SupplierPO represents a Purchase Order sent to a supplier
@@ -155,25 +138,10 @@ type Aircon struct {
 	Price    float64            `bson:"price" json:"price"`
 }
 
-type Invoice struct {
-	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	ProjectID    primitive.ObjectID `bson:"projectId" json:"projectId"`
-	CustomerID   primitive.ObjectID `bson:"customerId" json:"customerId"`
-	SalesOrderID primitive.ObjectID `bson:"salesOrderId" json:"salesOrderId"`
-	Items        []InvoiceItem      `bson:"items" json:"items"`
-	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
-	UpdatedAt    time.Time          `bson:"updated_at" json:"updated_at"`
-}
-
-type InvoiceItem struct {
-	SKUNumber string `bson:"sku_number" json:"sku_number"`
-	Qty       int    `bson:"qty" json:"qty"`
-	UOM       string `bson:"uom" json:"uom"`
-}
-
 type SupplierDeliveryReceipt struct {
 	ID              primitive.ObjectID            `bson:"_id,omitempty" json:"id,omitempty"`
 	SupplierID      primitive.ObjectID            `bson:"supplier_id" json:"supplier_id"`
+	ProjectID       primitive.ObjectID            `bson:"project_id" json:"project_id"`
 	Date            time.Time                     `bson:"date" json:"date"`
 	SupplierDRNo    string                        `bson:"supplier_dr_no" json:"supplier_dr_no"`
 	SupplierInvoice string                        `bson:"supplier_invoice" json:"supplier_invoice"`
@@ -192,6 +160,7 @@ type SupplierDeliveryReceiptItem struct {
 type SupplierInvoice struct {
 	ID              primitive.ObjectID    `bson:"_id,omitempty" json:"id,omitempty"`
 	SupplierID      primitive.ObjectID    `bson:"supplier_id" json:"supplier_id"`
+	ProjectID       primitive.ObjectID    `bson:"project_id" json:"project_id"`
 	InvoiceNo       string                `bson:"invoice_no" json:"invoice_no"`
 	InvoiceDate     time.Time             `bson:"invoice_date" json:"invoice_date"`
 	DeliveryNo      string                `bson:"delivery_no" json:"delivery_no"`

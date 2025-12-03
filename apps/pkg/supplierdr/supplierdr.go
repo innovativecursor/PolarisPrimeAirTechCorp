@@ -47,9 +47,16 @@ func CreateSupplierDR(c *gin.Context, db *mongo.Database) {
 		})
 	}
 
+	projectID, err := primitive.ObjectIDFromHex(payload.ProjectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
 	dr := models.SupplierDeliveryReceipt{
 		SupplierID:   supplierID,
 		SupplierDRNo: payload.SupplierDRNo,
+		ProjectID:    projectID,
 		YourPONo:     payload.YourPONo,
 		Items:        items,
 		Date:         dateParsed,
@@ -152,6 +159,7 @@ func EditSupplierDR(c *gin.Context, db *mongo.Database) {
 	update := bson.M{
 		"$set": bson.M{
 			"supplier_id":    supplierID,
+			"project_id":     payload.ProjectID,
 			"supplier_dr_no": payload.SupplierDRNo,
 			"your_po_no":     payload.YourPONo,
 			"items":          items,

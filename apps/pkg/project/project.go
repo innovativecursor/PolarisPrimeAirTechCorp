@@ -1,7 +1,7 @@
 package project
 
 import (
-	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -11,10 +11,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// Create and inserts a new Project document into MongoDB.
-func CreateProject(c *gin.Context, db *mongo.Database) {
+func GetCustomerDetails(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
@@ -25,28 +25,75 @@ func CreateProject(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
-	var req config.ProjectRequest
+	customerID := c.Param("id")
 
-	// Bind and validate the JSON payload
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	objID, err := primitive.ObjectIDFromHex(customerID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid customer ID"})
 		return
 	}
 
-	// Build the project document to store in DB
-	project := models.Project{
-		ID:                   primitive.NewObjectID(),
-		ProjectName:          req.ProjectName,
-		CustomerID:           req.CustomerID,
-		AddressID:            req.AddressID,
-		CustomerOrganization: req.CustomerOrganization,
-		CreatedAt:            time.Now().Unix(),
-		UpdatedAt:            time.Now().Unix(),
+	var customer models.Customer
+	col := db.Collection("customer")
+
+	err = col.FindOne(c, bson.M{"_id": objID}).Decode(&customer)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+		return
 	}
 
-	projectCol := db.Collection("project")
-	// Insert project into MongoDB
-	_, err := projectCol.InsertOne(context.TODO(), project)
+	c.JSON(http.StatusOK, gin.H{
+		"customer_id":           customer.ID.Hex(),
+		"customer_name":         customer.CustomerName,
+		"customer_organization": customer.CustomerOrg,
+		"customer_address":      customer.Address,
+	})
+}
+
+func CreateProject(c *gin.Context, db *mongo.Database) {
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	var projectdata config.ProjectRequest
+	if err := c.ShouldBindJSON(&projectdata); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
+		return
+	}
+
+	customerObjID, err := primitive.ObjectIDFromHex(projectdata.CustomerID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid customerID"})
+		return
+	}
+
+	// Auto-generate PRJ-XXXX
+	projectCode := fmt.Sprintf("PRJ-%d", time.Now().Unix()%10000)
+
+	now := time.Now().Unix()
+
+	project := models.Project{
+		ID:                   primitive.NewObjectID(),
+		ProjectName:          projectdata.ProjectName,
+		CustomerID:           customerObjID,
+		AddressCustomer:      projectdata.CustomerAddress,
+		CustomerOrganization: projectdata.CustomerOrganization,
+		Notes:                projectdata.Notes,
+		ProjectID:            projectCode,
+		CreatedAt:            now,
+		UpdatedAt:            now,
+	}
+
+	// Insert to DB
+	_, err = db.Collection("project").InsertOne(c, project)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create project"})
 		return
@@ -58,9 +105,7 @@ func CreateProject(c *gin.Context, db *mongo.Database) {
 	})
 }
 
-// GetAllProjects retrieves all project records from the database
-// and returns them as a JSON array.
-func GetAllProjects(c *gin.Context, db *mongo.Database) {
+func GetProjectFullDetails(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
@@ -71,60 +116,105 @@ func GetAllProjects(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
+	// Get Project Mongo ObjectID from URL
+	projectID := c.Param("projectID")
+	if projectID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "projectID is required"})
+		return
+	}
 
-	projectCol := db.Collection("project")
-	cursor, err := projectCol.Find(context.TODO(), bson.M{})
+	// Convert to ObjectID
+	projectObjID, err := primitive.ObjectIDFromHex(projectID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid projectID format"})
 		return
 	}
-	defer cursor.Close(context.TODO())
-
-	var projects []models.Project
-	if err := cursor.All(context.TODO(), &projects); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"projects": projects})
-}
-
-// GetProjectByID retrieves a single project record based on its ID.
-// If the ID is invalid or the project does not exist, an error is returned.
-func GetProjectByID(c *gin.Context, db *mongo.Database) {
-	user, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-		return
-	}
-	_, ok := user.(*models.User)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
-		return
-	}
-	id := c.Param("id")
-
-	// Convert the string ID into a MongoDB ObjectID
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
-		return
-	}
-	projectCol := db.Collection("project")
 
 	var project models.Project
-	err = projectCol.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&project)
+	err = db.Collection("project").FindOne(c, bson.M{"_id": projectObjID}).Decode(&project)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"project": project})
+	var salesOrders []models.SalesOrder
+	cursor, _ := db.Collection("salesorder").Find(c, bson.M{"projectId": projectObjID})
+	cursor.All(c, &salesOrders)
+
+	var supplierPO []models.SupplierPO
+	cursor, _ = db.Collection("supplier_purchase_orders").Find(c, bson.M{"projectId": projectObjID})
+	cursor.All(c, &supplierPO)
+
+	var deliveryReceipts []models.SupplierDeliveryReceipt
+	cursor, _ = db.Collection("supplierdeliveryreceipt").Find(c, bson.M{"project_id": projectObjID})
+	cursor.All(c, &deliveryReceipts)
+
+	var supplierInvoices []models.SupplierInvoice
+	cursor, _ = db.Collection("supplierinvoice").Find(c, bson.M{"project_id": projectObjID})
+	cursor.All(c, &supplierInvoices)
+
+	var suppliers []models.Supplier
+	cursor, _ = db.Collection("supplier").Find(c, bson.M{"project_id": projectObjID})
+	cursor.All(c, &suppliers)
+
+	var salesInvoices []models.SalesInvoice
+	cursor, _ = db.Collection("sales_invoices").Find(c, bson.M{"project_id": projectObjID})
+	cursor.All(c, &salesInvoices)
+
+	var customerDR []models.DeliveryReceipt
+	cursor, _ = db.Collection("delivery_receipts").Find(c, bson.M{"project_id": projectObjID})
+	cursor.All(c, &customerDR)
+
+	// Final Response
+	c.JSON(http.StatusOK, gin.H{
+		"project":           project,
+		"sales_orders":      salesOrders,
+		"supplier_po":       supplierPO,
+		"supplier_dr":       deliveryReceipts,
+		"supplier_invoices": supplierInvoices,
+		"suppliers":         suppliers,
+		"sales_invoices":    salesInvoices,
+		"delivery_receipts": customerDR,
+	})
 }
 
-// UpdateProject updates an existing project document in the database.
-// It supports partial updates using the fields provided in the payload.
+func GetAllProjects(c *gin.Context, db *mongo.Database) {
+
+	// Auth
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		return
+	}
+
+	// Sort by latest created_at
+	findOptions := options.Find().SetSort(bson.M{"created_at": -1})
+
+	cursor, err := db.Collection("project").Find(c, bson.M{}, findOptions)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
+		return
+	}
+
+	var projects []models.Project
+	if err := cursor.All(c, &projects); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode projects"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"total":    len(projects),
+		"projects": projects,
+	})
+}
+
 func UpdateProject(c *gin.Context, db *mongo.Database) {
+
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
@@ -135,56 +225,67 @@ func UpdateProject(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
-	id := c.Param("id")
 
-	// Convert the string ID to ObjectID
-	objID, err := primitive.ObjectIDFromHex(id)
+	projectID := c.Param("id")
+	if projectID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "project ID is required"})
+		return
+	}
+
+	// Convert to ObjectID
+	projectObjID, err := primitive.ObjectIDFromHex(projectID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
 
-	var req config.UpdateProjectRequest
-
-	// Bind and validate the incoming JSON payload
+	var req config.ProjectRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
 		return
 	}
 
-	projectCol := db.Collection("project")
-	// Build the update document with the provided fields
-	update := bson.M{
-		"$set": bson.M{
-			"project_name": req.ProjectName,
-			"updated_at":   time.Now().Unix(),
-			// "customer_id":           req.CustomerID,
-			// "address_id":            req.AddressID,
-			// "customer_organization": req.CustomerOrganization,
-			// "quotation_id":          req.QuotationID,
-			// "is_quotation_approved": req.IsQuotationApproved,
-			// "supplier_ids":          req.SupplierIDs,
-			// "sku_ids":               req.SkuIDs,
-			// "supplier_po_ids":       req.SupplierPOIDs,
-			// "customer_po_id":        req.CustomerPOID,
-			// "supplier_receipt_id":   req.SupplierReceiptID,
-			// "sales_invoice_id":      req.SalesInvoiceID,
-		},
+	// Convert customer ID → ObjectID
+	custObjID, err := primitive.ObjectIDFromHex(req.CustomerID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid customerID"})
+		return
 	}
 
-	// Update the project document
-	_, err = projectCol.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
+	updateData := bson.M{
+		"project_name":          req.ProjectName,
+		"customer_id":           custObjID,
+		"customer_organization": req.CustomerOrganization,
+		"address_customer":      req.CustomerAddress,
+		"notes":                 req.Notes,
+		"updatedAt":             time.Now().Unix(),
+	}
+
+	result, err := db.Collection("project").UpdateOne(
+		c,
+		bson.M{"_id": projectObjID},
+		bson.M{"$set": updateData},
+	)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Project updated successfully"})
+	if result.MatchedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Project updated successfully",
+		"updated_fields": updateData,
+	})
 }
 
-// DeleteProject removes a project record from the database
-// based on the provided project ID.
 func DeleteProject(c *gin.Context, db *mongo.Database) {
+
+	// Auth check
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
@@ -195,23 +296,34 @@ func DeleteProject(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
-	id := c.Param("id")
 
-	// Convert string ID to ObjectID
-	objID, err := primitive.ObjectIDFromHex(id)
+	projectID := c.Param("id")
+	if projectID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "project ID is required"})
+		return
+	}
+
+	// Convert --> ObjectID
+	projectObjID, err := primitive.ObjectIDFromHex(projectID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
 
-	projectCol := db.Collection("project")
-
-	// Delete the project document
-	_, err = projectCol.DeleteOne(context.TODO(), bson.M{"_id": objID})
+	// Delete from DB
+	result, err := db.Collection("project").DeleteOne(c, bson.M{"_id": projectObjID})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete project"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Project deleted successfully"})
+	if result.DeletedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Project not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Project deleted successfully",
+		"project_id": projectID,
+	})
 }
