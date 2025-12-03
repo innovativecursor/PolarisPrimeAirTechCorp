@@ -50,8 +50,14 @@ func CreateSupplierInvoice(c *gin.Context, db *mongo.Database) {
 		})
 	}
 
+	projectID, err := primitive.ObjectIDFromHex(payload.ProjectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
 	invoice := models.SupplierInvoice{
 		SupplierID:      supplierID,
+		ProjectID:       projectID,
 		InvoiceNo:       payload.InvoiceNo,
 		InvoiceDate:     invDate,
 		DeliveryNo:      payload.DeliveryNo,
@@ -170,6 +176,7 @@ func EditSupplierInvoice(c *gin.Context, db *mongo.Database) {
 	update := bson.M{
 		"$set": bson.M{
 			"supplier_id":       supplierID,
+			"project_id":        payload.ProjectID,
 			"invoice_no":        payload.InvoiceNo,
 			"invoice_date":      invDate,
 			"delivery_no":       payload.DeliveryNo,

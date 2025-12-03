@@ -2,6 +2,7 @@ package config
 
 type SupplierInvoiceData struct {
 	SupplierID      string                `json:"supplier_id"`
+	ProjectID       string                `json:"project_id"`
 	InvoiceNo       string                `json:"invoice_no"`
 	InvoiceDate     string                `json:"invoice_date"` // yyyy-mm-dd
 	DeliveryNo      string                `json:"delivery_no"`
@@ -26,6 +27,7 @@ type SupplierInvoiceItem struct {
 type EditSupplierInvoice struct {
 	ID              string                `json:"id"`
 	SupplierID      string                `json:"supplier_id"`
+	ProjectID       string                `json:"project_id"`
 	InvoiceNo       string                `json:"invoice_no"`
 	InvoiceDate     string                `json:"invoice_date"`
 	DeliveryNo      string                `json:"delivery_no"`

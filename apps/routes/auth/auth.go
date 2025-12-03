@@ -11,11 +11,10 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signup"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/customer"
-	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/invoices"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/middleware"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/polarisinventory"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
-	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/quotation"
+
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/report"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/salesorder"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplier"
@@ -66,19 +65,22 @@ func Auth(db *mongo.Database) {
 	})
 
 	//project
-	apiV1.POST("/project", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/project/get-customer-details/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		project.GetCustomerDetails(c, db)
+	})
+	apiV1.POST("/project/create-project", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.CreateProject(c, db)
 	})
-	apiV1.GET("/get-project", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/project/get-all-project", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.GetAllProjects(c, db)
 	})
-	apiV1.GET("/get-project-by/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		project.GetProjectByID(c, db)
+	apiV1.GET("/project/get-project-by/:projectID", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		project.GetProjectFullDetails(c, db)
 	})
-	apiV1.PUT("/project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.PUT("/project/edit-project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.UpdateProject(c, db)
 	})
-	apiV1.DELETE("project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.DELETE("/project/delete-project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.DeleteProject(c, db)
 	})
 
@@ -95,22 +97,22 @@ func Auth(db *mongo.Database) {
 		customer.DeleteCustomer(c, db)
 	})
 
-	//quotation
-	apiV1.POST("/quotation/upsert", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		quotation.UpsertQuotation(c, db)
-	})
-	apiV1.POST("/quotation/toggle-status", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		quotation.ToggleQuotationStatus(c, db)
-	})
-	apiV1.GET("/quotation/customer-quotations/:customerId", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		quotation.GetQuotationsByCustomer(c, db)
-	})
-	apiV1.GET("/quotation/get-quotation-by-id/:quotationId", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		quotation.GetQuotationByID(c, db)
-	})
-	apiV1.DELETE("/quotation/delete-quotation/:quotationId", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		quotation.DeleteQuotation(c, db)
-	})
+	// //quotation
+	// apiV1.POST("/quotation/upsert", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	quotation.UpsertQuotation(c, db)
+	// })
+	// apiV1.POST("/quotation/toggle-status", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	quotation.ToggleQuotationStatus(c, db)
+	// })
+	// apiV1.GET("/quotation/customer-quotations/:customerId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	quotation.GetQuotationsByCustomer(c, db)
+	// })
+	// apiV1.GET("/quotation/get-quotation-by-id/:quotationId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	quotation.GetQuotationByID(c, db)
+	// })
+	// apiV1.DELETE("/quotation/delete-quotation/:quotationId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	quotation.DeleteQuotation(c, db)
+	// })
 
 	//Supplier Purchase order
 	apiV1.POST("/supplierpo/add", middleware.JWTMiddleware(db), func(c *gin.Context) {
@@ -180,25 +182,25 @@ func Auth(db *mongo.Database) {
 	})
 
 	//Invoices
-	apiV1.POST("/invoices/add", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.CreateInvoice(c, db)
-	})
+	// apiV1.POST("/invoices/add", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	invoices.CreateInvoice(c, db)
+	// })
 
-	apiV1.GET("/invoices/get", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.GetAllInvoices(c, db)
-	})
+	// apiV1.GET("/invoices/get", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	invoices.GetAllInvoices(c, db)
+	// })
 
-	apiV1.GET("/invoices/get-by/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.GetInvoiceByID(c, db)
-	})
+	// apiV1.GET("/invoices/get-by/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	invoices.GetInvoiceByID(c, db)
+	// })
 
-	apiV1.PUT("/invoices/update/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.UpdateInvoice(c, db)
-	})
+	// apiV1.PUT("/invoices/update/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	invoices.UpdateInvoice(c, db)
+	// })
 
-	apiV1.DELETE("/invoices/delete/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		invoices.DeleteInvoice(c, db)
-	})
+	// apiV1.DELETE("/invoices/delete/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	// 	invoices.DeleteInvoice(c, db)
+	// })
 
 	//supplier dr
 	apiV1.POST("/supplier/delivery-r-create", middleware.JWTMiddleware(db), func(c *gin.Context) {
