@@ -36,30 +36,43 @@ func CreateSupplierDR(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	dateParsed, _ := time.Parse("2006-01-02", payload.Date)
-
-	var items []models.SupplierDeliveryReceiptItem
-	for _, it := range payload.Items {
-		items = append(items, models.SupplierDeliveryReceiptItem{
-			Description: it.Description,
-			Qty:         it.Qty,
-			Unit:        it.Unit,
-		})
-	}
-
 	projectID, err := primitive.ObjectIDFromHex(payload.ProjectID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
 
+	dateParsed, _ := time.Parse("2006-01-02", payload.Date)
+	dispatchDateParsed, _ := time.Parse("2006-01-02", payload.DispatchDate)
+
+	// Build Items
+	var items []models.SupplierDeliveryReceiptItem
+	for _, it := range payload.Items {
+		items = append(items, models.SupplierDeliveryReceiptItem{
+			LineNo:      it.LineNo,
+			Model:       it.Model,
+			Description: it.Description,
+			Plant:       it.Plant,
+			StorLoc:     it.StorLoc,
+			Unit:        it.Unit,
+			ShipQty:     it.ShipQty,
+			TotalCBM:    it.TotalCBM,
+			TotalKGS:    it.TotalKGS,
+			SerialNos:   it.SerialNos,
+		})
+	}
+
+	// Prepare DR
 	dr := models.SupplierDeliveryReceipt{
 		SupplierID:   supplierID,
-		SupplierDRNo: payload.SupplierDRNo,
 		ProjectID:    projectID,
+		SupplierDRNo: payload.SupplierDRNo,
 		YourPONo:     payload.YourPONo,
-		Items:        items,
+		DispatchDate: dispatchDateParsed,
+		ShipTo:       payload.ShipTo,
+		Reference:    payload.Reference,
 		Date:         dateParsed,
+		Items:        items,
 		ReceivedBy:   authUser.ID,
 		CreatedAt:    time.Now(),
 	}
@@ -143,33 +156,59 @@ func EditSupplierDR(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	objID, _ := primitive.ObjectIDFromHex(payload.ID)
-	supplierID, _ := primitive.ObjectIDFromHex(payload.SupplierID)
-	dateParsed, _ := time.Parse("2006-01-02", payload.Date)
+	objID, err := primitive.ObjectIDFromHex(payload.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid DR ID"})
+		return
+	}
 
+	supplierID, err := primitive.ObjectIDFromHex(payload.SupplierID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid supplier ID"})
+		return
+	}
+
+	projectID, err := primitive.ObjectIDFromHex(payload.ProjectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
+	dateParsed, _ := time.Parse("2006-01-02", payload.Date)
+	dispatchDateParsed, _ := time.Parse("2006-01-02", payload.DispatchDate)
+
+	// Build items
 	var items []models.SupplierDeliveryReceiptItem
 	for _, it := range payload.Items {
 		items = append(items, models.SupplierDeliveryReceiptItem{
+			LineNo:      it.LineNo,
+			Model:       it.Model,
 			Description: it.Description,
-			Qty:         it.Qty,
+			Plant:       it.Plant,
+			StorLoc:     it.StorLoc,
 			Unit:        it.Unit,
+			ShipQty:     it.ShipQty,
+			TotalCBM:    it.TotalCBM,
+			TotalKGS:    it.TotalKGS,
+			SerialNos:   it.SerialNos,
 		})
 	}
 
 	update := bson.M{
 		"$set": bson.M{
 			"supplier_id":    supplierID,
-			"project_id":     payload.ProjectID,
+			"project_id":     projectID,
 			"supplier_dr_no": payload.SupplierDRNo,
 			"your_po_no":     payload.YourPONo,
-			"items":          items,
+			"dispatch_date":  dispatchDateParsed,
+			"ship_to":        payload.ShipTo,
+			"reference":      payload.Reference,
 			"date":           dateParsed,
+			"items":          items,
 		},
 	}
 
-	_, err := db.Collection("supplierdeliveryreceipt").
-		UpdateOne(c, bson.M{"_id": objID}, update)
-
+	_, err = db.Collection("supplierdeliveryreceipt").UpdateOne(c, bson.M{"_id": objID}, update)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update DR"})
 		return
