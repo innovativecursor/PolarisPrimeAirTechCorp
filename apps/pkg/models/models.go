@@ -138,23 +138,33 @@ type Aircon struct {
 	Price    float64            `bson:"price" json:"price"`
 }
 
-type SupplierDeliveryReceipt struct {
-	ID              primitive.ObjectID            `bson:"_id,omitempty" json:"id,omitempty"`
-	SupplierID      primitive.ObjectID            `bson:"supplier_id" json:"supplier_id"`
-	ProjectID       primitive.ObjectID            `bson:"project_id" json:"project_id"`
-	Date            time.Time                     `bson:"date" json:"date"`
-	SupplierDRNo    string                        `bson:"supplier_dr_no" json:"supplier_dr_no"`
-	SupplierInvoice string                        `bson:"supplier_invoice" json:"supplier_invoice"`
-	YourPONo        string                        `bson:"your_po_no" json:"your_po_no"` // Polaris PO No.
-	Items           []SupplierDeliveryReceiptItem `bson:"items" json:"items"`
-	ReceivedBy      primitive.ObjectID            `bson:"received_by" json:"received_by"`
-	CreatedAt       time.Time                     `bson:"created_at" json:"created_at"`
+type SupplierDeliveryReceiptItem struct {
+	LineNo      int      `bson:"line_no" json:"line_no"`
+	Model       string   `bson:"model" json:"model"`
+	Description string   `bson:"description" json:"description"`
+	Plant       string   `bson:"plant" json:"plant"`
+	StorLoc     string   `bson:"stor_loc" json:"stor_loc"`
+	Unit        string   `bson:"unit" json:"unit"`
+	ShipQty     int      `bson:"ship_qty" json:"ship_qty"`
+	TotalCBM    float64  `bson:"total_cbm" json:"total_cbm"`
+	TotalKGS    float64  `bson:"total_kgs" json:"total_kgs"`
+	SerialNos   []string `bson:"serial_nos" json:"serial_nos"`
 }
 
-type SupplierDeliveryReceiptItem struct {
-	Description string `bson:"description" json:"description"`
-	Qty         int    `bson:"qty" json:"qty"`
-	Unit        string `bson:"unit" json:"unit"`
+type SupplierDeliveryReceipt struct {
+	ID           primitive.ObjectID            `bson:"_id,omitempty" json:"id"`
+	SupplierID   primitive.ObjectID            `bson:"supplier_id" json:"supplier_id"`
+	ProjectID    primitive.ObjectID            `bson:"project_id" json:"project_id"`
+	SupplierDRNo string                        `bson:"supplier_dr_no" json:"supplier_dr_no"`
+	YourPONo     string                        `bson:"your_po_no" json:"your_po_no"`
+	DispatchDate time.Time                     `bson:"dispatch_date" json:"dispatch_date"`
+	ShipTo       string                        `bson:"ship_to" json:"ship_to"`
+	Reference    string                        `bson:"reference" json:"reference"`
+	Date         time.Time                     `bson:"date" json:"date"`
+	Items        []SupplierDeliveryReceiptItem `bson:"items" json:"items"`
+
+	ReceivedBy primitive.ObjectID `bson:"received_by" json:"received_by"`
+	CreatedAt  time.Time          `bson:"created_at" json:"created_at"`
 }
 
 type SupplierInvoice struct {
