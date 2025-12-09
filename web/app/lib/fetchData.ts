@@ -33,11 +33,11 @@ function buildAuthHeaders(extra?: Record<string, string>) {
     }
 
     if (!(window as any).__authHeaderLogged) {
-      console.log("Auth token in headers:", {
-        mode: AUTH_HEADER_MODE,
-        tokenPreview: token.slice(0, 12) + "...",
-        headers,
-      });
+      // console.log("Auth token in headers:", {
+      //   mode: AUTH_HEADER_MODE,
+      //   tokenPreview: token.slice(0, 12) + "...",
+      //   headers,
+      // });
       (window as any).__authHeaderLogged = true;
     }
   }

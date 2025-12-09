@@ -22,11 +22,13 @@ const endpoints = {
 
   // ---------- PROJECT ----------
   project: {
-    create: full("/project"), // POST
-    getAll: full("/get-project"), // GET
-    getById: (id: string) => full(`/get-project-by/${id}`), // GET
-    update: (id: string) => full(`/project/${id}`), // PUT
-    delete: (id: string) => full(`/project/${id}`), // DELETE (note: backend missing leading "/" in route, but this is the intended path)
+    create: full("/project/create-project"), // POST
+    getAll: full("/project/get-all-project"), // GET
+    getById: (id: string) => full(`/project/get-project-by/${id}`), // GET
+    getCustomerDetails: (id: string) =>
+      full(`/project/get-customer-details/${id}`), // GET
+    update: (id: string) => full(`/project/edit-project/${id}`), // PUT
+    delete: (id: string) => full(`/project/delete-project/${id}`), // DELETE
   },
 
   // ---------- CUSTOMER ----------

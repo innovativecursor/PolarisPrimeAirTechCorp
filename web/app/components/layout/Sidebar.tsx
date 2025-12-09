@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -49,16 +50,13 @@ export default function Sidebar() {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex items-center gap-2 px-6 pt-6 pb-4 border-b border-slate-200">
-            <div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center text-xs font-black text-white">
-              PL
-            </div>
             <div className="flex flex-col">
-              <span className="text-xs font-semibold tracking-[0.18em] uppercase text-slate-400">
-                Polaris
-              </span>
-              <span className="text-sm font-semibold text-slate-900">
-                Prime Air Tech
-              </span>
+              <Image
+                src="/polaris-logo.png"
+                alt="Polaris Logo"
+                width={200}
+                height={200}
+              />
             </div>
           </div>
 

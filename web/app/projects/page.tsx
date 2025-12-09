@@ -112,7 +112,7 @@ export default function ProjectsPage() {
         try {
           setSaving(true);
           await fetchDataDelete(
-            endpoints.project.delete(row._raw?._id ?? row.id)
+            endpoints.project.delete(row._raw?.id || row._raw?._id || row.id)
           );
           await loadProjects();
           toast.success("Project deleted successfully");
@@ -134,22 +134,17 @@ export default function ProjectsPage() {
     try {
       setSaving(true);
 
-      // 🔑 Match backend keys exactly
       const payload = {
         project_name: values.projectName,
         customer_id: values.customerId,
-        address_id: values.customerLocation,
+        customer_address: values.customerLocation,
         customer_organization: values.customerOrganisation,
+        notes: values.deploymentNotes || "",
       };
 
-      if (editing && editing._raw?._id) {
-        // UPDATE (PUT)
-        const updateUrl = endpoints.project.update(editing._raw._id);
-        console.log("🔄 Updating project:", {
-          id: editing._raw._id,
-          url: updateUrl,
-          payload,
-        });
+      if (editing && (editing._raw?.id || editing._raw?._id)) {
+        const projectId = editing._raw?.id || editing._raw?._id;
+        const updateUrl = endpoints.project.update(projectId);
         await fetchWithError(updateUrl, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -157,8 +152,6 @@ export default function ProjectsPage() {
         });
         toast.success("Project updated successfully");
       } else {
-        // CREATE (POST)
-        console.log("➕ Creating project:", { payload });
         await fetchDataPost(endpoints.project.create, payload);
         toast.success("Project created successfully");
       }
@@ -167,7 +160,6 @@ export default function ProjectsPage() {
       setMode("list");
       setEditing(null);
     } catch (e: any) {
-      console.error("❌ Failed to save project:", e);
       toast.error(e.message ?? "Failed to save project");
     } finally {
       setSaving(false);
@@ -230,7 +222,6 @@ type ProjectsListProps = {
 
 function ProjectsListCard({
   projects,
-  loading,
   onCreate,
   onEdit,
   onDelete,
@@ -304,7 +295,7 @@ function ProjectsListCard({
                 onClick={() => onEdit(p)}
                 className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-[#eef1f8] px-3 py-1.5 text-xs text-slate-600 hover:bg-[#e4e8f3]"
               >
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-500">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-500">
                   <FiEdit2 className="h-3.5 w-3.5" />
                 </span>
               </button>
@@ -315,7 +306,7 @@ function ProjectsListCard({
                 onClick={() => onDelete(p)}
                 className="inline-flex items-center gap-1.5 rounded-full border border-[#f9a8b8] bg-[#ffe6eb] px-3 py-1.5 text-xs text-[#e11d48] hover:bg-[#ffd7e0]"
               >
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#ffeef2] text-[#e11d48]">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[#e11d48]">
                   <FiTrash2 className="h-3.5 w-3.5" />
                 </span>
               </button>
@@ -345,12 +336,16 @@ function CreateProjectCard({
   onSubmit,
 }: CreateProjectCardProps) {
   const [form, setForm] = useState<ProjectFormValues>(() => ({
-    projectId: initialValues?.id || "PRJ-7122",
+    projectId:
+      initialValues?._raw?.project_id || initialValues?.id || "PRJ-7122",
     projectName: initialValues?.name || "",
-    customerLocation: initialValues?._raw?.address_id || "",
+    customerLocation:
+      initialValues?._raw?.addresscustomer ||
+      initialValues?._raw?.customer_address ||
+      "",
     customerOrganisation: initialValues?._raw?.customer_organization || "",
     customerId: initialValues?._raw?.customer_id || "",
-    deploymentNotes: "",
+    deploymentNotes: initialValues?._raw?.notes || "",
   }));
 
   const handleChange =
