@@ -11,6 +11,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signup"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/customer"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/dashboard"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/middleware"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/polarisinventory"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/project"
@@ -330,6 +331,12 @@ func Auth(db *mongo.Database) {
 	apiV1.POST("/generate-report/generate-report", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		report.GenerateReport(c, db)
 	})
+
+	//dashboard
+	apiV1.GET("/dashboard/get-dashboard", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		dashboard.GetDashboard(c, db)
+	})
+
 	// Listen and serve on defined port
 	log.Printf("Application started, Listening on Port %s", port)
 	router.Run(":" + port)
