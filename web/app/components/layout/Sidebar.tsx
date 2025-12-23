@@ -17,7 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Purchase Order", href: "/purchase-orders" },
   { label: "Warehousing", href: "/warehousing" },
   { label: "Accounts Receivable", href: "/accounts-receivable" },
-  { label: "Generate Reports", href: "/reports" },
+  { label: "Generate Reports", href: "/generate-reports" },
 ];
 
 export default function Sidebar() {

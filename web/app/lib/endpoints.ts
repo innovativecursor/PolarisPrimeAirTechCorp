@@ -147,6 +147,11 @@ const endpoints = {
     delete: (id: string) =>
       full(`/delivery-receipt/delete-delivery-receipt/${id}`), // DELETE
   },
+
+  // ---------- GENERATE REPORT ----------
+  GenerateReport: {
+    create: full("/generate-report/generate-report"), // POST
+  },
 };
 
 export { baseUrl, apiPrefix };
