@@ -1,7 +1,7 @@
-const baseURLLive = "http://localhost:10001";
+const baseURLLive = "https://api.polaris.innovativecursor.com";
 const baseURLDev = "http://localhost:10001";
 
-const isLive = false;
+const isLive = true;
 const baseUrl = isLive ? baseURLLive : baseURLDev;
 
 const apiPrefix = "/v1";
