@@ -1,7 +1,7 @@
-const baseURLLive = "http://localhost:10001";
+const baseURLLive = "https://api.polaris.innovativecursor.com";
 const baseURLDev = "http://localhost:10001";
 
-const isLive = false;
+const isLive = true;
 const baseUrl = isLive ? baseURLLive : baseURLDev;
 
 const apiPrefix = "/v1";
@@ -146,6 +146,11 @@ const endpoints = {
       full(`/delivery-receipt/update-delivery-receipt/${id}`), // PUT
     delete: (id: string) =>
       full(`/delivery-receipt/delete-delivery-receipt/${id}`), // DELETE
+  },
+
+  // ---------- GENERATE REPORT ----------
+  GenerateReport: {
+    create: full("/generate-report/generate-report"), // POST
   },
 };
 
