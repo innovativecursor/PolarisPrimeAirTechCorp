@@ -113,6 +113,10 @@ export default function SupplierPOPage() {
     }
   };
 
+
+  console.log(orders, "prrrr");
+  
+
   return (
     <AppShell>
       <div className="space-y-6">

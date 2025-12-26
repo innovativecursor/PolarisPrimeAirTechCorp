@@ -1,10 +1,77 @@
+import { SupplierPORow } from "@/app/purchase-orders/components/types";
+import { CreateRRPayload, CreateRRRes, DeliveryReceiptRow } from "./type";
+import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "react-toastify";
+
 type CreateReceivingCardProps = {
   onCancel: () => void;
+  deliveryReceipts: DeliveryReceiptRow[];
+  prorders: SupplierPORow[];
+  salesOrder: { id: string }[];
+  invoices: { id: string; invoice_no: string }[];
+  createReceivingReport: (payload: CreateRRPayload) => Promise<CreateRRRes>;
+  saving: boolean;
+  loadReceivingReports: () => Promise<void>;
 };
 
 export default function CreateReceivingCard({
   onCancel,
+  deliveryReceipts,
+  prorders,
+  salesOrder,
+  invoices,
+  createReceivingReport,
+  saving,
+  loadReceivingReports,
 }: CreateReceivingCardProps) {
+  const [form, setForm] = useState<CreateRRPayload>({
+    supplier_dr_id: "",
+    supplier_invoice_id: "",
+    purchase_order_id: "",
+    sales_order_id: "",
+    sku: "",
+    barcode: "",
+    aircon_model_number: "",
+    aircon_name: "",
+    type_of_aircon: "",
+    hp: "",
+    indoor_outdoor_unit: "",
+    quantity: 0,
+    price: 0,
+  });
+
+  const updateForm = (key: string, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSave = async () => {
+    if (
+      !form.supplier_dr_id ||
+      !form.purchase_order_id ||
+      !form.sales_order_id ||
+      !form.supplier_invoice_id
+    ) {
+      toast.error("Please select DR, PO, SO and Invoice");
+      return;
+    }
+
+    const res = await createReceivingReport({
+      ...form,
+      quantity: Number(form.quantity),
+      price: Number(form.price),
+    });
+    await loadReceivingReports();
+    toast.success(res.message);
+    onCancel();
+  };
+
   return (
     <div className="space-y-8">
       {/*  HEADER */}
@@ -33,36 +100,96 @@ export default function CreateReceivingCard({
             <label className="text-sm font-medium text-slate-600">
               Select delivery receipt
             </label>
-            <select className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm">
-              <option>Choose a delivery receipt</option>
-            </select>
+
+            <Select
+              value={form.supplier_dr_id}
+              onValueChange={(val) =>
+                setForm((p) => ({ ...p, supplier_dr_id: val }))
+              }
+            >
+              <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
+                <SelectValue placeholder="Choose a delivery receipt" />
+              </SelectTrigger>
+              <SelectContent>
+                {deliveryReceipts.map((dr) => (
+                  <SelectItem key={dr?.id} value={dr?.id}>
+                    {dr?.supplier_dr_no}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
               Select purchase order
             </label>
-            <select className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm">
-              <option>Choose a purchase order</option>
-            </select>
+
+            <Select
+              value={form.purchase_order_id}
+              onValueChange={(val) =>
+                setForm((p) => ({ ...p, purchase_order_id: val }))
+              }
+            >
+              <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
+                <SelectValue placeholder="Choose a purchase order" />
+              </SelectTrigger>
+              <SelectContent>
+                {prorders.map((po) => (
+                  <SelectItem key={po?.id} value={po?.id}>
+                    {po?.id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
               Select sales order
             </label>
-            <select className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm">
-              <option>Choose a sales order</option>
-            </select>
+
+            <Select
+              value={form.sales_order_id}
+              onValueChange={(val) =>
+                setForm((p) => ({ ...p, sales_order_id: val }))
+              }
+            >
+              <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
+                <SelectValue placeholder="Choose a sales order" />
+              </SelectTrigger>
+              <SelectContent>
+                {salesOrder.map((so) => (
+                  <SelectItem key={so?.id} value={so?.id}>
+                    {so?.id}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2 md:col-span-1">
             <label className="text-sm font-medium text-slate-600">
               Supplier invoice number
             </label>
-            <select className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm">
-              <option>Choose supplier invoice</option>
-            </select>
+
+            <Select
+              value={form.supplier_invoice_id}
+              onValueChange={(val) =>
+                setForm((p) => ({ ...p, supplier_invoice_id: val }))
+              }
+            >
+              <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
+                <SelectValue placeholder="Choose supplier invoice" />
+              </SelectTrigger>
+              <SelectContent>
+                {invoices.map((inv) => (
+                  <SelectItem key={inv?.id} value={inv?.id}>
+                    {inv?.invoice_no}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </section>
@@ -81,6 +208,8 @@ export default function CreateReceivingCard({
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">SKU</label>
             <input
+              value={form.sku}
+              onChange={(e) => updateForm("sku", e.target.value)}
               placeholder="Eg. SKU-001-AC"
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
             />
@@ -91,6 +220,10 @@ export default function CreateReceivingCard({
               Aircon model number
             </label>
             <input
+              value={form.aircon_model_number}
+              onChange={(e) =>
+                updateForm("aircon_model_number", e.target.value)
+              }
               placeholder="Eg. MX-1200"
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
             />
@@ -101,6 +234,8 @@ export default function CreateReceivingCard({
               Aircon name
             </label>
             <input
+              value={form.aircon_name}
+              onChange={(e) => updateForm("aircon_name", e.target.value)}
               placeholder="Eg. 1.5HP Window aircon"
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
             />
@@ -111,17 +246,46 @@ export default function CreateReceivingCard({
               HP (Horsepower)
             </label>
             <input
+              value={form.hp}
+              onChange={(e) => updateForm("hp", e.target.value)}
               placeholder="1.5"
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
             />
           </div>
 
           <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-600">Price</label>
+            <input
+              value={form.price}
+              onChange={(e) => updateForm("price", e.target.value)}
+              placeholder="Price"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-600">
+              quantity
+            </label>
+            <input
+              value={form.quantity}
+              onChange={(e) => updateForm("quantity", e.target.value)}
+              placeholder="quantity"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
+            />
+          </div>
+          <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
               Type of aircon
             </label>
-            <select className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm">
-              <option>Select type</option>
+            <select
+              value={form.type_of_aircon}
+              onChange={(e) => updateForm("type_of_aircon", e.target.value)}
+              className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
+            >
+              <option value="" hidden>
+                Select type
+              </option>
               <option>Window</option>
               <option>Split</option>
               <option>Cassette</option>
@@ -133,7 +297,13 @@ export default function CreateReceivingCard({
             <label className="text-sm font-medium text-slate-600">
               Indoor / outdoor unit
             </label>
-            <select className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm">
+            <select
+              value={form.indoor_outdoor_unit}
+              onChange={(e) =>
+                updateForm("indoor_outdoor_unit", e.target.value)
+              }
+              className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
+            >
               <option>Select unit type</option>
               <option>Indoor</option>
               <option>Outdoor</option>
@@ -153,9 +323,16 @@ export default function CreateReceivingCard({
 
         <button
           type="button"
-          className="rounded-full bg-[#1f285c] px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-[#171e48]"
+          disabled={saving}
+          onClick={handleSave}
+          className={`rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow 
+    ${
+      saving
+        ? "bg-slate-400 cursor-not-allowed"
+        : "bg-[#1f285c] hover:bg-[#171e48]"
+    }`}
         >
-          Save receiving report
+          {saving ? "Saving..." : "Save receiving report"}
         </button>
       </div>
     </div>

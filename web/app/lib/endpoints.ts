@@ -1,7 +1,7 @@
 const baseURLLive = "https://api.polaris.innovativecursor.com";
 const baseURLDev = "http://localhost:10001";
 
-const isLive = true;
+const isLive = false;
 const baseUrl = isLive ? baseURLLive : baseURLDev;
 
 const apiPrefix = "/v1";
@@ -112,7 +112,8 @@ const endpoints = {
     create: full("/receiving-r/rr-create"), // POST
     getAll: full("/receiving-r/rr-get-all"), // GET
     getById: (id: string) => full(`/receiving-r/rr-get-by-id/${id}`), // GET
-    delete: full("/receiving-r/rr-delete"), // DELETE
+    // delete: full("/receiving-r/rr-delete"), // DELETE
+    delete: (id: string) => full(`/receiving-r/rr-delete/${id}`),
   },
 
   // ---------- SUPPLIER MASTER ----------
