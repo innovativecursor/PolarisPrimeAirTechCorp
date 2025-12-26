@@ -76,7 +76,7 @@ export default function useReceivingReport() {
   }, []);
 
   const createReceivingReport = useCallback(
-    async (payload: CreateRRPayload): Promise<CreateRRRes> => {      
+    async (payload: CreateRRPayload): Promise<CreateRRRes> => {
       setSaving(true);
       setError(null);
 

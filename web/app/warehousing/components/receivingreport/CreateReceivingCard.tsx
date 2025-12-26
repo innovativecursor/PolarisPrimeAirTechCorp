@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+import JsBarcode from "jsbarcode";
 import { SupplierPORow } from "@/app/purchase-orders/components/types";
 import { CreateRRPayload, CreateRRRes, DeliveryReceiptRow } from "./type";
 import { useState } from "react";
@@ -51,7 +53,29 @@ export default function CreateReceivingCard({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
+  const [generatedBarcode, setGeneratedBarcode] = useState("");
+  const barcodeRef = useRef<SVGSVGElement | null>(null);
+
+  useEffect(() => {
+    if (!barcodeRef.current || !generatedBarcode) return;
+
+    JsBarcode(barcodeRef.current, generatedBarcode, {
+      format: "CODE128",
+      width: 2,
+      height: 60,
+      displayValue: false,
+    });
+  }, [generatedBarcode]);
+
+  useEffect(() => {
+    const code = "AC-" + Math.floor(100000 + Math.random() * 900000);
+    setGeneratedBarcode(code);
+  }, []);
+
   const handleSave = async () => {
+    const scanned = form.barcode.trim().toUpperCase();
+    const actual = generatedBarcode.trim().toUpperCase();
+
     if (
       !form.supplier_dr_id ||
       !form.purchase_order_id ||
@@ -59,6 +83,16 @@ export default function CreateReceivingCard({
       !form.supplier_invoice_id
     ) {
       toast.error("Please select DR, PO, SO and Invoice");
+      return;
+    }
+
+    if (scanned !== actual) {
+      toast.error("Invalid barcode. Please scan the correct barcode.");
+      return;
+    }
+
+    if (!form.price || Number(form.price) <= 0) {
+      toast.error("Please enter a valid price");
       return;
     }
 
@@ -202,6 +236,25 @@ export default function CreateReceivingCard({
           <p className="text-sm text-slate-500">
             Use camera or scanner to capture SKU barcode.
           </p>
+
+          {/* GENERATED BARCODE */}
+
+          <div className="mt-6 inline-flex rounded-2xl border border-slate-300 bg-white p-6">
+            <svg ref={barcodeRef} />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-600">
+            Barcode number
+          </label>
+          <input
+            value={form.barcode}
+            onChange={(e) => updateForm("barcode", e.target.value)}
+            placeholder="Scan barcode"
+            autoFocus
+            className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
+          />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -256,6 +309,8 @@ export default function CreateReceivingCard({
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">Price</label>
             <input
+              type="number"
+              min="1"
               value={form.price}
               onChange={(e) => updateForm("price", e.target.value)}
               placeholder="Price"

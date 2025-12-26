@@ -41,7 +41,6 @@ export default function ReceivingReport() {
     setEditing(null);
   };
 
-  // Load data on mount
   useEffect(() => {
     void loadDeliveryReceipts();
     void loadOrders();
