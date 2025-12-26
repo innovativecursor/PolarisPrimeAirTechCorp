@@ -1,7 +1,12 @@
 import { useEffect, useRef } from "react";
 import JsBarcode from "jsbarcode";
 import { SupplierPORow } from "@/app/purchase-orders/components/types";
-import { CreateRRPayload, CreateRRRes, DeliveryReceiptRow } from "./type";
+import {
+  CreateRRPayload,
+  CreateRRRes,
+  DeliveryReceiptRow,
+  ReceivingReportItem,
+} from "./type";
 import { useState } from "react";
 import {
   Select,
@@ -21,6 +26,7 @@ type CreateReceivingCardProps = {
   createReceivingReport: (payload: CreateRRPayload) => Promise<CreateRRRes>;
   saving: boolean;
   loadReceivingReports: () => Promise<void>;
+  editing?: ReceivingReportItem | null;
 };
 
 export default function CreateReceivingCard({
@@ -32,6 +38,7 @@ export default function CreateReceivingCard({
   createReceivingReport,
   saving,
   loadReceivingReports,
+  editing,
 }: CreateReceivingCardProps) {
   const [form, setForm] = useState<CreateRRPayload>({
     supplier_dr_id: "",
@@ -72,6 +79,28 @@ export default function CreateReceivingCard({
     setGeneratedBarcode(code);
   }, []);
 
+  useEffect(() => {
+    if (!editing) return;
+
+    setForm({
+      supplier_dr_id: editing.supplier_dr_id,
+      supplier_invoice_id: editing.supplier_invoice_id,
+      purchase_order_id: editing.purchase_order_id,
+      sales_order_id: editing.sales_order_id,
+      sku: editing.sku,
+      barcode: editing.barcode ?? "",
+      aircon_model_number: editing.aircon_model_number,
+      aircon_name: editing.aircon_name,
+      type_of_aircon: editing.type_of_aircon,
+      hp: editing.hp,
+      indoor_outdoor_unit: editing.indoor_outdoor_unit,
+      quantity: editing.quantity,
+      price: editing.price,
+    });
+
+    setGeneratedBarcode(editing.barcode ?? "");
+  }, [editing]);
+
   const handleSave = async () => {
     const scanned = form.barcode.trim().toUpperCase();
     const actual = generatedBarcode.trim().toUpperCase();
@@ -97,6 +126,7 @@ export default function CreateReceivingCard({
     }
 
     const res = await createReceivingReport({
+      ...(editing?.id && { id: editing.id }),
       ...form,
       quantity: Number(form.quantity),
       price: Number(form.price),
@@ -252,7 +282,7 @@ export default function CreateReceivingCard({
             value={form.barcode}
             onChange={(e) => updateForm("barcode", e.target.value)}
             placeholder="Scan barcode"
-            autoFocus
+            autoFocus={!editing}
             className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
           />
         </div>

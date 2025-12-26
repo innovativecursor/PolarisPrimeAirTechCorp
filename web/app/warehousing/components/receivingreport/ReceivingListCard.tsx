@@ -9,14 +9,16 @@ type ReceivingListCardProps = {
   loading: boolean;
   onCreate: () => void;
   receivingReports: ReceivingReportItem[];
-    onDelete: (row: ReceivingReportItem) => void;
+  onDelete: (row: ReceivingReportItem) => void;
+  onEdit: (row: ReceivingReportItem) => void;
 };
 
 export default function ReceivingListCard({
   loading,
   onCreate,
   receivingReports,
-  onDelete
+  onDelete,
+  onEdit,
 }: ReceivingListCardProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
@@ -86,6 +88,7 @@ export default function ReceivingListCard({
             <div className="flex justify-end gap-3">
               <button
                 type="button"
+                onClick={() => onEdit(o)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
               >
                 <FiEdit2 className="h-3.5 w-3.5" />
@@ -93,7 +96,7 @@ export default function ReceivingListCard({
 
               <button
                 type="button"
-                  onClick={() => onDelete(o)}
+                onClick={() => onDelete(o)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
               >
                 <FiTrash2 className="h-3.5 w-3.5" />

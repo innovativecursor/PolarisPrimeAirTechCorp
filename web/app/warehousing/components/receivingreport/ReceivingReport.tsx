@@ -6,7 +6,7 @@ import { useSupplierPO } from "@/app/purchase-orders/hooks/useSupplierPO";
 import { useConfirmToast } from "@/app/hooks/useConfirmToast";
 import { toast } from "react-toastify";
 import { fetchWithError } from "@/app/lib/fetchData";
-import { ReceivingReportItem, SalesOrderRow } from "./type";
+import { ReceivingReportItem } from "./type";
 import endpoints from "@/app/lib/endpoints";
 
 export default function ReceivingReport() {
@@ -14,6 +14,7 @@ export default function ReceivingReport() {
     mode,
     setMode,
     setEditing,
+    editing,
     loading,
     saving,
     deliveryReceipts,
@@ -33,6 +34,11 @@ export default function ReceivingReport() {
 
   const handleCreateClick = () => {
     setEditing(null);
+    setMode("create");
+  };
+
+  const handleEdit = (row: ReceivingReportItem) => {
+    setEditing(row);
     setMode("create");
   };
 
@@ -79,6 +85,7 @@ export default function ReceivingReport() {
       {mode === "list" ? (
         <ReceivingListCard
           loading={loading || saving}
+          onEdit={handleEdit}
           onCreate={handleCreateClick}
           receivingReports={receivingReports}
           onDelete={handleDelete}
@@ -93,6 +100,7 @@ export default function ReceivingReport() {
           createReceivingReport={createReceivingReport}
           saving={saving}
           loadReceivingReports={loadReceivingReports}
+          editing={editing}
         />
       )}
     </div>

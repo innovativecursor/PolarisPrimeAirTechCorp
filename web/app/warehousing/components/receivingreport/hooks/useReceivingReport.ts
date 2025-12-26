@@ -5,7 +5,6 @@ import {
   DeliveryReceiptRow,
   GetReceivingReportRes,
   ReceivingReportItem,
-  ReceivingReportRow,
   RRInvoicesResponse,
   RRInvoicesRow,
   SalesOrderResponse,
@@ -17,7 +16,7 @@ import endpoints from "@/app/lib/endpoints";
 
 export default function useReceivingReport() {
   const [mode, setMode] = useState<string>("list");
-  const [editing, setEditing] = useState<ReceivingReportRow | null>(null);
+  const [editing, setEditing] = useState<ReceivingReportItem | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
