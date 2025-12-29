@@ -22,7 +22,7 @@ export default function CraeteInventory({
   handleSubmit,
 }: CraeteInventoryProps) {
   const [openScanner, setOpenScanner] = useState(false);
-  
+
   const usedSkusRef = useRef<Set<string>>(new Set());
   const [generatedBarcode, setGeneratedBarcode] = useState("");
   const barcodeRef = useRef<SVGSVGElement | null>(null);
@@ -47,53 +47,46 @@ export default function CraeteInventory({
     });
   }, [generatedBarcode]);
 
-
-
   useEffect(() => {
-  if (!openScanner) return;
+    if (!openScanner) return;
 
-  let scanner: any;
+    let scanner: any;
 
-  (async () => {
-    const { Html5QrcodeScanner } = await import("html5-qrcode");
+    (async () => {
+      const { Html5QrcodeScanner } = await import("html5-qrcode");
 
-    scanner = new Html5QrcodeScanner(
-      "rr-barcode-reader",
-      { fps: 10, qrbox: 250 },
-      false
-    );
+      scanner = new Html5QrcodeScanner(
+        "rr-barcode-reader",
+        { fps: 10, qrbox: 250 },
+        false
+      );
 
-    scanner.render(
-      (decodedText: string) => {
-        const scanned = decodedText.trim().toUpperCase();
-        const generated = generatedBarcode.trim().toUpperCase();
+      scanner.render(
+        (decodedText: string) => {
+          const scanned = decodedText.trim().toUpperCase();
+          const generated = generatedBarcode.trim().toUpperCase();
 
-        if (scanned !== generated) {
-          toast.error("Scanned barcode does not match generated barcode");
-          return;
-        }
+          if (scanned !== generated) {
+            toast.error("Scanned barcode does not match generated barcode");
+            return;
+          }
 
-        setForm((p) => ({ ...p, barcode: decodedText }));
-        toast.success("Barcode verified successfully");
+          setForm((p) => ({ ...p, barcode: decodedText }));
+          toast.success("Barcode verified successfully");
 
-        setOpenScanner(false);
-        scanner.clear();
-      },
-      () => {}
-    );
-  })();
+          setOpenScanner(false);
+          scanner.clear();
+        },
+        () => {}
+      );
+    })();
 
-  return () => {
-    if (scanner) {
-      scanner.clear().catch(() => {});
-    }
-  };
-}, [openScanner, generatedBarcode]);
-
-
-
-
-
+    return () => {
+      if (scanner) {
+        scanner.clear().catch(() => {});
+      }
+    };
+  }, [openScanner, generatedBarcode]);
 
   useEffect(() => {
     if (!editing) {
