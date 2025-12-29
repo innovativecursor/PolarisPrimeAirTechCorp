@@ -135,6 +135,7 @@ export default function CreateReceivingCard({
     toast.success(res.message);
     onCancel();
   };
+  const isEdit = Boolean(editing);
 
   return (
     <div className="space-y-8">
@@ -145,7 +146,7 @@ export default function CreateReceivingCard({
             Warehousing
           </p>
           <h2 className="text-lg md:text-xl font-semibold text-slate-900">
-            Create receiving report
+            {isEdit ? "Edit receiving report" : "Create receiving report"}
           </h2>
         </div>
 
@@ -162,7 +163,7 @@ export default function CreateReceivingCard({
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              Select delivery receipt
+              Supplier delivery receipt
             </label>
 
             <Select
@@ -186,7 +187,7 @@ export default function CreateReceivingCard({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              Select purchase order
+              Supplier purchase order
             </label>
 
             <Select

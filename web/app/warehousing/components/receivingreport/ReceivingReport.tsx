@@ -101,6 +101,7 @@ export default function ReceivingReport() {
           saving={saving}
           loadReceivingReports={loadReceivingReports}
           editing={editing}
+
         />
       )}
     </div>
