@@ -23,3 +23,14 @@ export type InventoryItem = {
 export type InventoryListResponse = {
   inventory: InventoryItem[];
 };
+export type InventoryForm = {
+  sku: string;
+  barcode: string;
+  aircon_model_number: string;
+  aircon_name: string;
+  hp: string;
+  type_of_aircon: string;
+  indoor_outdoor_unit: string;
+  quantity: number;
+  price: number;
+};

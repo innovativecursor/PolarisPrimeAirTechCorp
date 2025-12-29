@@ -1,35 +1,29 @@
-import endpoints from "@/app/lib/endpoints";
-import { fetchDataPost, fetchDataPut } from "@/app/lib/fetchData";
-
 import JsBarcode from "jsbarcode";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { InventoryItem } from "./type";
+import { InventoryForm, InventoryItem } from "./type";
 
 type CraeteInventoryProps = {
   onCancel: () => void;
-  editing?: InventoryItem | null;
+  editing: InventoryItem | null;
+  form: InventoryForm;
+  setForm: React.Dispatch<React.SetStateAction<InventoryForm>>;
+  updateForm: (key: keyof InventoryForm, value: any) => void;
+  handleSubmit: () => Promise<boolean>;
 };
 
 export default function CraeteInventory({
   onCancel,
   editing,
+  form,
+  setForm,
+  updateForm,
+  handleSubmit,
 }: CraeteInventoryProps) {
   const [openScanner, setOpenScanner] = useState(false);
   const usedSkusRef = useRef<Set<string>>(new Set());
   const [generatedBarcode, setGeneratedBarcode] = useState("");
   const barcodeRef = useRef<SVGSVGElement | null>(null);
-  const [form, setForm] = useState({
-    sku: "",
-    barcode: "",
-    aircon_model_number: "",
-    aircon_name: "",
-    hp: "",
-    type_of_aircon: "",
-    indoor_outdoor_unit: "",
-    quantity: 0,
-    price: 0,
-  });
 
   const generateUniqueSku = () => {
     let sku = "";
@@ -42,10 +36,6 @@ export default function CraeteInventory({
     return sku;
   };
 
-  const updateForm = (key: string, value: any) => {
-    setForm((p) => ({ ...p, [key]: value }));
-  };
-
   useEffect(() => {
     if (editing?.barcode) {
       setGeneratedBarcode(editing.barcode);
@@ -55,7 +45,6 @@ export default function CraeteInventory({
     }
   }, [editing]);
 
-  /* ---------- Draw barcode ---------- */
   useEffect(() => {
     if (!barcodeRef.current || !generatedBarcode) return;
 
@@ -67,7 +56,6 @@ export default function CraeteInventory({
     });
   }, [generatedBarcode]);
 
-  /* ---------- Laptop camera scanner ---------- */
   useEffect(() => {
     if (!openScanner) return;
 
@@ -113,64 +101,29 @@ export default function CraeteInventory({
     }
   }, [editing]);
 
-  useEffect(() => {
-    if (!editing) return;
+  const validateBarcode = () => {
+    if (!form.barcode) {
+      toast.error("Please scan the barcode");
+      return false;
+    }
 
-    setForm({
-      sku: editing.sku,
-      barcode: editing.barcode || "",
-      aircon_model_number: editing.aircon_model_number,
-      aircon_name: editing.aircon_name,
-      hp: editing.hp,
-      type_of_aircon: editing.type_of_aircon?.toLowerCase() || "",
-      indoor_outdoor_unit: editing.indoor_outdoor_unit?.toLowerCase() || "",
-      quantity: editing.quantity,
-      price: editing.price,
-    });
-  }, [editing]);
-
-  const validateForm = () => {
     const scanned = form.barcode.trim().toUpperCase();
     const generated = generatedBarcode.trim().toUpperCase();
-    if (!scanned) return "Please scan the barcode";
-    if (!editing && scanned !== generated) {
-      return "Scanned barcode does not match generated barcode";
+
+    if (scanned !== generated) {
+      toast.error("Scanned barcode does not match generated barcode");
+      return false;
     }
-    if (!form.sku.trim()) return "SKU is required";
-    if (!form.aircon_model_number.trim()) return "Model number is required";
-    if (!form.aircon_name.trim()) return "Aircon name is required";
-    if (!form.hp.trim()) return "HP is required";
-    if (!form.type_of_aircon) return "Type of aircon is required";
-    if (!form.indoor_outdoor_unit) return "Indoor / Outdoor unit is required";
 
-    if (form.quantity <= 0) return "Quantity must be greater than 0";
-
-    if (form.price <= 0) return "Price must be greater than 0";
-
-    return null;
+    return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const error = validateForm();
-    if (error) {
-      toast.error(error);
-      return;
-    }
-
-    try {
-      if (editing?.id) {
-        await fetchDataPut(endpoints.inventory.update(editing.id), form);
-        toast.success("Inventory updated successfully");
-      } else {
-        await fetchDataPost(endpoints.inventory.add, form);
-        toast.success("Inventory added successfully");
-      }
-
+    if (!validateBarcode()) return;
+    const success = await handleSubmit();
+    if (success) {
       onCancel();
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong");
     }
   };
 
@@ -195,7 +148,7 @@ export default function CraeteInventory({
         </button>
       </div>
 
-      <form className="space-y-8" onSubmit={handleSubmit}>
+      <form className="space-y-8" onSubmit={handleFormSubmit}>
         <div className="space-y-8">
           {/* GENERATED BARCODE */}
           <div>

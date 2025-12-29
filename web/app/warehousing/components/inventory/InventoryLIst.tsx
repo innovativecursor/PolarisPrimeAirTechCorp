@@ -10,6 +10,7 @@ type InventoryListProps = {
   onCreate: () => void;
   allInventories: InventoryItem[];
   onEdit: (item: InventoryItem) => void;
+  onDelete: (item: InventoryItem) => void;
 };
 
 export default function InventoryList({
@@ -17,6 +18,7 @@ export default function InventoryList({
   loading,
   allInventories,
   onEdit,
+  onDelete,
 }: InventoryListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
@@ -30,8 +32,6 @@ export default function InventoryList({
     ],
     []
   );
-
-  console.log(allInventories, "kkkk");
 
   const columnWidths = "1.2fr 2fr 2fr 1.5fr 1.2fr 1.2fr";
   return (
@@ -102,6 +102,7 @@ export default function InventoryList({
 
               <button
                 type="button"
+                onClick={() => onDelete(o)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
               >
                 <FiTrash2 className="h-3.5 w-3.5" />
