@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import JsBarcode from "jsbarcode";
 import { SupplierPORow } from "@/app/purchase-orders/components/types";
 import {
@@ -7,7 +7,6 @@ import {
   DeliveryReceiptRow,
   ReceivingReportItem,
 } from "./type";
-import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -16,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "react-toastify";
+import { generateSku } from "@/app/utils/skuGenerator";
 
 type CreateReceivingCardProps = {
   onCancel: () => void;
@@ -40,6 +40,9 @@ export default function CreateReceivingCard({
   loadReceivingReports,
   editing,
 }: CreateReceivingCardProps) {
+  const [openScanner, setOpenScanner] = useState(false);
+  const [generatedBarcode, setGeneratedBarcode] = useState("");
+  const barcodeRef = useRef<SVGSVGElement | null>(null);
   const [form, setForm] = useState<CreateRRPayload>({
     supplier_dr_id: "",
     supplier_invoice_id: "",
@@ -60,8 +63,21 @@ export default function CreateReceivingCard({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const [generatedBarcode, setGeneratedBarcode] = useState("");
-  const barcodeRef = useRef<SVGSVGElement | null>(null);
+  useEffect(() => {
+    if (!editing) {
+      const sku = generateSku("RR");
+      setForm((p) => ({ ...p, sku }));
+    }
+  }, [editing]);
+
+  useEffect(() => {
+    if (editing) return;
+
+    const code = "RR-" + Math.floor(100000 + Math.random() * 900000);
+    setGeneratedBarcode(code);
+
+    setForm((p) => ({ ...p, barcode: "" }));
+  }, [editing]);
 
   useEffect(() => {
     if (!barcodeRef.current || !generatedBarcode) return;
@@ -75,9 +91,48 @@ export default function CreateReceivingCard({
   }, [generatedBarcode]);
 
   useEffect(() => {
-    const code = "AC-" + Math.floor(100000 + Math.random() * 900000);
-    setGeneratedBarcode(code);
-  }, []);
+    if (!openScanner) return;
+
+    let scanner: any;
+
+    (async () => {
+      const { Html5QrcodeScanner } = await import("html5-qrcode");
+
+      scanner = new Html5QrcodeScanner(
+        "rr-barcode-reader",
+        {
+          fps: 10,
+          qrbox: 250,
+        },
+        false
+      );
+
+      scanner.render(
+        (decodedText: string) => {
+          const scanned = decodedText.trim().toUpperCase();
+          const generated = generatedBarcode.trim().toUpperCase();
+
+          if (scanned !== generated) {
+            toast.error("Scanned barcode does not match generated barcode");
+            return;
+          }
+
+          setForm((p) => ({ ...p, barcode: decodedText }));
+          toast.success("Barcode verified successfully");
+
+          setOpenScanner(false);
+          scanner.clear();
+        },
+        () => {}
+      );
+    })();
+
+    return () => {
+      if (scanner) {
+        scanner.clear().catch(() => {});
+      }
+    };
+  }, [openScanner, generatedBarcode]);
 
   useEffect(() => {
     if (!editing) return;
@@ -101,10 +156,24 @@ export default function CreateReceivingCard({
     setGeneratedBarcode(editing.barcode ?? "");
   }, [editing]);
 
-  const handleSave = async () => {
-    const scanned = form.barcode.trim().toUpperCase();
-    const actual = generatedBarcode.trim().toUpperCase();
+  const validateReceivingBarcode = () => {
+    if (!form.barcode) {
+      toast.error("Please scan the barcode");
+      return false;
+    }
 
+    const scanned = form.barcode.trim().toUpperCase();
+    const generated = generatedBarcode.trim().toUpperCase();
+
+    if (scanned !== generated) {
+      toast.error("Scanned barcode does not match generated barcode");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSave = async () => {
     if (
       !form.supplier_dr_id ||
       !form.purchase_order_id ||
@@ -114,12 +183,7 @@ export default function CreateReceivingCard({
       toast.error("Please select DR, PO, SO and Invoice");
       return;
     }
-
-    if (scanned !== actual) {
-      toast.error("Invalid barcode. Please scan the correct barcode.");
-      return;
-    }
-
+    if (!validateReceivingBarcode()) return;
     if (!form.price || Number(form.price) <= 0) {
       toast.error("Please enter a valid price");
       return;
@@ -135,6 +199,7 @@ export default function CreateReceivingCard({
     toast.success(res.message);
     onCancel();
   };
+
   const isEdit = Boolean(editing);
 
   return (
@@ -275,7 +340,7 @@ export default function CreateReceivingCard({
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <label className="text-sm font-medium text-slate-600">
             Barcode number
           </label>
@@ -283,17 +348,30 @@ export default function CreateReceivingCard({
             value={form.barcode}
             onChange={(e) => updateForm("barcode", e.target.value)}
             placeholder="Scan barcode"
-            autoFocus={!editing}
-            className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
+            className="w-full rounded-2xl border bg-slate-100 px-4 py-3 text-sm"
           />
+
+          <button
+            type="button"
+            onClick={() => setOpenScanner(true)}
+            className="text-sm text-blue-600 underline mt-2"
+          >
+            Scan using laptop camera
+          </button>
+
+          {openScanner && (
+            <div className="mt-4 border rounded-xl p-4">
+              <div id="rr-barcode-reader" />
+            </div>
+          )}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-3 mt-10">
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">SKU</label>
             <input
               value={form.sku}
-              onChange={(e) => updateForm("sku", e.target.value)}
+              readOnly
               placeholder="Eg. SKU-001-AC"
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
             />
