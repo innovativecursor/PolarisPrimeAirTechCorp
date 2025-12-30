@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type InventoryItem struct {
@@ -25,14 +26,15 @@ type InventoryItem struct {
 
 func ImportInventory(db *mongo.Database) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get CSV file from form
+
+		// 1️⃣ Get CSV file
 		file, err := c.FormFile("file")
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "CSV file required"})
 			return
 		}
 
-		// Save temporarily
+		// 2️⃣ Save temporarily
 		tempFile := fmt.Sprintf("./%s", file.Filename)
 		if err := c.SaveUploadedFile(file, tempFile); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save file"})
@@ -40,7 +42,7 @@ func ImportInventory(db *mongo.Database) gin.HandlerFunc {
 		}
 		defer os.Remove(tempFile)
 
-		// Open CSV
+		// 3️⃣ Open CSV
 		f, err := os.Open(tempFile)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot open file"})
@@ -55,34 +57,60 @@ func ImportInventory(db *mongo.Database) gin.HandlerFunc {
 			return
 		}
 
-		// Process each row
+		// 4️⃣ Process rows
 		for i, row := range records {
-			if i == 0 { // skip header
+
+			// skip header
+			if i == 0 {
 				continue
 			}
 
-			if len(row) < 9 { // check columns
-				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Row %d has insufficient columns", i)})
+			if len(row) < 9 {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": fmt.Sprintf("Row %d has insufficient columns", i),
+				})
 				return
 			}
 
 			// SKU validation
 			if row[0] == "" {
-				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Row %d has empty SKU", i)})
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": fmt.Sprintf("Row %d has empty SKU", i),
+				})
+				return
+			}
+
+			// 🔴 Duplicate SKU check (MAIN CHANGE)
+			count, err := db.Collection("inventory").CountDocuments(
+				c,
+				bson.M{"sku": row[0]},
+			)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "DB error"})
+				return
+			}
+			if count > 0 {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": fmt.Sprintf("Duplicate SKU at row %d", i),
+				})
 				return
 			}
 
 			// Price validation
 			price, err := strconv.ParseFloat(row[4], 64)
 			if err != nil || price <= 0 {
-				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid price at row %d", i)})
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": fmt.Sprintf("Invalid price at row %d", i),
+				})
 				return
 			}
 
 			// Quantity validation
 			quantity, err := strconv.Atoi(row[8])
 			if err != nil || quantity < 0 {
-				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Invalid quantity at row %d", i)})
+				c.JSON(http.StatusBadRequest, gin.H{
+					"error": fmt.Sprintf("Invalid quantity at row %d", i),
+				})
 				return
 			}
 
@@ -98,14 +126,20 @@ func ImportInventory(db *mongo.Database) gin.HandlerFunc {
 				Quantity:          quantity,
 			}
 
-			// Insert into MongoDB
+			// 5️⃣ Insert into MongoDB
 			_, err = db.Collection("inventory").InsertOne(c, item)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "DB insert failed", "row": i})
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": "DB insert failed",
+					"row":   i,
+				})
 				return
 			}
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": "CSV imported successfully"})
+		// 6️⃣ Success response
+		c.JSON(http.StatusOK, gin.H{
+			"message": "CSV imported successfully",
+		})
 	}
 }
