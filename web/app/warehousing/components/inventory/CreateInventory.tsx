@@ -171,10 +171,9 @@ export default function CraeteInventory({
             </button>
           </div>
 
-          {/* CAMERA VIEW */}
           {openScanner && (
             <div className="border rounded-xl p-4">
-              <div id="barcode-reader" />
+              <div id="rr-barcode-reader" />
             </div>
           )}
         </div>
