@@ -1,6 +1,7 @@
 import CreateDeliveryReceipt from "./CreateDeliveryReceipt";
 import DeliveryReceiptList from "./DeliveryReceiptList";
-import { useDeliveryReceipt } from "./hooks/useDeliveryREceipt";
+import { useDeliveryReceipt } from "./hooks/useDeliveryReceipt";
+
 
 export default function DeliveryReceipt() {
   const { mode, setMode, setEditing, loading, saving } = useDeliveryReceipt();

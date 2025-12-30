@@ -3,18 +3,36 @@ import CreateSalesInvioce from "./CreateSalesInvoice";
 import { useSalesInvoice } from "./hooks/useSalesInvoice";
 
 import SalesInvioceList from "./SalesInvoiceList";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useSupplier } from "../addsupplier/hooks/useSupplier";
+import { useConfirmToast } from "@/app/hooks/useConfirmToast";
+import { SupplierInvoice } from "./type";
 
 export default function SalesInvioce() {
   const salesInvoice = useSalesInvoice();
   const { projectsOptions, loadOptions } = useSupplierPO();
   const { GetSupplier, allSupplier } = useSupplier();
-
+  const confirmToast = useConfirmToast();
   useEffect(() => {
     void loadOptions();
     void GetSupplier();
+    void salesInvoice.GetSalesInvoice();
   }, []);
+
+  const handleDelete = useCallback(
+    (invoice: SupplierInvoice) => {
+      confirmToast.confirm({
+        title: "Delete Invoice",
+        message: `Are you sure you want to delete invoice "${invoice.invoice_no}"?`,
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        onConfirm: async () => {
+          await salesInvoice.deleteSalesInvoice(invoice.id);
+        },
+      });
+    },
+    [salesInvoice.deleteSalesInvoice, confirmToast]
+  );
 
   return (
     <div className="space-y-6">
@@ -22,6 +40,12 @@ export default function SalesInvioce() {
         <SalesInvioceList
           onCreate={() => salesInvoice.setMode("create")}
           loading={salesInvoice.loading || salesInvoice.saving}
+          allSalesInvoice={salesInvoice.allSalesInvoice}
+          onEdit={(id) => {
+            salesInvoice.setEditing(id);
+            salesInvoice.setMode("create");
+          }}
+          onDelete={handleDelete}
         />
       ) : (
         <CreateSalesInvioce

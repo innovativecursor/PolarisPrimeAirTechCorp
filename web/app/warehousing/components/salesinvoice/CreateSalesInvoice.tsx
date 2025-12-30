@@ -8,26 +8,48 @@ import {
 } from "@/components/ui/select";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import { Supplier } from "../addsupplier/type";
-import { InvoiceItem } from "./type";
+import { InvoiceItem, SalesInvoiceForm } from "./type";
 
 type CreateSalesInvioceProps = {
   onCancel: () => void;
   projects: ProjectOption[];
   allSupplier: Supplier[];
+
+  form: SalesInvoiceForm;
+  updateForm: (key: keyof SalesInvoiceForm, value: any) => void;
+
   items: InvoiceItem[];
   addItem: () => void;
   updateItem: (index: number, key: keyof InvoiceItem, value: any) => void;
   removeItem: (index: number) => void;
+
+  totalSales: number;
+  vatAmount: number;
+  grandTotal: number;
+  createInvoice: () => void;
+  saving: boolean;
+  editing: string | null;
 };
 
 export default function CreateSalesInvioce({
   onCancel,
   projects,
   allSupplier,
+
+  form,
+  updateForm,
+
   items,
   addItem,
   updateItem,
   removeItem,
+
+  totalSales,
+  vatAmount,
+  grandTotal,
+  createInvoice,
+  saving,
+  editing,
 }: CreateSalesInvioceProps) {
   return (
     <>
@@ -37,7 +59,7 @@ export default function CreateSalesInvioce({
             Accounts Receivable
           </p>
           <h2 className="text-lg md:text-xl font-semibold text-slate-900">
-            Create invoice
+            {editing ? "Edit invoice" : " Create invoice"}
           </h2>
         </div>
 
@@ -50,13 +72,22 @@ export default function CreateSalesInvioce({
         </button>
       </div>
 
-      <form className="space-y-8">
+      <form
+        className="space-y-8"
+        onSubmit={(e) => {
+          e.preventDefault();
+          createInvoice();
+        }}
+      >
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
               Supplier Name
             </label>
-            <Select>
+            <Select
+              value={form.supplier_id}
+              onValueChange={(v) => updateForm("supplier_id", v)}
+            >
               <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
                 <SelectValue placeholder="Choose Supplier" />
               </SelectTrigger>
@@ -74,7 +105,10 @@ export default function CreateSalesInvioce({
             <label className="block text-sm font-medium text-slate-600">
               Project name
             </label>
-            <Select>
+            <Select
+              value={form.project_id}
+              onValueChange={(v) => updateForm("project_id", v)}
+            >
               <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
                 <SelectValue placeholder="Choose project" />
               </SelectTrigger>
@@ -93,7 +127,9 @@ export default function CreateSalesInvioce({
               Invoice Number
             </label>
             <input
-              type="number"
+              value={form.invoice_number}
+              onChange={(e) => updateForm("invoice_number", e.target.value)}
+              type="text"
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder=" Invoice Number"
             />
@@ -104,7 +140,9 @@ export default function CreateSalesInvioce({
               Invoice Date
             </label>
             <input
-              type="number"
+              type="date"
+              value={form.invoice_date}
+              onChange={(e) => updateForm("invoice_date", e.target.value)}
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder=" Invoice Date"
             />
@@ -116,6 +154,8 @@ export default function CreateSalesInvioce({
             </label>
             <input
               type="number"
+              value={form.delivery_number}
+              onChange={(e) => updateForm("delivery_number", e.target.value)}
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder="  Delivery Number"
             />
@@ -126,6 +166,8 @@ export default function CreateSalesInvioce({
               Purchase order no
             </label>
             <input
+              value={form.po_number}
+              onChange={(e) => updateForm("po_number", e.target.value)}
               type="number"
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder=" Purchase order no"
@@ -137,7 +179,9 @@ export default function CreateSalesInvioce({
               Due Date
             </label>
             <input
-              type="number"
+              type="date"
+              value={form.due_date}
+              onChange={(e) => updateForm("due_date", e.target.value)}
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder="due date"
             />
@@ -148,7 +192,9 @@ export default function CreateSalesInvioce({
               Delivery address
             </label>
             <input
-              type="number"
+              type="text"
+              value={form.delivery_address}
+              onChange={(e) => updateForm("delivery_address", e.target.value)}
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder="Delivery address"
             />
@@ -159,7 +205,8 @@ export default function CreateSalesInvioce({
               Total Sales
             </label>
             <input
-              type="number"
+              value={totalSales}
+              disabled
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder="total sales"
             />
@@ -169,9 +216,12 @@ export default function CreateSalesInvioce({
             <label className="block text-sm font-medium text-slate-600">
               VAT
             </label>
-            <Select>
+            <Select
+              value={form.vat_type}
+              onValueChange={(v) => updateForm("vat_type", v)}
+            >
               <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
-                <SelectValue placeholder="Select UOM" />
+                <SelectValue placeholder="Select VAT" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="vatable">VATABLE 12%</SelectItem>
@@ -183,10 +233,23 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
+              VAT Amount
+            </label>
+            <input
+              value={vatAmount}
+              disabled
+              className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
+              placeholder="total sales"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-600">
               Grand Total
             </label>
             <input
-              type="number"
+              value={grandTotal}
+              disabled
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder="grand total"
             />
@@ -243,15 +306,24 @@ export default function CreateSalesInvioce({
               </div>
 
               {/* Unit */}
+              {/* UOM */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Unit
+                  Unit of measurement
                 </label>
-                <input
+                <Select
                   value={item.unit}
-                  onChange={(e) => updateItem(index, "unit", e.target.value)}
-                  className="block w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm"
-                />
+                  onValueChange={(v) => updateItem(index, "unit", v)}
+                >
+                  <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900">
+                    <SelectValue placeholder="Select UOM" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unit">unit</SelectItem>
+                    <SelectItem value="pcs">pcs</SelectItem>
+                    <SelectItem value="set">set</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Unit Price */}
@@ -297,9 +369,10 @@ export default function CreateSalesInvioce({
 
           <button
             type="submit"
+            disabled={saving}
             className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
           >
-            save invoice
+            {saving ? "Saving..." : editing ? "Update invoice" : "Save invoice"}
           </button>
         </div>
       </form>
