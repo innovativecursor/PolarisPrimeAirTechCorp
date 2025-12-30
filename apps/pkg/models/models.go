@@ -174,7 +174,6 @@ type SupplierInvoice struct {
 	InvoiceNo       string                `bson:"invoice_no" json:"invoice_no"`
 	InvoiceDate     time.Time             `bson:"invoice_date" json:"invoice_date"`
 	DeliveryNo      string                `bson:"delivery_no" json:"delivery_no"`
-	SAPRefNo        string                `bson:"sap_ref_no" json:"sap_ref_no"`
 	PurchaseOrderNo string                `bson:"purchase_order_no" json:"purchase_order_no"`
 	DueDate         time.Time             `bson:"due_date" json:"due_date"`
 	DeliveryAddress string                `bson:"delivery_address" json:"delivery_address"`
