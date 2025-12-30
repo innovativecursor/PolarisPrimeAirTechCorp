@@ -34,6 +34,9 @@ export default function SupplierPOListCard({
     []
   );
 
+
+  
+
   const columnWidths = "1.2fr 2fr 2fr 1.5fr 1.2fr 1.2fr";
 
   return (
