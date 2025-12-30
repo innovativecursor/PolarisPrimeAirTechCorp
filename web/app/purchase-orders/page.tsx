@@ -114,8 +114,7 @@ export default function SupplierPOPage() {
   };
 
 
-  console.log(orders, "prrrr");
-  
+
 
   return (
     <AppShell>

@@ -111,6 +111,29 @@ async function fetchDataDelete<T = any>(url: string): Promise<T> {
   }
 }
 
+
+
+async function fetchDataPut<T = any, B extends Json = Json>(
+  url: string,
+  data?: B
+): Promise<T> {
+  try {
+    const response = await axios.put<T>(url, data, {
+      withCredentials: true,
+      headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+    });
+    return response.data;
+  } catch (e) {
+    handleAxiosError(e);
+  }
+}
+
+
+
+
+
+
+
 // ---------- Native fetch with error normalization ----------
 
 async function fetchWithError<T = any>(
@@ -146,5 +169,6 @@ export {
   fetchDataPost,
   fetchDataPatch,
   fetchDataDelete,
+  fetchDataPut,
   fetchWithError,
 };
