@@ -6,7 +6,6 @@ type SupplierInvoiceData struct {
 	InvoiceNo       string                `json:"invoice_no"`
 	InvoiceDate     string                `json:"invoice_date"` // yyyy-mm-dd
 	DeliveryNo      string                `json:"delivery_no"`
-	SAPRefNo        string                `json:"sap_ref_no"`
 	PurchaseOrderNo string                `json:"purchase_order_no"`
 	DueDate         string                `json:"due_date"` // yyyy-mm-dd
 	DeliveryAddress string                `json:"delivery_address"`
@@ -31,7 +30,6 @@ type EditSupplierInvoice struct {
 	InvoiceNo       string                `json:"invoice_no"`
 	InvoiceDate     string                `json:"invoice_date"`
 	DeliveryNo      string                `json:"delivery_no"`
-	SAPRefNo        string                `json:"sap_ref_no"`
 	PurchaseOrderNo string                `json:"purchase_order_no"`
 	DueDate         string                `json:"due_date"`
 	DeliveryAddress string                `json:"delivery_address"`
