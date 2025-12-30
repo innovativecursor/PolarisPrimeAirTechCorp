@@ -6,6 +6,10 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+importAPI "github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/import"
+ exportAPI "github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/export"
+
+
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/accountsreceivable/deliveryreceipt"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/accountsreceivable/salesinvoice"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signin"
@@ -24,6 +28,7 @@ import (
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/supplierpo"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/routes/getapiroutes"
 	"go.mongodb.org/mongo-driver/mongo"
+
 )
 
 func Auth(db *mongo.Database) {
@@ -39,6 +44,11 @@ func Auth(db *mongo.Database) {
 	apiV1.GET("/auth", func(c *gin.Context) {
 		c.String(http.StatusOK, "Auth Service Healthy")
 	})
+  apiV1.POST("/import/inventory", importAPI.ImportInventory(db))
+
+apiV1.GET("/export/inventory", exportAPI.ExportInventory(db))
+apiV1.GET("/export/inventory/sample", exportAPI.DownloadInventorySample())
+
 
 	// Define sign-up handler for email-based sign-up
 	apiV1.POST("/auth/sign-up-email", func(c *gin.Context) {
