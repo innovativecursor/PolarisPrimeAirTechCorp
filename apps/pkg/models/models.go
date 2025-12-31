@@ -220,7 +220,7 @@ type Supplier struct {
 	CreatedBy    primitive.ObjectID `bson:"created_by" json:"created_by"`
 }
 type SalesInvoice struct {
-	ID           primitive.ObjectID `bson:"_id" json:"id"`
+	ID           primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	InvoiceID    string             `bson:"invoice_id" json:"invoice_id"`
 	ProjectID    primitive.ObjectID `bson:"project_id" json:"project_id"`
 	CustomerID   primitive.ObjectID `bson:"customer_id" json:"customer_id"`
@@ -241,7 +241,7 @@ type InvoiceItemSales struct {
 }
 
 type DeliveryReceipt struct {
-	ID       primitive.ObjectID `bson:"_id" json:"id"`
+	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	DRNumber string             `bson:"dr_number" json:"dr_number"`
 
 	ProjectID      primitive.ObjectID `bson:"project_id" json:"project_id"`
