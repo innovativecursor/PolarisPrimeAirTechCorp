@@ -219,7 +219,7 @@ func AddOrUpdateReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	collection := db.Collection("polaris_inventory")
+	collection := db.Collection("polaris_receiving_reports")
 
 	// Parse optional RR IDs
 	var supplierDRID, supplierInvoiceID, poID, soID *primitive.ObjectID
@@ -279,7 +279,7 @@ func AddOrUpdateReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	item := models.PolarisInventory{
+	item := models.PolarisReceivingReport{
 		SKU:               payload.SKU,
 		Barcode:           payload.Barcode,
 		AirconModelNumber: payload.AirconModelNumber,
@@ -320,7 +320,7 @@ func GetAllReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
-	collection := db.Collection("polaris_inventory")
+	collection := db.Collection("polaris_receiving_reports")
 
 	cursor, err := collection.Find(context.Background(), bson.M{}, options.Find().SetSort(bson.M{
 		"created_at": -1,
@@ -331,7 +331,7 @@ func GetAllReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 	}
 	defer cursor.Close(context.Background())
 
-	var items []models.PolarisInventory
+	var items []models.PolarisReceivingReport
 	if err := cursor.All(context.Background(), &items); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse inventory"})
 		return
@@ -359,9 +359,9 @@ func GetReceivingReportInventoryByID(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	collection := db.Collection("polaris_inventory")
+	collection := db.Collection("polaris_receiving_reports")
 
-	var item models.PolarisInventory
+	var item models.PolarisReceivingReport
 	err = collection.FindOne(context.Background(), bson.M{"_id": objID}).Decode(&item)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -394,7 +394,7 @@ func DeleteReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	collection := db.Collection("polaris_inventory")
+	collection := db.Collection("polaris_receiving_reports")
 
 	res, err := collection.DeleteOne(context.Background(), bson.M{"_id": objID})
 	if err != nil {
