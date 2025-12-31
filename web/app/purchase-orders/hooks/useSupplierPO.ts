@@ -139,6 +139,7 @@ export function useSupplierPO() {
         projectsData.map((p: any) => ({
           id: p._id || p.id || "",
           name: p.project_name || p.projectName || p.name || "",
+          customer_id: p.customer_id || p.customerid || "",
         }))
       );
 

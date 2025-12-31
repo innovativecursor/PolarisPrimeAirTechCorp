@@ -468,7 +468,9 @@ export default function CreateReceivingCard({
               }
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
             >
-              <option>Select unit type</option>
+              <option hidden value="">
+                Select unit type
+              </option>
               <option>Indoor</option>
               <option>Outdoor</option>
             </select>

@@ -1,32 +1,31 @@
 import PolarisTable, {
   PolarisTableColumn,
 } from "@/app/components/table/PolarisTable";
-import { SupplierDeliveryReceipt } from "./type";
+import { SalesInvoice } from "./type";
 import { useMemo } from "react";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 
-type DeliveryRLProps = {
+type AccountListProps = {
   onCreate: () => void;
   loading: boolean;
-  allDr: SupplierDeliveryReceipt[];
+  allAccountSales: SalesInvoice[];
   onEdit: (id: string) => void;
-  onDelete: (row: SupplierDeliveryReceipt) => void;
+  onDelete: (row: SalesInvoice) => void;
 };
 
-export default function DeliveryReceiptList({
+export default function AccountSalesList({
   onCreate,
   loading,
-  allDr,
+  allAccountSales,
   onEdit,
   onDelete,
-}: DeliveryRLProps) {
+}: AccountListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "supplierid", header: "Supplier Id" },
-      { key: "projectid", header: "Project Id" },
-      { key: "supplierdrno", header: "Supplier Dr No" },
-      { key: "yourpono", header: "Your Po No" },
-      { key: "date", header: "date" },
+      { key: "invoiceid", header: "Invoice Id" },
+      { key: "customerid", header: "Customer Id" },
+      { key: "salesorderid", header: "Sales Order Id" },
+      { key: "totalamount", header: "Total Amount" },
       { key: "actions", header: "Actions", align: "right" },
     ],
     []
@@ -38,8 +37,11 @@ export default function DeliveryReceiptList({
     <>
       <div className="flex items-start justify-between mb-6">
         <div>
+          <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
+            Accounts Receivable
+          </p>
           <h2 className="text-lg md:text-xl font-semibold text-slate-900">
-            Delivery Receipt Registry
+            Sales Invoice Registry
           </h2>
         </div>
 
@@ -47,43 +49,36 @@ export default function DeliveryReceiptList({
           type="button"
           onClick={onCreate}
           disabled={loading}
-          className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+          className="inline-flex cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
         >
-          Create Delivery Receipt
+          Sales Invoice Registry
         </button>
       </div>
 
       <PolarisTable
         columns={columns}
-        data={allDr}
+        data={allAccountSales}
         columnWidths={columnWidths}
         getCell={(row, key) => {
-          const o = row as SupplierDeliveryReceipt;
+          const o = row as SalesInvoice;
 
-          if (key === "supplierid") {
+          if (key === "invoiceid") {
             return (
               <span className="font-mono text-xs text-slate-700">
-                {o?.project_id}
+                {o?.invoice_id}
               </span>
             );
           }
-          if (key === "projectid") {
-            return <span className="text-slate-900">{o?.supplier_id}</span>;
+          if (key === "customerid") {
+            return <span className="text-slate-900">{o?.customer_id}</span>;
           }
-          if (key === "supplierdrno") {
-            return <span className="text-slate-700">{o?.project_id}</span>;
+          if (key === "salesorderid") {
+            return <span className="text-slate-700">{o?.sales_order_id}</span>;
           }
-          if (key === "yourpono") {
-            return <span className="text-slate-700">{o?.your_po_no}</span>;
+          if (key === "totalamount") {
+            return <span className="text-slate-700"> ₱{o?.total_amount}</span>;
           }
 
-          if (key === "date") {
-            return (
-              <span className="text-slate-700">
-                {o?.date ? new Date(o.date).toLocaleDateString() : "-"}
-              </span>
-            );
-          }
           return (
             <div className="flex justify-end gap-3">
               <button
