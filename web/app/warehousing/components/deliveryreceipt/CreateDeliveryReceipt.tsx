@@ -194,7 +194,6 @@ export default function CreateDeliveryReceipt({
             />
           </div>
 
-          {/* Items */}
           {items.map((item, index) => (
             <div
               key={index}
@@ -354,7 +353,6 @@ export default function CreateDeliveryReceipt({
           ))}
         </div>
 
-        {/* Footer */}
         <div className="flex justify-between items-center">
           <button
             type="button"

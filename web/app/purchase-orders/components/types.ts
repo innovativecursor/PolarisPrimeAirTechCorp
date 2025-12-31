@@ -12,6 +12,7 @@ export type SupplierPORow = {
 export type ProjectOption = {
   id: string;
   name: string;
+  customer_id: string;
 };
 
 export type SupplierOption = {
