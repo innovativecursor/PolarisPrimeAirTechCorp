@@ -1,12 +1,39 @@
+import PolarisTable, {
+  PolarisTableColumn,
+} from "@/app/components/table/PolarisTable";
+import { SupplierDeliveryReceipt } from "./type";
+import { useMemo } from "react";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
+
 type DeliveryRLProps = {
   onCreate: () => void;
   loading: boolean;
+  allDr: SupplierDeliveryReceipt[];
+  onEdit: (id: string) => void;
+  onDelete: (row: SupplierDeliveryReceipt) => void;
 };
 
 export default function DeliveryReceiptList({
   onCreate,
   loading,
+  allDr,
+  onEdit,
+  onDelete,
 }: DeliveryRLProps) {
+  const columns: PolarisTableColumn[] = useMemo(
+    () => [
+      { key: "supplierid", header: "Supplier Id" },
+      { key: "projectid", header: "Project Id" },
+      { key: "supplierdrno", header: "Supplier Dr No" },
+      { key: "yourpono", header: "Your Po No" },
+      { key: "date", header: "date" },
+      { key: "actions", header: "Actions", align: "right" },
+    ],
+    []
+  );
+
+  const columnWidths = "1.2fr 2fr 2fr 1.5fr 1.2fr 1.2fr";
+
   return (
     <>
       <div className="flex items-start justify-between mb-6">
@@ -25,6 +52,59 @@ export default function DeliveryReceiptList({
           Create Delivery Receipt
         </button>
       </div>
+
+      <PolarisTable
+        columns={columns}
+        data={allDr}
+        columnWidths={columnWidths}
+        getCell={(row, key) => {
+          const o = row as SupplierDeliveryReceipt;
+
+          if (key === "supplierid") {
+            return (
+              <span className="font-mono text-xs text-slate-700">
+                {o?.project_id}
+              </span>
+            );
+          }
+          if (key === "projectid") {
+            return <span className="text-slate-900">{o?.supplier_id}</span>;
+          }
+          if (key === "supplierdrno") {
+            return <span className="text-slate-700">{o?.project_id}</span>;
+          }
+          if (key === "yourpono") {
+            return <span className="text-slate-700">{o?.your_po_no}</span>;
+          }
+
+          if (key === "date") {
+            return (
+              <span className="text-slate-700">
+                {o?.date ? new Date(o.date).toLocaleDateString() : "-"}
+              </span>
+            );
+          }
+          return (
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => onEdit(o.id)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
+              >
+                <FiEdit2 className="h-3.5 w-3.5" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onDelete(o)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+              >
+                <FiTrash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          );
+        }}
+      />
     </>
   );
 }
