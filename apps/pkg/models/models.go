@@ -88,7 +88,7 @@ type SupplierPOItem struct {
 }
 
 // PolarisInventory represents an item in Polaris warehouse inventory.
-type PolarisInventory struct {
+type PolarisReceivingReport struct {
 	ID                primitive.ObjectID  `bson:"_id,omitempty" json:"id,omitempty"`
 	SKU               string              `bson:"sku" json:"sku"`                             // Unique item SKU
 	Barcode           string              `bson:"barcode,omitempty" json:"barcode,omitempty"` // Optional: for scanned code
@@ -106,6 +106,22 @@ type PolarisInventory struct {
 	CreatedBy         primitive.ObjectID  `bson:"created_by,omitempty" json:"created_by,omitempty"`
 	CreatedAt         time.Time           `bson:"created_at" json:"created_at"`
 	UpdatedAt         time.Time           `bson:"updated_at" json:"updated_at"`
+}
+
+type PolarisInventory struct {
+	ID                primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	SKU               string             `bson:"sku" json:"sku"`
+	Barcode           string             `bson:"barcode,omitempty" json:"barcode,omitempty"`
+	AirconModelNumber string             `bson:"aircon_model_number" json:"aircon_model_number"`
+	AirconName        string             `bson:"aircon_name" json:"aircon_name"`
+	HP                string             `bson:"hp" json:"hp"`
+	TypeOfAircon      string             `bson:"type_of_aircon" json:"type_of_aircon"`
+	IndoorOutdoorUnit string             `bson:"indoor_outdoor_unit" json:"indoor_outdoor_unit"`
+	Quantity          int                `bson:"quantity" json:"quantity"`
+	Price             float64            `bson:"price" json:"price"`
+	CreatedBy         primitive.ObjectID `bson:"created_by" json:"created_by"`
+	CreatedAt         time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt         time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
 type SalesOrder struct {
