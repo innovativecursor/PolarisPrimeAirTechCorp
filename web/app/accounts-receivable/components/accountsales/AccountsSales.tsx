@@ -20,20 +20,19 @@ export default function AccountSales() {
   }, []);
 
   const handleDelete = useCallback(
-  (row: SalesInvoice) => {
-    confirmToast.confirm({
-      title: "Delete Sales Invoice",
-      message: `Are you sure you want to delete invoice "${row.invoice_id}"?`,
-      confirmText: "Delete",
-      cancelText: "Cancel",
-      onConfirm: async () => {
-        await accountSales.deleteSalesInvoice(row.id);
-      },
-    });
-  },
-  [accountSales.deleteSalesInvoice, confirmToast]
-);
-
+    (row: SalesInvoice) => {
+      confirmToast.confirm({
+        title: "Delete Sales Invoice",
+        message: `Are you sure you want to delete invoice "${row.invoice_id}"?`,
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        onConfirm: async () => {
+          await accountSales.deleteSalesInvoice(row.id);
+        },
+      });
+    },
+    [accountSales.deleteSalesInvoice, confirmToast]
+  );
 
   return (
     <div className="space-y-6">
@@ -45,18 +44,38 @@ export default function AccountSales() {
             accountSales.setMode("create");
           }}
           allAccountSales={accountSales.allAccountSales}
-          onEdit={(id) => {
-            accountSales.setEditing(id);
+          onEdit={(row) => {
+            accountSales.setEditing(row.id);
+
+            accountSales.setForm({
+              project_id: row.project_id,
+              customer_id: row.customer_id,
+              sales_order_id: row.sales_order_id,
+            });
+
+            accountSales.setItems(
+              row.items?.map((it) => ({
+                sku: it.sku,
+                quantity: it.quantity,
+              })) || []
+            );
+
             accountSales.setMode("create");
           }}
-           onDelete={handleDelete}
+          onDelete={handleDelete}
         />
       ) : (
         <CreateAccountSales
           saving={accountSales.saving}
           onCancel={() => {
-            accountSales.setMode("list");
+            accountSales.setForm({
+              project_id: "",
+              customer_id: "",
+              sales_order_id: "",
+            });
+            accountSales.setItems([]);
             accountSales.setEditing(null);
+            accountSales.setMode("list");
           }}
           projects={projectsOptions}
           salesOrders={salesOrdersOptions}

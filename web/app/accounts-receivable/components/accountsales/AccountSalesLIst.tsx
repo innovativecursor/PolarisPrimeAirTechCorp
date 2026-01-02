@@ -9,7 +9,7 @@ type AccountListProps = {
   onCreate: () => void;
   loading: boolean;
   allAccountSales: SalesInvoice[];
-  onEdit: (id: string) => void;
+  onEdit: (row: SalesInvoice) => void;
   onDelete: (row: SalesInvoice) => void;
 };
 
@@ -23,8 +23,10 @@ export default function AccountSalesList({
   const columns: PolarisTableColumn[] = useMemo(
     () => [
       { key: "invoiceid", header: "Invoice Id" },
-      { key: "customerid", header: "Customer Id" },
+      { key: "projectname", header: "Project Name" },
+      { key: "customer", header: "Customer" },
       { key: "salesorderid", header: "Sales Order Id" },
+
       { key: "totalamount", header: "Total Amount" },
       { key: "actions", header: "Actions", align: "right" },
     ],
@@ -69,10 +71,13 @@ export default function AccountSalesList({
               </span>
             );
           }
-          if (key === "customerid") {
-            return <span className="text-slate-900">{o?.customer_id}</span>;
+          if (key === "projectname") {
+            return <span className="text-slate-900">-</span>;
           }
-          if (key === "salesorderid") {
+          if (key === "customer") {
+            return <span className="text-slate-700">-</span>;
+          }
+             if (key === "salesorderid") {
             return <span className="text-slate-700">{o?.sales_order_id}</span>;
           }
           if (key === "totalamount") {
@@ -83,7 +88,7 @@ export default function AccountSalesList({
             <div className="flex justify-end gap-3">
               <button
                 type="button"
-                onClick={() => onEdit(o.id)}
+                onClick={() => onEdit(o)}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
               >
                 <FiEdit2 className="h-3.5 w-3.5" />

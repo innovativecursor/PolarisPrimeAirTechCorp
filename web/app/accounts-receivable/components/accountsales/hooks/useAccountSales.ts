@@ -16,12 +16,13 @@ export function useAccountSales() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [allAccountSales, setAllAccountSales] = useState<SalesInvoice[]>([]);
-
-  const [form, setForm] = useState({
+  const initialForm = {
     project_id: "",
     customer_id: "",
     sales_order_id: "",
-  });
+  };
+
+  const [form, setForm] = useState(initialForm);
 
   const [items, setItems] = useState<InvoiceItem[]>([]);
 
@@ -71,8 +72,11 @@ export function useAccountSales() {
       return;
     }
 
-    if (items.length === 0) {
-      toast.error("Add at least one item");
+    if (
+      items.length === 0 ||
+      items.some((it) => !it.sku || it.sku.trim() === "")
+    ) {
+      toast.error("SKU is required for all items");
       return;
     }
 
@@ -97,6 +101,9 @@ export function useAccountSales() {
         await fetchDataPost(endpoints.salesInvoice.create, payload);
         toast.success("Sales invoice created");
       }
+
+      setForm(initialForm);
+      setItems([]);
 
       setMode("list");
       setEditing(null);
@@ -140,8 +147,9 @@ export function useAccountSales() {
     setSaving,
     form,
     updateForm,
-
+    setForm,
     items,
+    setItems,
     addItem,
     updateItem,
     removeItem,
