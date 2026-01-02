@@ -22,9 +22,11 @@ export default function SalesInvioceList({
 }: SalesInvioceListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "projectid", header: "Project Id" },
-      { key: "deliveryno", header: "Delivery No" },
-      { key: "purchaseorderno", header: "Purchase Order No" },
+      { key: "invoiceno", header: "Invoice No" },
+      { key: "projectname", header: "Project Name" },
+      { key: "customername", header: "Customer Name" },
+
+      { key: "salesorder", header: "Sales order" },
       { key: "vat", header: "Vat" },
       { key: "grandtotal", header: "Grand Total" },
       { key: "actions", header: "Actions", align: "right" },
@@ -63,19 +65,24 @@ export default function SalesInvioceList({
         getCell={(row, key) => {
           const o = row as SupplierInvoice;
 
-          if (key === "projectid") {
+          if (key === "invoiceno") {
             return (
               <span className="font-mono text-xs text-slate-700">
-                {o?.project_id}
+                {o?.invoice_no}
               </span>
             );
           }
-          if (key === "deliveryno") {
-            return <span className="text-slate-900">{o?.delivery_no}</span>;
+          if (key === "projectname") {
+            return <span className="text-slate-900">-</span>;
           }
-          if (key === "purchaseorderno") {
+          if (key === "customername") {
             return (
-              <span className="text-slate-700">{o?.purchase_order_no}</span>
+              <span className="text-slate-700">-</span>
+            );
+          }
+               if (key === "salesorder") {
+            return (
+              <span className="text-slate-700">-</span>
             );
           }
           if (key === "vat") {

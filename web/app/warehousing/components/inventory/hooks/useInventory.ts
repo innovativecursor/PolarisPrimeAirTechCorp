@@ -18,7 +18,7 @@ export function useInventory() {
   const [allInventories, setAllInventories] = useState<InventoryItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const confirmToast = useConfirmToast();
-  const [form, setForm] = useState({
+  const initialFormState = {
     sku: "",
     barcode: "",
     aircon_model_number: "",
@@ -28,10 +28,15 @@ export function useInventory() {
     indoor_outdoor_unit: "",
     quantity: 0,
     price: 0,
-  });
+  };
+
+  const [form, setForm] = useState(initialFormState);
 
   const updateForm = (key: string, value: any) => {
     setForm((p) => ({ ...p, [key]: value }));
+  };
+  const resetForm = () => {
+    setForm(initialFormState);
   };
 
   const GetInventories = useCallback(async () => {
@@ -79,6 +84,7 @@ export function useInventory() {
       } else {
         await fetchDataPost(endpoints.inventory.add, form);
         toast.success("Inventory added successfully");
+        resetForm();
       }
       await GetInventories();
       return true;
@@ -150,5 +156,6 @@ export function useInventory() {
     updateForm,
     handleSubmit,
     handleDelete,
+    resetForm,
   };
 }

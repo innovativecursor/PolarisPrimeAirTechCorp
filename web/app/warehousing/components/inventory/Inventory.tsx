@@ -20,6 +20,7 @@ export default function Inventory() {
     updateForm,
     handleSubmit,
     handleDelete,
+    resetForm,
   } = useInventory();
 
   const handleCancelForm = () => {
@@ -28,6 +29,7 @@ export default function Inventory() {
   };
 
   const handleCreateClick = () => {
+    resetForm();
     setEditing(null);
     setMode("create");
   };

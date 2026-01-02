@@ -22,10 +22,10 @@ export default function DeliveryReceiptList({
 }: DeliveryRLProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "supplierid", header: "Supplier Id" },
-      { key: "projectid", header: "Project Id" },
-      { key: "supplierdrno", header: "Supplier Dr No" },
-      { key: "yourpono", header: "Your Po No" },
+      { key: "deliveryreceiptiD", header: "Delivery Receipt ID" },
+      { key: "projectname", header: "Project Name" },
+      { key: "salesorder", header: "Sales order" },
+      { key: "salesinvoice", header: "	Sales invoice" },
       { key: "date", header: "date" },
       { key: "actions", header: "Actions", align: "right" },
     ],
@@ -60,21 +60,21 @@ export default function DeliveryReceiptList({
         getCell={(row, key) => {
           const o = row as SupplierDeliveryReceipt;
 
-          if (key === "supplierid") {
+          if (key === "deliveryreceiptiD") {
             return (
               <span className="font-mono text-xs text-slate-700">
-                {o?.project_id}
+                {o?.id}
               </span>
             );
           }
-          if (key === "projectid") {
-            return <span className="text-slate-900">{o?.supplier_id}</span>;
+          if (key === "projectname") {
+            return <span className="text-slate-900">-</span>;
           }
-          if (key === "supplierdrno") {
-            return <span className="text-slate-700">{o?.project_id}</span>;
+          if (key === "salesorder") {
+            return <span className="text-slate-700">-</span>;
           }
-          if (key === "yourpono") {
-            return <span className="text-slate-700">{o?.your_po_no}</span>;
+          if (key === "salesinvoice") {
+            return <span className="text-slate-700">-</span>;
           }
 
           if (key === "date") {

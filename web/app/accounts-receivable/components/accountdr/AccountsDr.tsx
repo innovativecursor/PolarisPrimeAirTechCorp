@@ -4,29 +4,53 @@ import { useAccountDr } from "./hooks/useAccountDr";
 import CreateAccountDr from "./CreateAccountDr";
 
 import AccountList from "./AccountList";
+import { useAccountSales } from "../accountsales/hooks/useAccountSales";
+import { useConfirmToast } from "@/app/hooks/useConfirmToast";
+import { DeliveryReceipt } from "../accountsales/type";
 
 export default function AccountDr() {
-  const { mode, setMode, editing, setEditing, loading, saving } =
-    useAccountDr();
+  const dr = useAccountDr();
+  const { GetAccountSales, allAccountSales } = useAccountSales();
+  const confirmToast = useConfirmToast();
 
-  const handleCreateClick = () => {
-    setEditing(null);
-    setMode("create");
-  };
-  const handleCancelForm = () => {
-    setMode("list");
-    setEditing(null);
-  };
+  const handleDelete = useCallback(
+    (row: DeliveryReceipt) => {
+      confirmToast.confirm({
+        title: "Delete Sales Invoice",
+        message: `Are you sure you want to delete invoice "${row.dr_number}"?`,
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        onConfirm: async () => {
+          await dr.deleteAccountDr(row.id);
+        },
+      });
+    },
+    [dr.deleteAccountDr, confirmToast]
+  );
+
+  useEffect(() => {
+    void GetAccountSales();
+    void dr.GetAccountDr();
+  }, []);
 
   return (
     <div className="space-y-6">
-      {mode === "list" ? (
+      {dr.mode === "list" ? (
         <AccountList
-          loading={loading || saving}
-          onCreate={handleCreateClick}
+          loading={dr.loading || dr.saving}
+          onCreate={() => dr.setMode("create")}
+          allAccountDr={dr.allAccountDr}
+          onDelete={handleDelete}
         />
       ) : (
-        <CreateAccountDr saving={saving} onCancel={handleCancelForm} />
+        <CreateAccountDr
+          saving={dr.saving}
+          onCancel={() => dr.setMode("list")}
+          allAccountSales={allAccountSales}
+          selectedInvoice={dr.selectedInvoice}
+          onSelectInvoice={dr.onSelectInvoice}
+          onSubmit={dr.createDeliveryReceipt}
+        />
       )}
     </div>
   );
