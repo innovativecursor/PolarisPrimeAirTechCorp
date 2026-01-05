@@ -1,48 +1,37 @@
-"use client";
-
-import { useMemo } from "react";
 import PolarisTable, {
   PolarisTableColumn,
-} from "../../components/table/PolarisTable";
+} from "@/app/components/table/PolarisTable";
+import { SalesOrderRow } from "../hooks/useSalesOrders";
+import { useMemo } from "react";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
-import { SupplierPORow } from "./types";
 
-type SupplierPOListProps = {
-  orders: SupplierPORow[];
+type SalesOrdersListProps = {
+  orders: SalesOrderRow[];
   loading: boolean;
   onCreate: () => void;
-  onEdit: (row: SupplierPORow) => void;
-  onDelete?: (row: SupplierPORow) => void;
-  page: number;
-  totalPages: number;
-  setPage: (p: number) => void;
+  onEdit: (row: SalesOrderRow) => void;
+  onDelete: (row: SalesOrderRow) => void;
 };
 
-export default function SupplierPOListCard({
+export default function SalesOrdersListCard({
   orders,
   loading,
   onCreate,
   onEdit,
   onDelete,
-  page,
-  totalPages,
-  setPage,
-}: SupplierPOListProps) {
+}: SalesOrdersListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "poId", header: "PO ID" },
+      { key: "id", header: "Sales order ID" },
       { key: "projectName", header: "Project name" },
-      { key: "supplierName", header: "Supplier name" },
-      { key: "soId", header: "SO ID" },
+      { key: "customerName", header: "Customer name" },
       { key: "status", header: "Status" },
       { key: "actions", header: "Actions", align: "right" },
     ],
     []
   );
 
-  const columnWidths = "1.2fr 2fr 2fr 1.5fr 1.2fr 1.2fr";
-
-  console.log(orders, "kkkkk");
+  const columnWidths = "1.2fr 2.4fr 2.4fr 1.4fr 1.2fr";
 
   return (
     <section className="w-full mx-auto rounded-[32px] bg-white border border-slate-100 shadow-[0_24px_60px_rgba(15,23,42,0.08)] px-8 py-8">
@@ -50,10 +39,10 @@ export default function SupplierPOListCard({
       <div className="flex items-start justify-between mb-6">
         <div>
           <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
-            Supplier purchase orders
+            Sales orders
           </p>
           <h2 className="text-lg md:text-xl font-semibold text-slate-900">
-            Supplier PO Registry
+            Sales Order Registry
           </h2>
         </div>
 
@@ -63,7 +52,7 @@ export default function SupplierPOListCard({
           disabled={loading}
           className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
         >
-          Create supplier PO
+          Create sales order
         </button>
       </div>
 
@@ -72,25 +61,19 @@ export default function SupplierPOListCard({
         data={orders}
         columnWidths={columnWidths}
         getCell={(row, key) => {
-          const o = row as SupplierPORow;
+          const o = row as SalesOrderRow;
 
-          if (key === "poId") {
+          if (key === "id") {
             return (
-              <span className="font-mono text-xs text-slate-700">{o.poId}</span>
+              <span className="font-mono text-xs text-slate-700">{o.id}</span>
             );
           }
           if (key === "projectName") {
             return <span className="text-slate-900">{o.projectName}</span>;
           }
-          if (key === "supplierName") {
-            return <span className="text-slate-700">{o.supplierName}</span>;
+          if (key === "customerName") {
+            return <span className="text-slate-700">{o.customerName}</span>;
           }
-          if (key === "soId") {
-            return (
-              <span className="font-mono text-xs text-slate-700">{o.soId}</span>
-            );
-          }
-
           if (key === "status") {
             const isApproved =
               o.status.toLowerCase() === "approved" ||
@@ -107,6 +90,7 @@ export default function SupplierPOListCard({
               </span>
             );
           }
+
           return (
             <div className="flex justify-end gap-3">
               <button
@@ -117,40 +101,17 @@ export default function SupplierPOListCard({
                 <FiEdit2 className="h-3.5 w-3.5" />
               </button>
 
-              {onDelete && (
-                <button
-                  type="button"
-                  onClick={() => onDelete(o)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
-                >
-                  <FiTrash2 className="h-3.5 w-3.5" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => onDelete(o)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+              >
+                <FiTrash2 className="h-3.5 w-3.5" />
+              </button>
             </div>
           );
         }}
       />
-      <div className="mt-6 flex items-center justify-end gap-3">
-        <button
-          disabled={page <= 1}
-          onClick={() => setPage(page - 1)}
-          className="px-4 py-2 text-xs rounded-lg border disabled:opacity-50"
-        >
-          Prev
-        </button>
-
-        <span className="text-xs text-slate-600">
-          Page {page} of {totalPages}
-        </span>
-
-        <button
-          disabled={page >= totalPages}
-          onClick={() => setPage(page + 1)}
-          className="px-4 py-2 text-xs rounded-lg border disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
     </section>
   );
 }
