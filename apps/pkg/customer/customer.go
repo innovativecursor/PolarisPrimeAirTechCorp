@@ -1,6 +1,7 @@
 package customer
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -13,28 +14,30 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func GenerateCustomerID(count int64) string {
+	year := time.Now().Year()
+	return fmt.Sprintf("CUST-%d-%05d", year, count+1)
+}
+
 func AddCustomer(c *gin.Context, db *mongo.Database) {
-	user, exists := c.Get("user")
+	_, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-		return
-	}
-	_, ok := user.(*models.User)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
 
 	var payload config.CustomerData
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
 
 	collection := db.Collection("customer")
 
-	var filter bson.M
-	var customer models.Customer
+	var (
+		filter   bson.M
+		customer models.Customer
+	)
 
 	if payload.ID != "" {
 		objID, err := primitive.ObjectIDFromHex(payload.ID)
@@ -50,20 +53,28 @@ func AddCustomer(c *gin.Context, db *mongo.Database) {
 			"tinnumber":    payload.TINNumber,
 			"customerorg":  payload.CustomerOrg,
 		}
+
+		count, err := collection.CountDocuments(c, bson.M{})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate customer ID"})
+			return
+		}
+
+		customer.CustomerID = GenerateCustomerID(count)
+		customer.CreatedAt = time.Now()
 	}
 
 	customer.CustomerName = payload.CustomerName
 	customer.Address = payload.Address
 	customer.TINNumber = payload.TINNumber
 	customer.CustomerOrg = payload.CustomerOrg
-	customer.CreatedAt = time.Now()
 
 	update := bson.M{"$set": customer}
 	opts := options.Update().SetUpsert(true)
 
 	res, err := collection.UpdateOne(c, filter, update, opts)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save customer", "details": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save customer"})
 		return
 	}
 
@@ -76,7 +87,6 @@ func AddCustomer(c *gin.Context, db *mongo.Database) {
 		"customer": customer,
 	})
 }
-
 func GetAllCustomers(c *gin.Context, db *mongo.Database) {
 	// Get authenticated user from context
 	user, exists := c.Get("user")

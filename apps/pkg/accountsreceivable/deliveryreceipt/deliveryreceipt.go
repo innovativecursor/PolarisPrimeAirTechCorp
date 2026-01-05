@@ -70,7 +70,6 @@ func CreateDeliveryReceipt(c *gin.Context, db *mongo.Database) {
 
 	// Build DR object
 	dr := models.DeliveryReceipt{
-		ID:               primitive.NewObjectID(),
 		DRNumber:         "DR-" + time.Now().Format("20060102150405"),
 		ProjectID:        projectID,
 		CustomerID:       customerID,
