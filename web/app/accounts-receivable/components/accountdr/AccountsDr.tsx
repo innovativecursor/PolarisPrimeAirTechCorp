@@ -6,7 +6,7 @@ import CreateAccountDr from "./CreateAccountDr";
 import AccountList from "./AccountList";
 import { useAccountSales } from "../accountsales/hooks/useAccountSales";
 import { useConfirmToast } from "@/app/hooks/useConfirmToast";
-import { DeliveryReceipt } from "../accountsales/type";
+import { DeliveryReceipt } from "./type";
 
 export default function AccountDr() {
   const dr = useAccountDr();
@@ -41,6 +41,7 @@ export default function AccountDr() {
           onCreate={() => dr.setMode("create")}
           allAccountDr={dr.allAccountDr}
           onDelete={handleDelete}
+          onUpdateStatus={dr.updateDeliveryReceiptStatus}
         />
       ) : (
         <CreateAccountDr

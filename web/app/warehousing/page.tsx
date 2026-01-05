@@ -16,33 +16,6 @@ export default function WarehousingPage() {
 
   const warehouseCards = [
     {
-      key: "receiving",
-      title: "Receiving Report",
-      desc: "Log deliveries as they arrive at the depot.",
-      statLabel: "Total logged",
-      statValue: "148",
-      icon: PackageCheck,
-      component: <ReceivingReport />,
-    },
-    {
-      key: "inventory",
-      title: "Inventory",
-      desc: "Review on-hand stock across locations.",
-      statLabel: "Units on hand",
-      statValue: "4,382",
-      icon: Boxes,
-      component: <Inventory />,
-    },
-    {
-      key: "supplier",
-      title: "Add Supplier",
-      desc: "Register a new vendor for purchasing.",
-      statLabel: "Active suppliers",
-      statValue: "62",
-      icon: UserPlus,
-      component: <AddSupplier />,
-    },
-    {
       key: "invoice",
       title: "Sales Invoice",
       desc: "Prepare invoices from the warehouse.",
@@ -59,6 +32,35 @@ export default function WarehousingPage() {
       statValue: "189",
       icon: Truck,
       component: <DeliveryReceipt />,
+    },
+
+    {
+      key: "supplier",
+      title: "Add Supplier",
+      desc: "Register a new vendor for purchasing.",
+      statLabel: "Active suppliers",
+      statValue: "62",
+      icon: UserPlus,
+      component: <AddSupplier />,
+    },
+
+    {
+      key: "receiving",
+      title: "Receiving Report",
+      desc: "Log deliveries as they arrive at the depot.",
+      statLabel: "Total logged",
+      statValue: "148",
+      icon: PackageCheck,
+      component: <ReceivingReport />,
+    },
+    {
+      key: "inventory",
+      title: "Inventory",
+      desc: "Review on-hand stock across locations.",
+      statLabel: "Units on hand",
+      statValue: "4,382",
+      icon: Boxes,
+      component: <Inventory />,
     },
   ];
 

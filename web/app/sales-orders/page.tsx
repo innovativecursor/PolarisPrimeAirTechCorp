@@ -49,6 +49,7 @@ type SalesOrderFormValues = {
   customerId: string;
   projectName: string;
   customerName: string;
+  status: "approved" | "notapproved";
   items: LineItemForm[];
 };
 
@@ -292,6 +293,7 @@ export default function SalesOrdersPage() {
           body: JSON.stringify({
             id: editing._raw.id,
             ...payload,
+            status: values.status,
           }),
         });
       } else if (editing && editing._raw?._id) {
@@ -301,6 +303,7 @@ export default function SalesOrdersPage() {
           body: JSON.stringify({
             id: editing._raw._id,
             ...payload,
+            status: values.status,
           }),
         });
       } else {
@@ -582,6 +585,8 @@ function CreateSalesOrderCard({
         initialValues?.projectName || initialValues?._raw?.projectName || "",
       customerName:
         initialValues?.customerName || initialValues?._raw?.customerName || "",
+      status:
+        initialValues?._raw?.status === "approved" ? "approved" : "notapproved",
       items,
     };
   });
@@ -708,6 +713,33 @@ function CreateSalesOrderCard({
             </Select>
           </div>
         </div>
+
+        {isEdit && (
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-slate-600">
+              Status
+            </label>
+
+            <Select
+              value={form.status}
+              onValueChange={(val) =>
+                setForm((prev) => ({
+                  ...prev,
+                  status: val as "approved" | "notapproved",
+                }))
+              }
+            >
+              <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="notapproved">Not Approved</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Line items */}
         <div className="space-y-6">

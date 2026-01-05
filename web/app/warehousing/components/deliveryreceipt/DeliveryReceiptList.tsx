@@ -22,7 +22,7 @@ export default function DeliveryReceiptList({
 }: DeliveryRLProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "deliveryreceiptiD", header: "Delivery Receipt ID" },
+      { key: "supplierdrno", header: "Supplier DR ID" },
       { key: "projectname", header: "Project Name" },
       { key: "salesorder", header: "Sales order" },
       { key: "salesinvoice", header: "	Sales invoice" },
@@ -60,10 +60,10 @@ export default function DeliveryReceiptList({
         getCell={(row, key) => {
           const o = row as SupplierDeliveryReceipt;
 
-          if (key === "deliveryreceiptiD") {
+          if (key === "supplierdrno") {
             return (
               <span className="font-mono text-xs text-slate-700">
-                {o?.id}
+                {o?.supplier_dr_no}
               </span>
             );
           }

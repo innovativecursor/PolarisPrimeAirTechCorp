@@ -24,11 +24,12 @@ import { useConfirmToast } from "../hooks/useConfirmToast";
 
 export type ProjectRow = {
   id: string; // display id (e.g. Mongo _id or PRJ-1042)
+  projectid: string;
   name: string;
   customer: string;
-  status: string;
-  region: string;
+  salesdrid: string;
   _raw?: any;
+  salesorderid: string;
 };
 
 type ProjectFormValues = {
@@ -66,16 +67,17 @@ export default function ProjectsPage() {
       const apiData = response?.projects || [];
 
       const rows: ProjectRow[] = apiData.map((p: any) => ({
-        id: p._id || p.projectId || p.id || "",
+        id: p._id || p.id || "",
         name: p.project_name || p.projectName || p.name || "",
         customer:
+          p.customerName ||
           p.customer_organization ||
           p.customerOrganisation ||
-          p.customerName ||
           p.customer ||
           "",
-        status: p.status || p.projectStatus || "",
-        region: p.region || p.projectRegion || "",
+        projectid: p.project_id || p.projectid || "",
+        salesorderid: p.sales_order_id || "",
+        salesdrid: p.sales_dr_id || "",
         _raw: p,
       }));
 
@@ -228,11 +230,11 @@ function ProjectsListCard({
 }: ProjectsListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "id", header: "Project ID" },
+      { key: "projectid", header: "Project ID" },
       { key: "name", header: "Project name" },
       { key: "customer", header: "Customer" },
-      { key: "status", header: "Status" },
-      { key: "region", header: "Region" },
+      { key: "salesorderid", header: "Sales Order Id" },
+      { key: "salesdrid", header: "Sales DR Id" },
       { key: "actions", header: "Actions", align: "right" },
     ],
     []
@@ -269,9 +271,11 @@ function ProjectsListCard({
         getCell={(row, key) => {
           const p = row as ProjectRow;
 
-          if (key === "id") {
+          if (key === "projectid") {
             return (
-              <span className="font-mono text-xs text-slate-700">{p.id}</span>
+              <span className="font-mono text-xs text-slate-700">
+                {p.projectid}
+              </span>
             );
           }
           if (key === "name") {
@@ -280,11 +284,11 @@ function ProjectsListCard({
           if (key === "customer") {
             return <span className="text-slate-600">{p.customer}</span>;
           }
-          if (key === "status") {
-            return <span className="text-slate-800">{p.status}</span>;
+          if (key === "salesorderid") {
+            return <span className="text-slate-800">{p.salesorderid}</span>;
           }
-          if (key === "region") {
-            return <span className="text-slate-600">{p.region}</span>;
+          if (key === "salesdrid") {
+            return <span className="text-slate-600">{p.salesdrid}</span>;
           }
 
           return (
