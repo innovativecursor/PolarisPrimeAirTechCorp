@@ -124,16 +124,16 @@ func Auth(db *mongo.Database) {
 		supplierpo.UpdateSupplierPO(c, db)
 	})
 
-	apiV1.GET("/supplierpo/supplier/:supplierId", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		supplierpo.GetSupplierPOsBySupplier(c, db)
+	apiV1.GET("/supplierpo/get-all-supplierpo", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.GetAllSupplierPO(c, db)
 	})
 
-	apiV1.GET("/supplierpo/:supplierPOId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/supplierpo/get-po-by/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierpo.GetSupplierPOByID(c, db)
 	})
 
-	apiV1.PUT("/supplierpo/status", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		supplierpo.ToggleSupplierPOStatus(c, db)
+	apiV1.DELETE("/supplierpo/delete-po/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.DeleteSupplierPO(c, db)
 	})
 
 	// Inventory
