@@ -54,9 +54,9 @@ const endpoints = {
   supplierPO: {
     add: full("/supplierpo/add"), // POST
     update: full("/supplierpo/update"), // PUT
-    bySupplier: (supplierId: string) =>
-      full(`/supplierpo/supplier/${supplierId}`), // GET
+    getAll: (page = 1) => full(`/supplierpo/get-all-supplierpo?page=${page}`), // GET
     getById: (supplierPOId: string) => full(`/supplierpo/${supplierPOId}`), // GET
+    delete: (id: string) => full(`/supplierpo/delete-po/${id}`),
     toggleStatus: full("/supplierpo/status"), // PUT
   },
 

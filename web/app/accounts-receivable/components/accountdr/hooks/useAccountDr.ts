@@ -1,17 +1,14 @@
 import { useCallback, useState } from "react";
-import {
-  DeliveryReceipt,
-  DeliveryReceiptListRes,
-  DrForm,
-  SalesInvoice,
-} from "../../accountsales/type";
+import { SalesInvoice } from "../../accountsales/type";
 import { toast } from "react-toastify";
 import {
   fetchDataDelete,
   fetchDataGet,
   fetchDataPost,
+  fetchDataPut,
 } from "@/app/lib/fetchData";
 import endpoints from "@/app/lib/endpoints";
+import { DeliveryReceipt, DeliveryReceiptListRes, DrForm } from "../type";
 
 export function useAccountDr() {
   const [mode, setMode] = useState<"list" | "create">("list");
@@ -91,6 +88,27 @@ export function useAccountDr() {
     [GetAccountDr]
   );
 
+  const updateDeliveryReceiptStatus = useCallback(
+    async (id: string, status: "Ready" | "Issued") => {
+      if (!id) return;
+
+      try {
+        setSaving(true);
+        await fetchDataPut(endpoints.deliveryReceipt.update(id), {
+          status,
+        });
+
+        toast.success("Delivery receipt updated");
+        GetAccountDr();
+      } catch (err: any) {
+        toast.error(err.message || "Update failed");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [GetAccountDr]
+  );
+
   return {
     mode,
     setMode,
@@ -105,6 +123,7 @@ export function useAccountDr() {
     createDeliveryReceipt,
     GetAccountDr,
     allAccountDr,
-    deleteAccountDr
+    deleteAccountDr,
+    updateDeliveryReceiptStatus
   };
 }

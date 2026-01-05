@@ -40,6 +40,11 @@ export default function CreateReceivingCard({
   loadReceivingReports,
   editing,
 }: CreateReceivingCardProps) {
+
+  console.log(prorders, "iiiii");
+  
+
+
   const [openScanner, setOpenScanner] = useState(false);
   const [generatedBarcode, setGeneratedBarcode] = useState("");
   const barcodeRef = useRef<SVGSVGElement | null>(null);
@@ -267,7 +272,7 @@ export default function CreateReceivingCard({
               <SelectContent>
                 {prorders.map((po) => (
                   <SelectItem key={po?.id} value={po?.id}>
-                    {po?.id}
+                    {po?.projectName}
                   </SelectItem>
                 ))}
               </SelectContent>

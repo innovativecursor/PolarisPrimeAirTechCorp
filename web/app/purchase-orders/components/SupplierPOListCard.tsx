@@ -13,6 +13,9 @@ type SupplierPOListProps = {
   onCreate: () => void;
   onEdit: (row: SupplierPORow) => void;
   onDelete?: (row: SupplierPORow) => void;
+  page: number;
+  totalPages: number;
+  setPage: (p: number) => void;
 };
 
 export default function SupplierPOListCard({
@@ -21,23 +24,25 @@ export default function SupplierPOListCard({
   onCreate,
   onEdit,
   onDelete,
+  page,
+  totalPages,
+  setPage,
 }: SupplierPOListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "id", header: "Supplier PO ID" },
+      { key: "poId", header: "PO ID" },
       { key: "projectName", header: "Project name" },
       { key: "supplierName", header: "Supplier name" },
-      { key: "totalAmount", header: "Total amount" },
+      { key: "soId", header: "SO ID" },
       { key: "status", header: "Status" },
       { key: "actions", header: "Actions", align: "right" },
     ],
     []
   );
 
-
-  
-
   const columnWidths = "1.2fr 2fr 2fr 1.5fr 1.2fr 1.2fr";
+
+  console.log(orders, "kkkkk");
 
   return (
     <section className="w-full mx-auto rounded-[32px] bg-white border border-slate-100 shadow-[0_24px_60px_rgba(15,23,42,0.08)] px-8 py-8">
@@ -69,9 +74,9 @@ export default function SupplierPOListCard({
         getCell={(row, key) => {
           const o = row as SupplierPORow;
 
-          if (key === "id") {
+          if (key === "poId") {
             return (
-              <span className="font-mono text-xs text-slate-700">{o.id}</span>
+              <span className="font-mono text-xs text-slate-700">{o.poId}</span>
             );
           }
           if (key === "projectName") {
@@ -80,13 +85,12 @@ export default function SupplierPOListCard({
           if (key === "supplierName") {
             return <span className="text-slate-700">{o.supplierName}</span>;
           }
-          if (key === "totalAmount") {
+          if (key === "soId") {
             return (
-              <span className="text-slate-900 font-medium">
-                ₱{o.totalAmount.toLocaleString()}
-              </span>
+              <span className="font-mono text-xs text-slate-700">{o.soId}</span>
             );
           }
+
           if (key === "status") {
             const isApproved =
               o.status.toLowerCase() === "approved" ||
@@ -126,6 +130,27 @@ export default function SupplierPOListCard({
           );
         }}
       />
+      <div className="mt-6 flex items-center justify-end gap-3">
+        <button
+          disabled={page <= 1}
+          onClick={() => setPage(page - 1)}
+          className="px-4 py-2 text-xs rounded-lg border disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="text-xs text-slate-600">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          disabled={page >= totalPages}
+          onClick={() => setPage(page + 1)}
+          className="px-4 py-2 text-xs rounded-lg border disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </section>
   );
 }

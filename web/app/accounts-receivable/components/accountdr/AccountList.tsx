@@ -1,15 +1,17 @@
 import { useMemo } from "react";
-import { DeliveryReceipt } from "../accountsales/type";
+// import { DeliveryReceipt } from "../accountsales/type";
 import PolarisTable, {
   PolarisTableColumn,
 } from "@/app/components/table/PolarisTable";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { DeliveryReceipt } from "./type";
 
 type AccountListProps = {
   onCreate: () => void;
   loading: boolean;
   allAccountDr: DeliveryReceipt[];
   onDelete: (row: DeliveryReceipt) => void;
+  onUpdateStatus: (id: string, status: "Ready" | "Issued") => void;
 };
 
 export default function AccountList({
@@ -17,6 +19,7 @@ export default function AccountList({
   loading,
   allAccountDr,
   onDelete,
+  onUpdateStatus,
 }: AccountListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
@@ -70,7 +73,7 @@ export default function AccountList({
               </span>
             );
           }
-              if (key === "project") {
+          if (key === "project") {
             return <span className="text-slate-900">-</span>;
           }
           if (key === "customername") {
@@ -85,35 +88,56 @@ export default function AccountList({
             );
           }
           if (key === "status") {
-            const isApproved =
-              o.status.toLowerCase() === "Issued" ||
-              o.status.toLowerCase() === "Ready";
+            const isReady = o.status === "Ready";
+            const isIssued = o.status === "Issued";
+
             return (
               <span
-                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-                  isApproved
-                    ? "bg-emerald-50 text-emerald-600"
-                    : "bg-amber-50 text-amber-600"
-                }`}
+                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
+        ${
+          isIssued
+            ? "bg-emerald-50 text-emerald-600"
+            : isReady
+            ? "bg-blue-50 text-blue-600"
+            : "bg-slate-100 text-slate-600"
+        }`}
               >
-                {o.status || "Pending"}
+                {o.status}
               </span>
             );
           }
 
           return (
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
-              >
-                <FiEdit2 className="h-3.5 w-3.5" />
-              </button>
+            <div className="flex justify-end items-center gap-2">
+              <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
+                {(["Ready", "Issued"] as const).map((status) => {
+                  const active = o.status === status;
+
+                  return (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => onUpdateStatus(o.id, status)}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition
+          ${
+            active
+              ? status === "Issued"
+                ? "bg-emerald-500 text-white shadow"
+                : "bg-blue-500 text-white shadow"
+              : "text-slate-600 hover:bg-slate-200"
+          }`}
+                    >
+                      {status}
+                    </button>
+                  );
+                })}
+              </div>
 
               <button
                 type="button"
                 onClick={() => onDelete(o)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full
+                 bg-rose-50 text-rose-500 hover:bg-rose-100"
               >
                 <FiTrash2 className="h-3.5 w-3.5" />
               </button>
