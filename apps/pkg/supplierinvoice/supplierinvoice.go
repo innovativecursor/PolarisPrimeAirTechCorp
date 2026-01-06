@@ -2,6 +2,7 @@ package supplierinvoice
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -83,27 +84,108 @@ func CreateSupplierInvoice(c *gin.Context, db *mongo.Database) {
 }
 
 func GetAllSupplierInvoices(c *gin.Context, db *mongo.Database) {
-	user, exists := c.Get("user")
+
+	_, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
-	_, ok := user.(*models.User)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
-		return
+
+	page := int64(1)
+	limit := int64(10)
+
+	if p := c.Query("page"); p != "" {
+		if v, err := strconv.ParseInt(p, 10, 64); err == nil && v > 0 {
+			page = v
+		}
+	}
+	if l := c.Query("limit"); l != "" {
+		if v, err := strconv.ParseInt(l, 10, 64); err == nil && v > 0 {
+			limit = v
+		}
 	}
 
+	skip := (page - 1) * limit
+
 	collection := db.Collection("supplierinvoice")
-	cursor, err := collection.Find(c, bson.M{})
+
+	pipeline := mongo.Pipeline{
+
+		// 🔹 Join Project
+		bson.D{{Key: "$lookup", Value: bson.M{
+			"from":         "project",
+			"localField":   "project_id",
+			"foreignField": "_id",
+			"as":           "project",
+		}}},
+
+		bson.D{{Key: "$unwind", Value: bson.M{
+			"path":                       "$project",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		bson.D{{Key: "$facet", Value: bson.M{
+			"data": bson.A{
+				bson.M{"$sort": bson.M{"created_at": -1}},
+				bson.M{"$skip": skip},
+				bson.M{"$limit": limit},
+
+				bson.M{"$project": bson.M{
+					"_id":               1,
+					"supplier_id":       1,
+					"project_id":        1,
+					"invoice_no":        1,
+					"invoice_date":      1,
+					"delivery_no":       1,
+					"purchase_order_no": 1,
+					"due_date":          1,
+					"delivery_address":  1,
+					"items":             1,
+					"total_sales":       1,
+					"vat":               1,
+					"grand_total":       1,
+					"created_at":        1,
+					"created_by":        1,
+
+					"project_name": "$project.project_name",
+				}},
+			},
+			"total": bson.A{
+				bson.M{"$count": "count"},
+			},
+		}}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch invoices"})
 		return
 	}
-	var list []models.SupplierInvoice
-	cursor.All(c, &list)
+	defer cursor.Close(c)
 
-	c.JSON(http.StatusOK, gin.H{"invoices": list})
+	var result []struct {
+		Data  []bson.M `bson:"data"`
+		Total []struct {
+			Count int64 `bson:"count"`
+		} `bson:"total"`
+	}
+
+	if err := cursor.All(c, &result); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode invoices"})
+		return
+	}
+
+	var total int64
+	if len(result) > 0 && len(result[0].Total) > 0 {
+		total = result[0].Total[0].Count
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  result[0].Data,
+		"page":  page,
+		"limit": limit,
+		"total": total,
+	})
 }
 
 func GetSupplierInvoiceByID(c *gin.Context, db *mongo.Database) {

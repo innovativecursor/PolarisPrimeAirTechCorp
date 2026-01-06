@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Add Supplier Purchase Order
@@ -89,19 +88,37 @@ func AddSupplierPO(c *gin.Context, db *mongo.Database) {
 	})
 }
 
+type SupplierPOResponse struct {
+	ID           primitive.ObjectID      `bson:"_id" json:"id"`
+	POID         string                  `bson:"po_id" json:"po_id"`
+	SalesOrderID string                  `bson:"sales_order_id,omitempty" json:"sales_order_id,omitempty"`
+	Status       string                  `bson:"status" json:"status"`
+	CreatedAt    time.Time               `bson:"created_at" json:"created_at"`
+	Items        []models.SupplierPOItem `bson:"items" json:"items"`
+
+	Project struct {
+		ID   primitive.ObjectID `bson:"id" json:"id"`
+		Name string             `bson:"name" json:"name"`
+	} `bson:"project" json:"project"`
+
+	Supplier struct {
+		ID   primitive.ObjectID `bson:"id" json:"id"`
+		Name string             `bson:"name" json:"name"`
+	} `bson:"supplier" json:"supplier"`
+}
+
 func GetAllSupplierPO(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
-	_, ok := user.(*models.User)
-	if !ok {
+	if _, ok := user.(*models.User); !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
 
-	// Hardcoded pagination
+	// Pagination
 	page := int64(1)
 	limit := int64(10)
 
@@ -112,39 +129,104 @@ func GetAllSupplierPO(c *gin.Context, db *mongo.Database) {
 	}
 
 	skip := (page - 1) * limit
-
 	collection := db.Collection("supplier_purchase_orders")
 
-	cursor, err := collection.Find(
-		c,
-		bson.M{},
-		options.Find().
-			SetSkip(skip).
-			SetLimit(limit).
-			SetSort(bson.M{"createdAt": -1}),
-	)
+	pipeline := mongo.Pipeline{
+		// Sort
+		{{Key: "$sort", Value: bson.M{"createdAt": -1}}},
+
+		// Pagination
+		{{Key: "$skip", Value: skip}},
+		{{Key: "$limit", Value: limit}},
+
+		// Lookup Project
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "project",
+				"localField":   "projectId",
+				"foreignField": "_id",
+				"as":           "project",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path":                       "$project",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		// Lookup Supplier
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "supplier",
+				"localField":   "supplierId",
+				"foreignField": "_id",
+				"as":           "supplier",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path":                       "$supplier",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		// 🔹 Lookup Sales Order (ONLY for SalesOrderID)
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "salesorder",
+				"localField":   "soId",
+				"foreignField": "_id",
+				"as":           "salesOrder",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path":                       "$salesOrder",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		// Final Shape
+		{{
+			Key: "$project",
+			Value: bson.M{
+				"_id":            1,
+				"po_id":          "$poId",
+				"sales_order_id": "$salesOrder.salesOrderId",
+				"status":         1,
+				"created_at":     "$createdAt",
+				"items":          1,
+
+				"project": bson.M{
+					"id":   "$project._id",
+					"name": "$project.project_name",
+				},
+
+				"supplier": bson.M{
+					"id":   "$supplier._id",
+					"name": "$supplier.supplier_name",
+				},
+			},
+		}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Supplier POs"})
 		return
 	}
 	defer cursor.Close(c)
 
-	var pos []models.SupplierPO
-	if err := cursor.All(c, &pos); err != nil {
+	var result []SupplierPOResponse
+	if err := cursor.All(c, &result); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode Supplier POs"})
 		return
 	}
 
-	total, err := collection.CountDocuments(c, bson.M{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count Supplier POs"})
-		return
-	}
+	total, _ := collection.CountDocuments(c, bson.M{})
 
 	c.JSON(http.StatusOK, gin.H{
-		"data":  pos,
+		"data":  result,
 		"page":  page,
-		"limit": limit, // always 10
+		"limit": limit,
 		"total": total,
 	})
 }
