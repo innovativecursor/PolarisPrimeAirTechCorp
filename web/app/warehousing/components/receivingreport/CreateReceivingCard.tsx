@@ -40,10 +40,7 @@ export default function CreateReceivingCard({
   loadReceivingReports,
   editing,
 }: CreateReceivingCardProps) {
-
   console.log(prorders, "iiiii");
-  
-
 
   const [openScanner, setOpenScanner] = useState(false);
   const [generatedBarcode, setGeneratedBarcode] = useState("");
@@ -223,7 +220,7 @@ export default function CreateReceivingCard({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -487,7 +484,7 @@ export default function CreateReceivingCard({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-full px-6 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+          className="rounded-full  cursor-pointer px-6 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700"
         >
           Cancel
         </button>
@@ -496,7 +493,7 @@ export default function CreateReceivingCard({
           type="button"
           disabled={saving}
           onClick={handleSave}
-          className={`rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow 
+          className={`rounded-full  cursor-pointer px-6 py-2.5 text-sm font-semibold text-white shadow 
     ${
       saving
         ? "bg-slate-400 cursor-not-allowed"

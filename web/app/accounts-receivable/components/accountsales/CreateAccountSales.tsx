@@ -145,7 +145,7 @@ export default function CreateAccountSales({
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
-                    className="text-red-600 text-xs flex items-center gap-1"
+                    className="text-red-600  cursor-pointer text-xs flex items-center gap-1"
                   >
                     Remove
                   </button>
@@ -195,7 +195,7 @@ export default function CreateAccountSales({
           <button
             type="button"
             onClick={addItem}
-            className="flex items-center gap-2 border rounded-2xl px-4 py-2 text-xs"
+            className="flex  cursor-pointer items-center gap-2 border rounded-2xl px-4 py-2 text-xs"
           >
             + Add item
           </button>
@@ -203,7 +203,7 @@ export default function CreateAccountSales({
             type="button"
             onClick={onSubmit}
             disabled={saving}
-            className="rounded-full bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
+            className="rounded-full  cursor-pointer bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
           >
             Save Sales Invoice
           </button>

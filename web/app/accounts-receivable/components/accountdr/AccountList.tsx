@@ -93,7 +93,7 @@ export default function AccountList({
 
             return (
               <span
-                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
+                className={`inline-flex  items-center rounded-full px-3 py-1 text-xs font-medium
         ${
           isIssued
             ? "bg-emerald-50 text-emerald-600"
@@ -109,7 +109,7 @@ export default function AccountList({
 
           return (
             <div className="flex justify-end items-center gap-2">
-              <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
+              <div className="inline-flex  rounded-full border border-slate-200 bg-slate-50 p-1">
                 {(["Ready", "Issued"] as const).map((status) => {
                   const active = o.status === status;
 
@@ -118,7 +118,7 @@ export default function AccountList({
                       key={status}
                       type="button"
                       onClick={() => onUpdateStatus(o.id, status)}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition
+                      className={`px-3 py-1  cursor-pointer text-xs font-medium rounded-full transition
           ${
             active
               ? status === "Issued"
@@ -136,7 +136,7 @@ export default function AccountList({
               <button
                 type="button"
                 onClick={() => onDelete(o)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full
+                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full
                  bg-rose-50 text-rose-500 hover:bg-rose-100"
               >
                 <FiTrash2 className="h-3.5 w-3.5" />

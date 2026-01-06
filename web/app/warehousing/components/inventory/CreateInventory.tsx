@@ -135,7 +135,7 @@ export default function CraeteInventory({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -302,7 +302,7 @@ export default function CraeteInventory({
         <div className="flex justify-end ">
           <button
             type="submit"
-            className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+            className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
           >
             save Inventory
           </button>

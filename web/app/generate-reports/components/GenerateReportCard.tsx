@@ -93,7 +93,7 @@ export default function GenerateReportCard({
               type="date"
               value={form.startDate}
               onChange={(e) => onChange("startDate", e.target.value)}
-              className="border rounded-sm px-3 py-3 text-sm bg-white"
+              className="border  cursor-pointer rounded-sm px-3 py-3 text-sm bg-white"
             />
           </div>
           <div className="flex flex-col gap-2">
@@ -105,7 +105,7 @@ export default function GenerateReportCard({
               type="date"
               value={form.endDate}
               onChange={(e) => onChange("endDate", e.target.value)}
-              className="border rounded-sm px-3 py-3 text-sm bg-white"
+              className="border  cursor-pointer rounded-sm px-3 py-3 text-sm bg-white"
             />
           </div>
         </div>

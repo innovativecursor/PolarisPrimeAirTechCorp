@@ -72,7 +72,7 @@ export default function CreateProjectCard({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -117,7 +117,8 @@ export default function CreateProjectCard({
             <input
               type="text"
               value={form.customerLocation}
-              onChange={handleChange("customerLocation")}
+              readOnly
+              disabled
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder="674000f6d842db9caa5e1699"
             />
@@ -131,7 +132,8 @@ export default function CreateProjectCard({
             <input
               type="text"
               value={form.customerOrganisation}
-              onChange={handleChange("customerOrganisation")}
+              readOnly
+              disabled
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder="Prime Air Tech"
             />
@@ -146,9 +148,11 @@ export default function CreateProjectCard({
             <select
               value={form.customerId}
               onChange={(e) => handleCustomerSelect(e.target.value)}
-              className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+              className="block w-full rounded-2xl cursor-pointer border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
             >
-              <option value="">Select customer</option>
+              <option value="" hidden>
+                Select customer
+              </option>
 
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -178,7 +182,7 @@ export default function CreateProjectCard({
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center rounded-xl bg-slate-900 text-white px-5 py-2.5 text-sm font-semibold shadow-[0_16px_35px_rgba(15,23,42,0.35)] hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex  cursor-pointer items-center rounded-xl bg-slate-900 text-white px-5 py-2.5 text-sm font-semibold shadow-[0_16px_35px_rgba(15,23,42,0.35)] hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving ? "Saving…" : isEdit ? "Save changes" : "Create project"}
           </button>

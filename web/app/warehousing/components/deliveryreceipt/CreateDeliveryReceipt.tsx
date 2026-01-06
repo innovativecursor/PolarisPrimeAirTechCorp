@@ -60,7 +60,7 @@ export default function CreateDeliveryReceipt({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -204,7 +204,7 @@ export default function CreateDeliveryReceipt({
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  className="text-red-600 text-xs flex items-center gap-1"
+                  className="text-red-600  cursor-pointer text-xs flex items-center gap-1"
                 >
                   <FiTrash2 />
                   Remove
@@ -357,7 +357,7 @@ export default function CreateDeliveryReceipt({
           <button
             type="button"
             onClick={addItem}
-            className="flex items-center gap-2 border rounded-2xl px-4 py-2 text-xs"
+            className="flex items-center  cursor-pointer gap-2 border rounded-2xl px-4 py-2 text-xs"
           >
             <FiPlus />
             Add item
@@ -366,7 +366,7 @@ export default function CreateDeliveryReceipt({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-full bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
+            className="rounded-full  cursor-pointer bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
           >
             {saving
               ? "Saving..."

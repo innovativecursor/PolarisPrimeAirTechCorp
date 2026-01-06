@@ -66,7 +66,7 @@ export default function CreateSalesInvioce({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -269,7 +269,7 @@ export default function CreateSalesInvioce({
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700"
+                  className="inline-flex  cursor-pointer items-center gap-1 text-xs text-red-600 hover:text-red-700"
                 >
                   <FiTrash2 className="h-4 w-4" />
                   Remove
@@ -361,7 +361,7 @@ export default function CreateSalesInvioce({
           <button
             type="button"
             onClick={addItem}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="inline-flex  cursor-pointer items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
           >
             <FiPlus className="h-4 w-4" />
             Add line
@@ -370,7 +370,7 @@ export default function CreateSalesInvioce({
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+            className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
           >
             {saving ? "Saving..." : editing ? "Update invoice" : "Save invoice"}
           </button>

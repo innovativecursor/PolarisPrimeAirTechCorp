@@ -51,7 +51,7 @@ export default function CustomerFormCard({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -135,7 +135,7 @@ export default function CustomerFormCard({
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center rounded-[999px] bg-[#1f285c] px-6 py-2.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex cursor-pointer items-center rounded-[999px] bg-[#1f285c] px-6 py-2.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving ? "Saving…" : "Save customer"}
           </button>

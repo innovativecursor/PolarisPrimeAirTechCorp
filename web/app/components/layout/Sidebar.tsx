@@ -28,6 +28,11 @@ export default function Sidebar() {
   const isActive = (href: string) =>
     pathname === href || (href === "/dashboard" && pathname === "/");
 
+  const handleLogout = () => {
+    localStorage.clear();
+    router.replace("/");
+  };
+
   return (
     <aside className="relative flex-shrink-0">
       {/* Mobile toggle */}
@@ -41,11 +46,12 @@ export default function Sidebar() {
 
       <div
         className={`
-          fixed inset-y-0 left-0 z-30 w-64 transform bg-white
-          border-r border-slate-200 shadow-lg md:shadow-none
-          md:static md:translate-x-0 transition-transform duration-200
-          ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-        `}
+    fixed top-0 left-0 z-30 w-64 h-screen bg-white
+    border-r border-slate-200
+    transform transition-transform duration-200
+    md:translate-x-0
+    ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
+  `}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
@@ -71,7 +77,7 @@ export default function Sidebar() {
                   setOpen(false);
                 }}
                 className={`
-                  w-full flex items-center justify-start gap-2 rounded-xl px-3 py-2.5 text-sm
+                  w-full flex cursor-pointer items-center justify-start gap-2 rounded-xl px-3 py-2.5 text-sm
                   transition-colors
                   ${
                     isActive(item.href)
@@ -90,13 +96,16 @@ export default function Sidebar() {
           <div className="mt-auto border-t border-slate-200 px-4 py-4 space-y-2">
             <button
               type="button"
-              className="w-full inline-flex items-center justify-center rounded-xl bg-slate-900 text-white px-3 py-2 text-xs font-semibold shadow-sm hover:bg-slate-800"
+              className="w-full cursor-pointer inline-flex items-center justify-center rounded-xl bg-slate-900 text-white px-3 py-2 text-xs font-semibold shadow-sm hover:bg-slate-800"
             >
               Settings
             </button>
             <button
               type="button"
-              className="w-full inline-flex items-center justify-center rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100"
+              onClick={handleLogout}
+              className="w-full cursor-pointer inline-flex items-center justify-center rounded-xl
+             border border-slate-200 px-3 py-2 text-xs font-medium
+             text-slate-600 hover:bg-slate-100"
             >
               Logout
             </button>

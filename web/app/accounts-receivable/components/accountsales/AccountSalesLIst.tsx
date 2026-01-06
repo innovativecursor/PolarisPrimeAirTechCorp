@@ -51,7 +51,7 @@ export default function AccountSalesList({
           type="button"
           onClick={onCreate}
           disabled={loading}
-          className="inline-flex cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+          className="inline-flex  cursor-pointer cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
         >
           Sales Invoice Registry
         </button>
@@ -77,7 +77,7 @@ export default function AccountSalesList({
           if (key === "customer") {
             return <span className="text-slate-700">-</span>;
           }
-             if (key === "salesorderid") {
+          if (key === "salesorderid") {
             return <span className="text-slate-700">{o?.sales_order_id}</span>;
           }
           if (key === "totalamount") {
@@ -89,7 +89,7 @@ export default function AccountSalesList({
               <button
                 type="button"
                 onClick={() => onEdit(o)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
+                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
               >
                 <FiEdit2 className="h-3.5 w-3.5" />
               </button>
@@ -97,7 +97,7 @@ export default function AccountSalesList({
               <button
                 type="button"
                 onClick={() => onDelete(o)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
               >
                 <FiTrash2 className="h-3.5 w-3.5" />
               </button>

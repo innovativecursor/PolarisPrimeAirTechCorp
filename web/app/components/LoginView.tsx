@@ -11,7 +11,7 @@ export default function LoginView() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="min-h-screen flex items-center justify-center">
       <div className="rounded-3xl bg-white shadow-xl shadow-slate-200/80 border border-slate-100 overflow-hidden">
         <div className="grid gap-y-8 md:grid-cols-2">
           {/* Left panel */}
@@ -111,29 +111,29 @@ export default function LoginView() {
               </div>
 
               {/* Remember + Forgot */}
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-[13px]">
+              <div className="flex  flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-[13px]">
                 <label className="inline-flex items-center gap-2 text-slate-600">
                   <input
                     type="checkbox"
                     name="remember"
-                    className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                    className="h-4 w-4 cursor-pointer rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                   />
                   <span>Keep me signed in</span>
                 </label>
 
-                <button
+                {/* <button
                   type="button"
                   className="self-start text-slate-500 hover:text-slate-900 font-medium"
                 >
                   Forgot password?
-                </button>
+                </button> */}
               </div>
 
               {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-1 inline-flex w-full items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                className="mt-1 inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? "Signing in..." : "Sign in"}
               </button>

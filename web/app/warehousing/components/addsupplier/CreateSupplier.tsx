@@ -146,7 +146,7 @@ export default function CreateSupplier({
         </div>
         <div className="flex items-center justify-end gap-4 pt-4">
           <button
-            className="rounded-full px-6 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+            className="rounded-full  cursor-pointer px-6 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700"
             type="button"
             onClick={onCancel}
           >

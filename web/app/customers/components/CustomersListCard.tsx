@@ -87,7 +87,7 @@ export default function CustomersListCard({
               <button
                 type="button"
                 onClick={() => onEdit(c)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-[#eef1f8] px-3 py-1.5 text-xs text-slate-600 hover:bg-[#e4e8f3]"
+                className="inline-flex items-center  cursor-pointer gap-1.5 rounded-full border border-slate-300 bg-[#eef1f8] px-3 py-1.5 text-xs text-slate-600 hover:bg-[#e4e8f3]"
               >
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-500">
                   <FiEdit2 className="h-3.5 w-3.5" />
@@ -98,7 +98,7 @@ export default function CustomersListCard({
               <button
                 type="button"
                 onClick={() => onDelete(c)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#f9a8b8] bg-[#ffe6eb] px-3 py-1.5 text-xs text-[#e11d48] hover:bg-[#ffd7e0]"
+                className="inline-flex   cursor-pointer items-center gap-1.5 rounded-full border border-[#f9a8b8] bg-[#ffe6eb] px-3 py-1.5 text-xs text-[#e11d48] hover:bg-[#ffd7e0]"
               >
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full  text-[#e11d48]">
                   <FiTrash2 className="h-3.5 w-3.5" />

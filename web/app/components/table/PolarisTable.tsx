@@ -39,7 +39,7 @@ export default function PolarisTable<T>({
   columnWidths,
 }: PolarisTableProps<T>) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white">
+    <div className="overflow-hidden cursor-pointer rounded-[28px] border border-slate-200 bg-white">
       <Table>
         <TableHeader>
           <TableRow className="bg-[#f4f5f8] hover:bg-[#f4f5f8] border-b-slate-200">
