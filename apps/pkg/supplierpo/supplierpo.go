@@ -89,11 +89,12 @@ func AddSupplierPO(c *gin.Context, db *mongo.Database) {
 }
 
 type SupplierPOResponse struct {
-	ID        primitive.ObjectID      `bson:"_id" json:"id"`
-	POID      string                  `bson:"po_id" json:"po_id"`
-	Status    string                  `bson:"status" json:"status"`
-	CreatedAt time.Time               `bson:"created_at" json:"created_at"`
-	Items     []models.SupplierPOItem `bson:"items" json:"items"`
+	ID           primitive.ObjectID      `bson:"_id" json:"id"`
+	POID         string                  `bson:"po_id" json:"po_id"`
+	SalesOrderID string                  `bson:"sales_order_id,omitempty" json:"sales_order_id,omitempty"`
+	Status       string                  `bson:"status" json:"status"`
+	CreatedAt    time.Time               `bson:"created_at" json:"created_at"`
+	Items        []models.SupplierPOItem `bson:"items" json:"items"`
 
 	Project struct {
 		ID   primitive.ObjectID `bson:"id" json:"id"`
@@ -128,7 +129,6 @@ func GetAllSupplierPO(c *gin.Context, db *mongo.Database) {
 	}
 
 	skip := (page - 1) * limit
-
 	collection := db.Collection("supplier_purchase_orders")
 
 	pipeline := mongo.Pipeline{
@@ -169,15 +169,31 @@ func GetAllSupplierPO(c *gin.Context, db *mongo.Database) {
 			"preserveNullAndEmptyArrays": true,
 		}}},
 
+		// 🔹 Lookup Sales Order (ONLY for SalesOrderID)
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "salesorder",
+				"localField":   "soId",
+				"foreignField": "_id",
+				"as":           "salesOrder",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path":                       "$salesOrder",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
 		// Final Shape
 		{{
 			Key: "$project",
 			Value: bson.M{
-				"_id":        1,
-				"po_id":      "$poId",
-				"status":     1,
-				"created_at": "$createdAt",
-				"items":      1,
+				"_id":            1,
+				"po_id":          "$poId",
+				"sales_order_id": "$salesOrder.salesOrderId",
+				"status":         1,
+				"created_at":     "$createdAt",
+				"items":          1,
 
 				"project": bson.M{
 					"id":   "$project._id",

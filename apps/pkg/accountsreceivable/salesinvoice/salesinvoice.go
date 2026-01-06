@@ -145,10 +145,11 @@ func CreateSalesInvoice(c *gin.Context, db *mongo.Database) {
 }
 
 type SalesInvoiceListResponse struct {
-	ID        primitive.ObjectID `bson:"_id" json:"id"`
-	InvoiceID string             `bson:"invoice_id" json:"invoice_id"`
-	Total     float64            `bson:"total_amount" json:"total_amount"`
-	CreatedAt time.Time          `bson:"created_at" json:"created_at"`
+	ID           primitive.ObjectID `bson:"_id" json:"id"`
+	InvoiceID    string             `bson:"invoice_id" json:"invoice_id"`
+	SalesOrderID string             `bson:"sales_order_id,omitempty" json:"sales_order_id,omitempty"`
+	Total        float64            `bson:"total_amount" json:"total_amount"`
+	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
 
 	Project struct {
 		ID   primitive.ObjectID `bson:"id" json:"id"`
@@ -190,7 +191,6 @@ func GetAllSalesInvoices(c *gin.Context, db *mongo.Database) {
 	}
 
 	skip := (page - 1) * limit
-
 	collection := db.Collection("sales_invoices")
 
 	pipeline := mongo.Pipeline{
@@ -232,14 +232,30 @@ func GetAllSalesInvoices(c *gin.Context, db *mongo.Database) {
 			"preserveNullAndEmptyArrays": true,
 		}}},
 
+		// 🔹 Lookup Sales Order (ONLY SalesOrderID)
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "salesorder",
+				"localField":   "sales_order_id",
+				"foreignField": "_id",
+				"as":           "salesOrder",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path":                       "$salesOrder",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
 		// Shape response
 		{{
 			Key: "$project",
 			Value: bson.M{
-				"_id":          1,
-				"invoice_id":   1,
-				"total_amount": 1,
-				"created_at":   1,
+				"_id":            1,
+				"invoice_id":     1,
+				"sales_order_id": "$salesOrder.salesOrderId",
+				"total_amount":   1,
+				"created_at":     1,
 
 				"project": bson.M{
 					"id":   "$project._id",
