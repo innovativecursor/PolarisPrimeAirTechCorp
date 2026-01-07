@@ -23,7 +23,8 @@ const endpoints = {
   // ---------- PROJECT ----------
   project: {
     create: full("/project/create-project"), // POST
-    getAll: full("/project/get-all-project"), // GET
+    // getAll: full("/project/get-all-project"), // GET
+    getAll: (page = 1) => full(`/project/get-all-project?page=${page}`),
     getById: (id: string) => full(`/project/get-project-by/${id}`), // GET
     getCustomerDetails: (id: string) =>
       full(`/project/get-customer-details/${id}`), // GET

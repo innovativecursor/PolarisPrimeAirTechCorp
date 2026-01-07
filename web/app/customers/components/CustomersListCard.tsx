@@ -22,7 +22,7 @@ export default function CustomersListCard({
 }: CustomersListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "id", header: "Customer ID" },
+      { key: "customerid", header: "Customer ID" },
       { key: "name", header: "Customer name" },
       { key: "org", header: "Customer organization" },
       { key: "location", header: "Location" },
@@ -63,9 +63,9 @@ export default function CustomersListCard({
         getCell={(row, key) => {
           const c = row as CustomerRow;
 
-          if (key === "id") {
+          if (key === "customerid") {
             return (
-              <span className="font-mono text-xs text-slate-700">{c.id}</span>
+              <span className="font-mono text-xs text-slate-700">{c.customerid}</span>
             );
           }
           if (key === "name") {

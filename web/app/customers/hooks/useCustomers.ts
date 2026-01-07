@@ -10,6 +10,7 @@ import { useToast } from "@/app/hooks/useToast";
 
 export type CustomerRow = {
   id: string;
+  customerid: string;
   name: string;
   org: string;
   location: string;
@@ -53,6 +54,7 @@ export function useCustomers() {
 
       const rows: CustomerRow[] = list.map((c: any) => ({
         id: c.id || c._id || "",
+        customerid: c.customerid || "",
         name: c.customername || c.name || "",
         org: c.customerorg || "",
         location: c.address || "",

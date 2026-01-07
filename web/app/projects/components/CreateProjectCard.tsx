@@ -1,6 +1,6 @@
 import { CustomerRow } from "@/app/customers/hooks/useCustomers";
 import { ProjectFormValues, ProjectRow } from "../hooks/useProjects";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type CreateProjectCardProps = {
   initialValues?: ProjectRow;
@@ -20,13 +20,16 @@ export default function CreateProjectCard({
   const [form, setForm] = useState<ProjectFormValues>(() => ({
     projectId:
       initialValues?._raw?.project_id || initialValues?.id || "PRJ-7122",
-    projectName: initialValues?.name || "",
+    projectName: initialValues?._raw?.project_name || "",
     customerLocation:
-      initialValues?._raw?.addresscustomer ||
+      initialValues?._raw?.customer?.address ||
       initialValues?._raw?.customer_address ||
       "",
-    customerOrganisation: initialValues?._raw?.customer_organization || "",
-    customerId: initialValues?._raw?.customer_id || "",
+    customerOrganisation: initialValues?._raw?.customer?.organization || "",
+    customerId:
+      initialValues?._raw?.customer?.id ||
+      initialValues?._raw?.customer?._id ||
+      "",
     deploymentNotes: initialValues?._raw?.notes || "",
   }));
 
@@ -42,6 +45,23 @@ export default function CreateProjectCard({
       customerLocation: selected.location,
     }));
   };
+
+  useEffect(() => {
+    if (!initialValues) return;
+
+    const customerFromList = customers.find(
+      (c) => c.id === initialValues._raw?.customer?.id
+    );
+
+    setForm({
+      projectId: initialValues._raw?.project_id || "",
+      projectName: initialValues._raw?.project_name || "",
+      customerId: initialValues._raw?.customer?.id || "",
+      customerOrganisation: initialValues._raw?.customer?.organization || "",
+      customerLocation: customerFromList?.location || "",
+      deploymentNotes: initialValues._raw?.notes || "",
+    });
+  }, [initialValues, customers]);
 
   const handleChange =
     (field: keyof ProjectFormValues) =>
@@ -156,7 +176,7 @@ export default function CreateProjectCard({
 
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} ({c.id})
+                  {c.name} ({c.customerid})
                 </option>
               ))}
             </select>

@@ -8,6 +8,11 @@ import { FiEdit2, FiTrash2 } from "react-icons/fi";
 type ProjectsListProps = {
   projects: ProjectRow[];
   loading: boolean;
+  page: number;
+  total: number;
+  limit: number;
+  onNext: () => void;
+  onPrev: () => void;
   onCreate: () => void;
   onEdit: (row: ProjectRow) => void;
   onDelete: (row: ProjectRow) => void;
@@ -15,6 +20,11 @@ type ProjectsListProps = {
 
 export default function ProjectsListCard({
   projects,
+  page,
+  total,
+  limit,
+  onNext,
+  onPrev,
   onCreate,
   onEdit,
   onDelete,
@@ -24,8 +34,7 @@ export default function ProjectsListCard({
       { key: "projectid", header: "Project ID" },
       { key: "name", header: "Project name" },
       { key: "customer", header: "Customer" },
-      { key: "salesorderid", header: "Sales Order Id" },
-      { key: "salesdrid", header: "Sales DR Id" },
+      { key: "customerorganization", header: "Customer Organization" },
       { key: "actions", header: "Actions", align: "right" },
     ],
     []
@@ -75,12 +84,10 @@ export default function ProjectsListCard({
           if (key === "customer") {
             return <span className="text-slate-600">{p.customer}</span>;
           }
-          if (key === "salesorderid") {
-            return <span className="text-slate-800">{p.salesorderid}</span>;
+            if (key === "customerorganization") {
+            return <span className="text-slate-600">{p.organization}</span>;
           }
-          if (key === "salesdrid") {
-            return <span className="text-slate-600">{p.salesdrid}</span>;
-          }
+      
 
           return (
             <div className="flex justify-end gap-3">
@@ -109,6 +116,30 @@ export default function ProjectsListCard({
           );
         }}
       />
+
+      <div className="mt-6 flex items-center justify-between">
+        <span className="text-xs text-slate-500">
+          Page {page} of {Math.ceil(total / limit)}
+        </span>
+
+        <div className="flex gap-2">
+          <button
+            disabled={page === 1}
+            onClick={onPrev}
+            className="rounded-md border px-4 py-1.5 text-xs disabled:opacity-50"
+          >
+            Prev
+          </button>
+
+          <button
+            disabled={page * limit >= total}
+            onClick={onNext}
+            className="rounded-md border px-4 py-1.5 text-xs disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </section>
   );
 }

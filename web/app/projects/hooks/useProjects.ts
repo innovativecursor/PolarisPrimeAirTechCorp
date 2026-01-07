@@ -15,8 +15,7 @@ export type ProjectRow = {
   projectid: string;
   name: string;
   customer: string;
-  salesdrid: string;
-  salesorderid: string;
+  organization: string;
   _raw?: any;
 };
 
@@ -35,6 +34,9 @@ export function useProjects() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<ProjectRow | null>(null);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
 
   const toast = useToast();
 
@@ -43,21 +45,38 @@ export function useProjects() {
     try {
       setLoading(true);
 
-      const res = await fetchDataGet<{ projects: any[] }>(
-        endpoints.project.getAll
-      );
+      const res = await fetchDataGet<{
+        data: any[];
+        page: number;
+        limit: number;
+        total: number;
+      }>(endpoints.project.getAll(page));
 
-      const list = res?.projects || [];
+      const list = res?.data || [];
+      setTotal(res?.total || 0);
 
-      const rows: ProjectRow[] = list.map((p: any) => ({
-        id: p._id || p.id || "",
-        projectid: p.project_id || "",
-        name: p.project_name || "",
-        customer: p.customer_organization || "",
-        salesorderid: p.sales_order_id || "",
-        salesdrid: p.sales_dr_id || "",
-        _raw: p,
-      }));
+      const rows: ProjectRow[] = list.map((p: any) => {
+        console.log("PROJECT FROM API 👉", p);
+
+        return {
+          id: p.id || "",
+          projectid: p.project_id || "",
+          name: p.project_name || "",
+          customer: p.customer?.name || "",
+          organization: p.customer?.organization || "",
+          _raw: {
+            id: p.id || p._id,
+            project_id: p.project_id,
+            project_name: p.project_name,
+            notes: p.notes || "",
+            customer: {
+              id: p.customer?.id || p.customer?._id || "",
+              address: p.customer?.address || "",
+              organization: p.customer?.organization || "",
+            },
+          },
+        };
+      });
 
       setProjects(rows);
     } catch (e: any) {
@@ -72,24 +91,37 @@ export function useProjects() {
     try {
       setSaving(true);
 
-      const payload = {
-        project_name: values.projectName,
-        customer_id: values.customerId,
-        customer_address: values.customerLocation,
-        customer_organization: values.customerOrganisation,
-        notes: values.deploymentNotes || "",
-      };
+      const isEdit = Boolean(editing?._raw?.id || editing?._raw?._id);
 
-      if (editing?._raw?.id || editing?._raw?._id) {
-        const id = editing._raw.id || editing._raw._id;
+      if (isEdit) {
+        // ✅ EDIT PAYLOAD
+        const payload = {
+          project_name: values.projectName,
+          customer_id: values.customerId,
+          notes: values.deploymentNotes || "",
+        };
+
+        const id = editing!._raw.id || editing!._raw._id;
+
         await fetchWithError(endpoints.project.update(id), {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
+
         toast.success("Project updated");
       } else {
+        // ✅ CREATE PAYLOAD
+        const payload = {
+          project_name: values.projectName,
+          customer_id: values.customerId,
+          customer_organization: values.customerOrganisation,
+          customer_address: values.customerLocation,
+          notes: values.deploymentNotes || "",
+        };
+
         await fetchDataPost(endpoints.project.create, payload);
+
         toast.success("Project created");
       }
 
@@ -121,7 +153,7 @@ export function useProjects() {
 
   useEffect(() => {
     loadProjects();
-  }, []);
+  }, [page]);
 
   return {
     // state
@@ -138,5 +170,10 @@ export function useProjects() {
     // actions
     saveProject,
     deleteProject,
+
+    page,
+    setPage,
+    total,
+    limit,
   };
 }

@@ -27,6 +27,13 @@ export default function ProjectsPage() {
         <ProjectsListCard
           loading={projectsHook.loading || projectsHook.saving}
           projects={projectsHook.projects}
+          page={projectsHook.page}
+          total={projectsHook.total}
+          limit={projectsHook.limit}
+          onNext={() => projectsHook.setPage(projectsHook.page + 1)}
+          onPrev={() =>
+            projectsHook.setPage(Math.max(1, projectsHook.page - 1))
+          }
           onCreate={() => {
             projectsHook.setEditing(null);
             projectsHook.setMode("create");
