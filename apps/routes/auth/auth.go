@@ -75,6 +75,9 @@ func Auth(db *mongo.Database) {
 	apiV1.GET("/project/get-all-project", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.GetAllProjects(c, db)
 	})
+	apiV1.GET("/project/get-all-project-info", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		project.GetAllProjectsInfo(c, db)
+	})
 	apiV1.GET("/project/get-project-by/:projectID", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.GetProjectFullDetails(c, db)
 	})

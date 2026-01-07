@@ -288,6 +288,65 @@ func GetAllProjects(c *gin.Context, db *mongo.Database) {
 	})
 }
 
+func GetAllProjectsInfo(c *gin.Context, db *mongo.Database) {
+
+	// Auth
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	if _, ok := user.(*models.User); !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		return
+	}
+
+	collection := db.Collection("project")
+
+	pipeline := mongo.Pipeline{
+		// Sort latest first
+		{{Key: "$sort", Value: bson.M{"created_at": -1}}},
+
+		// Project only project fields (NO customer)
+		{{
+			Key: "$project",
+			Value: bson.M{
+				"_id":          1,
+				"project_id":   1,
+				"project_name": 1,
+				"notes":        1,
+				"created_at":   1,
+			},
+		}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
+		return
+	}
+	defer cursor.Close(c)
+
+	// Use a basic response struct
+	var projects []struct {
+		ID          primitive.ObjectID `bson:"_id" json:"id"`
+		ProjectID   string             `bson:"project_id" json:"project_id"`
+		ProjectName string             `bson:"project_name" json:"project_name"`
+		Notes       string             `bson:"notes,omitempty" json:"notes,omitempty"`
+		CreatedAt   int64              `bson:"created_at" json:"created_at"`
+	}
+
+	if err := cursor.All(c, &projects); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode projects"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  projects,
+		"total": len(projects),
+	})
+}
+
 func UpdateProject(c *gin.Context, db *mongo.Database) {
 
 	user, exists := c.Get("user")
