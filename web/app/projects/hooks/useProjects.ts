@@ -16,6 +16,7 @@ export type ProjectRow = {
   name: string;
   customer: string;
   organization: string;
+  notes: string;
   _raw?: any;
 };
 
@@ -56,14 +57,13 @@ export function useProjects() {
       setTotal(res?.total || 0);
 
       const rows: ProjectRow[] = list.map((p: any) => {
-        console.log("PROJECT FROM API 👉", p);
-
         return {
           id: p.id || "",
           projectid: p.project_id || "",
           name: p.project_name || "",
           customer: p.customer?.name || "",
           organization: p.customer?.organization || "",
+          notes: p.notes || "",
           _raw: {
             id: p.id || p._id,
             project_id: p.project_id,
@@ -151,26 +151,17 @@ export function useProjects() {
     }
   };
 
-  useEffect(() => {
-    loadProjects();
-  }, [page]);
-
   return {
-    // state
     mode,
     projects,
     loading,
     saving,
     editing,
-
-    // setters
     setMode,
     setEditing,
-
-    // actions
     saveProject,
     deleteProject,
-
+    loadProjects,
     page,
     setPage,
     total,

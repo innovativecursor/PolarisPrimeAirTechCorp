@@ -35,10 +35,17 @@ export default function ProjectsListCard({
       { key: "name", header: "Project name" },
       { key: "customer", header: "Customer" },
       { key: "customerorganization", header: "Customer Organization" },
+      { key: "notes", header: "Notes" },
       { key: "actions", header: "Actions", align: "right" },
     ],
     []
   );
+
+  const truncateWords = (text = "", maxWords = 10) => {
+    const words = text.trim().split(/\s+/);
+    if (words.length <= maxWords) return text;
+    return words.slice(0, maxWords).join(" ") + " ...";
+  };
 
   const columnWidths = "1.2fr 2.4fr 2.2fr 1.6fr 1.1fr 1.2fr";
 
@@ -84,10 +91,17 @@ export default function ProjectsListCard({
           if (key === "customer") {
             return <span className="text-slate-600">{p.customer}</span>;
           }
-            if (key === "customerorganization") {
+          if (key === "customerorganization") {
             return <span className="text-slate-600">{p.organization}</span>;
           }
-      
+
+          if (key === "notes") {
+            return (
+              <span className="text-slate-600">
+                {truncateWords(p.notes, 10)}
+              </span>
+            );
+          }
 
           return (
             <div className="flex justify-end gap-3">
@@ -126,7 +140,7 @@ export default function ProjectsListCard({
           <button
             disabled={page === 1}
             onClick={onPrev}
-            className="rounded-md border px-4 py-1.5 text-xs disabled:opacity-50"
+            className="rounded-md cursor-pointer border px-4 py-1.5 text-xs disabled:opacity-50"
           >
             Prev
           </button>
@@ -134,7 +148,7 @@ export default function ProjectsListCard({
           <button
             disabled={page * limit >= total}
             onClick={onNext}
-            className="rounded-md border px-4 py-1.5 text-xs disabled:opacity-50"
+            className="rounded-md cursor-pointer border px-4 py-1.5 text-xs disabled:opacity-50"
           >
             Next
           </button>

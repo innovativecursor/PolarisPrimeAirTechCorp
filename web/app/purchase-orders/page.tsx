@@ -66,8 +66,6 @@ export default function SupplierPOPage() {
       setError(null);
 
       const isEdit = Boolean(editing?._raw?.id || editing?._raw?._id);
-
-      // items ko backend format me convert
       const items = values.items.map((i) => ({
         description: i.description,
         quantity: Number(i.quantity || 0),

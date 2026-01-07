@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import AppShell from "../components/layout/AppShell";
 import { useConfirmToast } from "../hooks/useConfirmToast";
+import { useProjects } from "../projects/hooks/useProjects";
 import CreateSalesOrderCard from "./components/CreateSalesOrderCard";
 import SalesOrdersListCard from "./components/SalesOrdersListCard";
 import { useSalesOrders } from "./hooks/useSalesOrders";
@@ -9,6 +11,7 @@ import { useSalesOrders } from "./hooks/useSalesOrders";
 export default function SalesOrdersPage() {
   const so = useSalesOrders();
   const confirmToast = useConfirmToast();
+  const { loadProjects, page } = useProjects();
 
   const handleDelete = (row: any) => {
     confirmToast.confirm({
@@ -19,6 +22,10 @@ export default function SalesOrdersPage() {
       onConfirm: () => so.deleteOrder(row),
     });
   };
+
+  useEffect(() => {
+    loadProjects();
+  }, [page]);
 
   return (
     <AppShell>

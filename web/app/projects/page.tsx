@@ -5,6 +5,7 @@ import { useConfirmToast } from "../hooks/useConfirmToast";
 import AppShell from "../components/layout/AppShell";
 import ProjectsListCard from "./components/ProjectsListCard";
 import CreateProjectCard from "./components/CreateProjectCard";
+import { useEffect } from "react";
 
 export default function ProjectsPage() {
   const projectsHook = useProjects();
@@ -20,6 +21,10 @@ export default function ProjectsPage() {
       onConfirm: () => projectsHook.deleteProject(row),
     });
   };
+
+  useEffect(() => {
+    projectsHook.loadProjects();
+  }, [projectsHook.page]);
 
   return (
     <AppShell>

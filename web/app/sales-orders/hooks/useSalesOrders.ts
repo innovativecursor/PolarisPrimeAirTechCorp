@@ -89,31 +89,50 @@ export function useSalesOrders() {
   };
 
   /* ---------- LOAD OPTIONS ---------- */
+  // const loadOptions = async () => {
+  //   try {
+  //     const [pRes, cRes, aRes] = await Promise.all([
+  //       fetchDataGet<any>(endpoints.project.getAll),
+  //       fetchDataGet<any>(endpoints.customer.getAll),
+  //       fetchDataGet<any>(endpoints.salesOrder.getAircon),
+  //     ]);
+
+  //     const pList = pRes?.projects || pRes?.data || [];
+  //     const cList = cRes?.data || cRes?.customers || [];
+  //     const aList = aRes?.data || aRes?.aircons || [];
+
+  //     setProjects(
+  //       pList.map((p: any) => ({
+  //         id: p.id || p._id,
+  //         name: p.project_name || p.name,
+  //       }))
+  //     );
+
+  //     setCustomers(
+  //       cList.map((c: any) => ({
+  //         id: c.id || c._id,
+  //         name: c.customername || c.name,
+  //       }))
+  //     );
+
+  //     setAircons(
+  //       aList.map((a: any) => ({
+  //         id: a.id || a._id,
+  //         name: a.name,
+  //         model: a.model,
+  //         brand: a.brand,
+  //       }))
+  //     );
+  //   } catch (e) {
+  //     console.error("Failed to load options", e);
+  //   }
+  // };
+
   const loadOptions = async () => {
     try {
-      const [pRes, cRes, aRes] = await Promise.all([
-        fetchDataGet<any>(endpoints.project.getAll),
-        fetchDataGet<any>(endpoints.customer.getAll),
-        fetchDataGet<any>(endpoints.salesOrder.getAircon),
-      ]);
+      const res = await fetchDataGet<any>(endpoints.salesOrder.getAircon);
 
-      const pList = pRes?.projects || pRes?.data || [];
-      const cList = cRes?.data || cRes?.customers || [];
-      const aList = aRes?.data || aRes?.aircons || [];
-
-      setProjects(
-        pList.map((p: any) => ({
-          id: p.id || p._id,
-          name: p.project_name || p.name,
-        }))
-      );
-
-      setCustomers(
-        cList.map((c: any) => ({
-          id: c.id || c._id,
-          name: c.customername || c.name,
-        }))
-      );
+      const aList = res?.data || res?.aircons || [];
 
       setAircons(
         aList.map((a: any) => ({
@@ -124,7 +143,7 @@ export function useSalesOrders() {
         }))
       );
     } catch (e) {
-      console.error("Failed to load options", e);
+      console.error("Failed to load aircon options", e);
     }
   };
 
