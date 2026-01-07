@@ -3,6 +3,7 @@ package project
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetCustomerDetails(c *gin.Context, db *mongo.Database) {
@@ -63,7 +63,7 @@ func CreateProject(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	var projectdata config.ProjectRequest
+	var projectdata config.CreateProjectRequest
 	if err := c.ShouldBindJSON(&projectdata); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
 		return
@@ -81,15 +81,13 @@ func CreateProject(c *gin.Context, db *mongo.Database) {
 	now := time.Now().Unix()
 
 	project := models.Project{
-		ID:                   primitive.NewObjectID(),
-		ProjectName:          projectdata.ProjectName,
-		CustomerID:           customerObjID,
-		AddressCustomer:      projectdata.CustomerAddress,
-		CustomerOrganization: projectdata.CustomerOrganization,
-		Notes:                projectdata.Notes,
-		ProjectID:            projectCode,
-		CreatedAt:            now,
-		UpdatedAt:            now,
+		ID:          primitive.NewObjectID(),
+		ProjectName: projectdata.ProjectName,
+		CustomerID:  customerObjID,
+		Notes:       projectdata.Notes,
+		ProjectID:   projectCode,
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	}
 
 	// Insert to DB
@@ -178,6 +176,19 @@ func GetProjectFullDetails(c *gin.Context, db *mongo.Database) {
 	})
 }
 
+type ProjectListResponse struct {
+	ID          primitive.ObjectID `bson:"_id" json:"id"`
+	ProjectID   string             `bson:"project_id" json:"project_id"`
+	ProjectName string             `bson:"project_name" json:"project_name"`
+	CreatedAt   int64              `bson:"created_at" json:"created_at"`
+
+	Customer struct {
+		ID   primitive.ObjectID `bson:"id" json:"id"`
+		Name string             `bson:"name" json:"name"`
+		Org  string             `bson:"organization" json:"organization"`
+	} `bson:"customer" json:"customer"`
+}
+
 func GetAllProjects(c *gin.Context, db *mongo.Database) {
 
 	// Auth
@@ -186,30 +197,92 @@ func GetAllProjects(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
-	_, ok := user.(*models.User)
-	if !ok {
+	if _, ok := user.(*models.User); !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
 		return
 	}
 
-	// Sort by latest created_at
-	findOptions := options.Find().SetSort(bson.M{"created_at": -1})
+	// Pagination (same as PO)
+	page := int64(1)
+	limit := int64(10)
 
-	cursor, err := db.Collection("project").Find(c, bson.M{}, findOptions)
+	if p := c.Query("page"); p != "" {
+		if v, err := strconv.ParseInt(p, 10, 64); err == nil && v > 0 {
+			page = v
+		}
+	}
+
+	if l := c.Query("limit"); l != "" {
+		if v, err := strconv.ParseInt(l, 10, 64); err == nil && v > 0 {
+			limit = v
+		}
+	}
+
+	skip := (page - 1) * limit
+
+	collection := db.Collection("project")
+
+	pipeline := mongo.Pipeline{
+		// Sort
+		{{Key: "$sort", Value: bson.M{"created_at": -1}}},
+
+		// Pagination
+		{{Key: "$skip", Value: skip}},
+		{{Key: "$limit", Value: limit}},
+
+		// Lookup Customer
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "customer",
+				"localField":   "customer_id",
+				"foreignField": "_id",
+				"as":           "customer",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path":                       "$customer",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		// Shape final response
+		{{
+			Key: "$project",
+			Value: bson.M{
+				"_id":          1,
+				"project_id":   1,
+				"project_name": 1,
+				"created_at":   1,
+
+				"customer": bson.M{
+					"id":           "$customer._id",
+					"name":         "$customer.customername",
+					"organization": "$customer.customerorg",
+				},
+			},
+		}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch projects"})
 		return
 	}
+	defer cursor.Close(c)
 
-	var projects []models.Project
+	var projects []ProjectListResponse
 	if err := cursor.All(c, &projects); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode projects"})
 		return
 	}
 
+	total, _ := collection.CountDocuments(c, bson.M{})
+
 	c.JSON(http.StatusOK, gin.H{
-		"total":    len(projects),
-		"projects": projects,
+		"data":  projects,
+		"page":  page,
+		"limit": limit,
+		"total": total,
 	})
 }
 
@@ -239,7 +312,7 @@ func UpdateProject(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	var req config.ProjectRequest
+	var req config.UpdateProjectRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
 		return
@@ -253,12 +326,10 @@ func UpdateProject(c *gin.Context, db *mongo.Database) {
 	}
 
 	updateData := bson.M{
-		"project_name":          req.ProjectName,
-		"customer_id":           custObjID,
-		"customer_organization": req.CustomerOrganization,
-		"address_customer":      req.CustomerAddress,
-		"notes":                 req.Notes,
-		"updatedAt":             time.Now().Unix(),
+		"project_name": req.ProjectName,
+		"customer_id":  custObjID,
+		"notes":        req.Notes,
+		"updatedAt":    time.Now().Unix(),
 	}
 
 	result, err := db.Collection("project").UpdateOne(
