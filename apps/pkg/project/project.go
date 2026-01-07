@@ -180,6 +180,7 @@ type ProjectListResponse struct {
 	ID          primitive.ObjectID `bson:"_id" json:"id"`
 	ProjectID   string             `bson:"project_id" json:"project_id"`
 	ProjectName string             `bson:"project_name" json:"project_name"`
+	Notes       string             `bson:"notes,omitempty" json:"notes,omitempty"`
 	CreatedAt   int64              `bson:"created_at" json:"created_at"`
 
 	Customer struct {
@@ -252,6 +253,7 @@ func GetAllProjects(c *gin.Context, db *mongo.Database) {
 				"_id":          1,
 				"project_id":   1,
 				"project_name": 1,
+				"notes":        1,
 				"created_at":   1,
 
 				"customer": bson.M{
