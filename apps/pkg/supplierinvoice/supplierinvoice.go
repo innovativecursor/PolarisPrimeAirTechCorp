@@ -240,6 +240,12 @@ func EditSupplierInvoice(c *gin.Context, db *mongo.Database) {
 	objID, _ := primitive.ObjectIDFromHex(payload.ID)
 	supplierID, _ := primitive.ObjectIDFromHex(payload.SupplierID)
 
+	projectID, err := primitive.ObjectIDFromHex(payload.ProjectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
 	invDate, _ := time.Parse("2006-01-02", payload.InvoiceDate)
 	dueDate, _ := time.Parse("2006-01-02", payload.DueDate)
 
@@ -257,7 +263,7 @@ func EditSupplierInvoice(c *gin.Context, db *mongo.Database) {
 	update := bson.M{
 		"$set": bson.M{
 			"supplier_id":       supplierID,
-			"project_id":        payload.ProjectID,
+			"project_id":        projectID,
 			"invoice_no":        payload.InvoiceNo,
 			"invoice_date":      invDate,
 			"delivery_no":       payload.DeliveryNo,
@@ -272,7 +278,7 @@ func EditSupplierInvoice(c *gin.Context, db *mongo.Database) {
 	}
 	collection := db.Collection("supplierinvoice")
 
-	_, err := collection.UpdateOne(c, bson.M{"_id": objID}, update)
+	_, err = collection.UpdateOne(c, bson.M{"_id": objID}, update)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update invoice"})
 		return
