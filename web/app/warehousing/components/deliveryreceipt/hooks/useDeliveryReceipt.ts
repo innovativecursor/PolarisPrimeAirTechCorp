@@ -23,6 +23,9 @@ export function useDeliveryReceipt() {
   const [allDrReceipts, setAllDrReceipts] = useState<SupplierDeliveryReceipt[]>(
     []
   );
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 10;
 
   const [form, setForm] = useState<DeliveryReceiptForm>({
     supplier_id: "",
@@ -76,17 +79,40 @@ export function useDeliveryReceipt() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetchDataGet<SupplierDRListRes>(
-        endpoints.supplierDR.getAll
+
+      const res = await fetchDataGet<any>(
+        `${endpoints.supplierDR.getAll}?page=${page}&limit=${limit}`
       );
-      setAllDrReceipts(Array.isArray(res?.supplierDR) ? res?.supplierDR : []);
+
+      const list = res?.data || res?.supplierDR || [];
+      setTotal(res?.total || 0);
+
+      setAllDrReceipts(
+        list.map((d: any) => ({
+          id: d._id,
+
+          supplier_dr_no: d.supplier_dr_no || "",
+
+          project_name: d.project_name || "",
+
+          your_po_no: d.your_po_no || "",
+
+          ship_to: d.ship_to || "",
+
+          date: d.date || "",
+
+          dispatch_date: d.dispatch_date || "",
+
+          _raw: d,
+        }))
+      );
     } catch (err: any) {
-      setError(err.message || "Failed to fetch inventories");
+      setError(err.message || "Failed to fetch delivery receipts");
       setAllDrReceipts([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   const loadDrForEdit = useCallback(async (id: string) => {
     const res = await fetchDataGet<{ supplierDR: any }>(
@@ -246,5 +272,9 @@ export function useDeliveryReceipt() {
     GetDrReceipts,
     allDrReceipts,
     deleteDr,
+    page,
+    setPage,
+    total,
+    limit,
   };
 }

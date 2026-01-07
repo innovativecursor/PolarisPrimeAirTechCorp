@@ -21,10 +21,10 @@ export type SalesInvoiceForm = {
 };
 
 export type SupplierInvoice = {
-  id: string;
+  _id: string;
   supplier_id: string;
   project_id: string;
-
+  project_name: string;
   invoice_no: string;
   invoice_date: string;
   delivery_no: string;

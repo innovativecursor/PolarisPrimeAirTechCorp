@@ -13,8 +13,10 @@ export type SalesOrderStatus = "Approved" | "Pending" | "Draft" | string;
 
 export type SalesOrderRow = {
   id: string;
+  salesOrderId: string;
   projectName: string;
   customerName: string;
+  totalAmount: number;
   status: SalesOrderStatus;
   _raw?: any;
 };
@@ -52,7 +54,7 @@ export function useSalesOrders() {
   const [orders, setOrders] = useState<SalesOrderRow[]>([]);
   const [editing, setEditing] = useState<SalesOrderRow | null>(null);
 
-  const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const [projectName, setProjectName] = useState<ProjectOption[]>([]);
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [aircons, setAircons] = useState<AirconOption[]>([]);
 
@@ -74,8 +76,11 @@ export function useSalesOrders() {
       setOrders(
         list.map((o: any) => ({
           id: o.id || o._id || "",
+          salesOrderId:
+            o.salesOrderId || o.sales_order_id || o.sales_orderid || "",
           projectName: o.project_name || o.projectName || "",
           customerName: o.customer_name || o.customerName || "",
+          totalAmount: Number(o.totalAmount || o.total_amount || 0),
           status: o.status || "Pending",
           _raw: o,
         }))
@@ -89,44 +94,37 @@ export function useSalesOrders() {
   };
 
   /* ---------- LOAD OPTIONS ---------- */
-  // const loadOptions = async () => {
-  //   try {
-  //     const [pRes, cRes, aRes] = await Promise.all([
-  //       fetchDataGet<any>(endpoints.project.getAll),
-  //       fetchDataGet<any>(endpoints.customer.getAll),
-  //       fetchDataGet<any>(endpoints.salesOrder.getAircon),
-  //     ]);
 
-  //     const pList = pRes?.projects || pRes?.data || [];
-  //     const cList = cRes?.data || cRes?.customers || [];
-  //     const aList = aRes?.data || aRes?.aircons || [];
+  const loadProjectName = async () => {
+    const res = await fetchDataGet<any>(endpoints.projectInfo.getAll);
+    const list = res?.data || res || [];
+    setProjectName(
+      list.map((p: any) => ({
+        id: p.id || p._id,
+        name: p.project_name || p.name,
+      }))
+    );
+  };
 
-  //     setProjects(
-  //       pList.map((p: any) => ({
-  //         id: p.id || p._id,
-  //         name: p.project_name || p.name,
-  //       }))
-  //     );
+  const loadCustomerByProject = async (projectId: string) => {
+    try {
+      const res = await fetchDataGet<any>(
+        endpoints.salesInvoice.customerByProject(projectId)
+      );
 
-  //     setCustomers(
-  //       cList.map((c: any) => ({
-  //         id: c.id || c._id,
-  //         name: c.customername || c.name,
-  //       }))
-  //     );
+      const customer = res?.customer;
 
-  //     setAircons(
-  //       aList.map((a: any) => ({
-  //         id: a.id || a._id,
-  //         name: a.name,
-  //         model: a.model,
-  //         brand: a.brand,
-  //       }))
-  //     );
-  //   } catch (e) {
-  //     console.error("Failed to load options", e);
-  //   }
-  // };
+      if (!customer) return null;
+
+      return {
+        id: customer.id || customer._id,
+        name: customer.customername || customer.name || "",
+      };
+    } catch (e) {
+      toast.error("Failed to load customer by project");
+      return null;
+    }
+  };
 
   const loadOptions = async () => {
     try {
@@ -237,24 +235,22 @@ export function useSalesOrders() {
   }, []);
 
   return {
-    // state
     mode,
     orders,
     editing,
-    projects,
+    loadProjectName,
+    projectName,
     customers,
     aircons,
     loading,
     saving,
     error,
-
-    // setters
     setMode,
     setEditing,
-
-    // actions
     editOrder,
     saveOrder,
     deleteOrder,
+    loadCustomerByProject,
+    loadOrders
   };
 }

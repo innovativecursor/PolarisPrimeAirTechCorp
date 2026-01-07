@@ -22,9 +22,10 @@ export default function SalesOrdersListCard({
 }: SalesOrdersListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "id", header: "Sales order ID" },
+      { key: "salesOrderId", header: "Sales order ID" },
       { key: "projectName", header: "Project name" },
       { key: "customerName", header: "Customer name" },
+      { key: "totalAmount", header: "Total amount" },
       { key: "status", header: "Status" },
       { key: "actions", header: "Actions", align: "right" },
     ],
@@ -63,9 +64,11 @@ export default function SalesOrdersListCard({
         getCell={(row, key) => {
           const o = row as SalesOrderRow;
 
-          if (key === "id") {
+          if (key === "salesOrderId") {
             return (
-              <span className="font-mono text-xs text-slate-700">{o.id}</span>
+              <span className="font-mono text-xs text-slate-700">
+                {o.salesOrderId}
+              </span>
             );
           }
           if (key === "projectName") {
@@ -74,6 +77,14 @@ export default function SalesOrdersListCard({
           if (key === "customerName") {
             return <span className="text-slate-700">{o.customerName}</span>;
           }
+          if (key === "totalAmount") {
+            return (
+              <span className="font-medium text-slate-800">
+                ₱ {o.totalAmount.toLocaleString()}
+              </span>
+            );
+          }
+
           if (key === "status") {
             const isApproved =
               o.status.toLowerCase() === "approved" ||

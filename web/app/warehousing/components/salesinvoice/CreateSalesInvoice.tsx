@@ -1,4 +1,4 @@
-import { ProjectOption } from "@/app/purchase-orders/components/types";
+// import { ProjectOption } from "@/app/purchase-orders/components/types";
 import {
   Select,
   SelectContent,
@@ -9,10 +9,11 @@ import {
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import { Supplier } from "../addsupplier/type";
 import { InvoiceItem, SalesInvoiceForm } from "./type";
+import { ProjectOption } from "@/app/sales-orders/hooks/useSalesOrders";
 
 type CreateSalesInvioceProps = {
   onCancel: () => void;
-  projects: ProjectOption[];
+  projectsName: ProjectOption[];
   allSupplier: Supplier[];
 
   form: SalesInvoiceForm;
@@ -33,7 +34,7 @@ type CreateSalesInvioceProps = {
 
 export default function CreateSalesInvioce({
   onCancel,
-  projects,
+  projectsName,
   allSupplier,
 
   form,
@@ -113,7 +114,7 @@ export default function CreateSalesInvioce({
                 <SelectValue placeholder="Choose project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((p) => (
+                {projectsName.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>

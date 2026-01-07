@@ -19,12 +19,15 @@ export function useAccountSales() {
   const initialForm = {
     project_id: "",
     customer_id: "",
+    customer_name: "",
     sales_order_id: "",
   };
 
   const [form, setForm] = useState(initialForm);
-
   const [items, setItems] = useState<InvoiceItem[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const updateForm = (key: keyof typeof form, value: string) => {
     setForm((p) => ({ ...p, [key]: value }));
@@ -54,17 +57,21 @@ export function useAccountSales() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetchDataGet<SalesInvoiceListRes>(
-        endpoints.salesInvoice.getAll
+
+      const res = await fetchDataGet<any>(
+        `${endpoints.salesInvoice.getAll}?page=${page}`
       );
-      setAllAccountSales(Array.isArray(res?.data) ? res?.data : []);
+
+      setAllAccountSales(res?.data || []);
+      setTotal(res?.total || 0);
+      setLimit(res?.limit || 10);
     } catch (err: any) {
       setError(err.message || "Failed to fetch inventories");
       setAllAccountSales([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page]);
 
   const createSalesInvoice = useCallback(async () => {
     if (!form.project_id || !form.customer_id || !form.sales_order_id) {
@@ -153,7 +160,10 @@ export function useAccountSales() {
     addItem,
     updateItem,
     removeItem,
-
+    page,
+    setPage,
+    limit,
+    total,
     createSalesInvoice,
     onSubmit: createSalesInvoice,
     GetAccountSales,

@@ -11,6 +11,10 @@ type AccountListProps = {
   allAccountSales: SalesInvoice[];
   onEdit: (row: SalesInvoice) => void;
   onDelete: (row: SalesInvoice) => void;
+  page: number;
+  setPage: (p: number) => void;
+  total: number;
+  limit: number;
 };
 
 export default function AccountSalesList({
@@ -19,6 +23,10 @@ export default function AccountSalesList({
   allAccountSales,
   onEdit,
   onDelete,
+  page,
+  setPage,
+  limit,
+  total,
 }: AccountListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
@@ -72,11 +80,13 @@ export default function AccountSalesList({
             );
           }
           if (key === "projectname") {
-            return <span className="text-slate-900">-</span>;
+            return <span>{o?.project?.name || "-"}</span>;
           }
+
           if (key === "customer") {
-            return <span className="text-slate-700">-</span>;
+            return <span>{o?.customer?.name || "-"}</span>;
           }
+
           if (key === "salesorderid") {
             return <span className="text-slate-700">{o?.sales_order_id}</span>;
           }
@@ -105,6 +115,27 @@ export default function AccountSalesList({
           );
         }}
       />
+      <div className="mt-6 flex items-center justify-end gap-3">
+        <button
+          disabled={page <= 1}
+          onClick={() => setPage(page - 1)}
+          className="px-4 py-2 text-xs rounded-lg border disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="text-xs text-slate-600">
+          Page {page} of {Math.ceil(total / limit)}
+        </span>
+
+        <button
+          disabled={page * limit >= total}
+          onClick={() => setPage(page + 1)}
+          className="px-4 py-2 text-xs rounded-lg border disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </>
   );
 }

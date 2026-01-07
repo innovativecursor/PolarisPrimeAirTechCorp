@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect } from "react";
@@ -11,19 +10,20 @@ import SupplierPOListCard from "./components/SupplierPOListCard";
 import CreateSupplierPOCard from "./components/CreateSupplierPOCard";
 import { useSupplierPO } from "./hooks/useSupplierPO";
 import { SupplierPOFormValues } from "./components/types";
+import { useSalesOrders } from "../sales-orders/hooks/useSalesOrders";
+import { useSupplier } from "../warehousing/components/addsupplier/hooks/useSupplier";
 
 export default function SupplierPOPage() {
   const { user } = useAuth();
   const toast = useToast();
   const displayName = user?.name || user?.email || "Admin";
+  const { loadProjectName, projectName, loadOrders, orders } = useSalesOrders();
+  const { GetSupplier, allSupplier } = useSupplier();
 
   const {
     mode,
     setMode,
-    orders,
-    projectsOptions,
-    suppliersOptions,
-    salesOrdersOptions,
+    supplierPO,
     loading,
     saving,
     setSaving,
@@ -31,8 +31,7 @@ export default function SupplierPOPage() {
     setError,
     editing,
     setEditing,
-    loadOrders,
-    loadOptions,
+    loadSupplierPO,
     handleEdit,
     page,
     totalPages,
@@ -42,11 +41,13 @@ export default function SupplierPOPage() {
 
   // Load data on mount
   useEffect(() => {
-    void loadOrders(page);
+    void loadSupplierPO(page);
   }, [page]);
 
   useEffect(() => {
-    void loadOptions();
+    void loadProjectName();
+    void GetSupplier();
+    void loadOrders();
   }, []);
 
   // Handlers
@@ -108,7 +109,7 @@ export default function SupplierPOPage() {
         toast.success("Supplier PO created successfully");
       }
 
-      await loadOrders(page);
+      await loadSupplierPO(page);
 
       setMode("list");
       setEditing(null);
@@ -151,7 +152,7 @@ export default function SupplierPOPage() {
         {mode === "list" ? (
           <SupplierPOListCard
             loading={loading || saving}
-            orders={orders}
+            orders={supplierPO}
             onCreate={handleCreateClick}
             onEdit={handleEdit}
             page={page}
@@ -164,9 +165,9 @@ export default function SupplierPOPage() {
             key={editing?._raw?.id || editing?._raw?._id || "new"}
             saving={saving}
             initialValues={editing ?? undefined}
-            projects={projectsOptions}
-            suppliers={suppliersOptions}
-            salesOrders={salesOrdersOptions}
+            projectsName={projectName}
+            suppliers={allSupplier}
+            salesOrders={orders}
             onCancel={handleCancelForm}
             onSubmit={handleSubmitForm}
           />

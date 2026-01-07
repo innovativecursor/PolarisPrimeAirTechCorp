@@ -6,10 +6,11 @@ import { useSupplier } from "../addsupplier/hooks/useSupplier";
 import { useCallback, useEffect } from "react";
 import { useConfirmToast } from "@/app/hooks/useConfirmToast";
 import { SupplierDeliveryReceipt } from "./type";
+import { useSalesOrders } from "@/app/sales-orders/hooks/useSalesOrders";
 
 export default function DeliveryReceipt() {
   const dr = useDeliveryReceipt();
-  const { projectsOptions, loadOptions } = useSupplierPO();
+  const { loadProjectName, projectName } = useSalesOrders();
   const { GetSupplier, allSupplier } = useSupplier();
   const confirmToast = useConfirmToast();
 
@@ -29,10 +30,13 @@ export default function DeliveryReceipt() {
   );
 
   useEffect(() => {
-    void loadOptions();
+    void loadProjectName();
     void GetSupplier();
-    void dr.GetDrReceipts();
   }, []);
+
+  useEffect(() => {
+    dr.GetDrReceipts();
+  }, [dr.GetDrReceipts]);
 
   return (
     <div className="space-y-6">
@@ -49,11 +53,15 @@ export default function DeliveryReceipt() {
             dr.setMode("create");
           }}
           onDelete={handleDelete}
+          page={dr.page}
+          total={dr.total}
+          limit={dr.limit}
+          setPage={dr.setPage}
         />
       ) : (
         <CreateDeliveryReceipt
           {...dr}
-          projects={projectsOptions}
+          projectsName={projectName}
           allSupplier={allSupplier}
           onCancel={() => {
             dr.setMode("list");

@@ -2,22 +2,32 @@ import { useCallback, useEffect } from "react";
 import AccountSalesList from "./AccountSalesLIst";
 import CreateAccountSales from "./CreateAccountSales";
 import { useAccountSales } from "./hooks/useAccountSales";
-import { useSupplierPO } from "@/app/purchase-orders/hooks/useSupplierPO";
 import { useInventory } from "@/app/warehousing/components/inventory/hooks/useInventory";
 import { useConfirmToast } from "@/app/hooks/useConfirmToast";
 import { SalesInvoice } from "./type";
+import { useSalesOrders } from "@/app/sales-orders/hooks/useSalesOrders";
 
 export default function AccountSales() {
   const accountSales = useAccountSales();
-  const { projectsOptions, loadOptions, salesOrdersOptions } = useSupplierPO();
+  const {
+    loadProjectName,
+    projectName,
+    loadCustomerByProject,
+    loadOrders,
+    orders,
+  } = useSalesOrders();
   const { GetInventories, allInventories } = useInventory();
   const confirmToast = useConfirmToast();
 
   useEffect(() => {
-    void loadOptions();
+    void loadProjectName();
     void GetInventories();
-    accountSales.GetAccountSales();
+    void loadOrders();
   }, []);
+
+  useEffect(() => {
+    accountSales.GetAccountSales();
+  }, [accountSales.page]);
 
   const handleDelete = useCallback(
     (row: SalesInvoice) => {
@@ -47,10 +57,15 @@ export default function AccountSales() {
           onEdit={(row) => {
             accountSales.setEditing(row.id);
 
+            const matchedOrder = orders.find(
+              (o) => o.salesOrderId === row.sales_order_id
+            );
+
             accountSales.setForm({
-              project_id: row.project_id,
-              customer_id: row.customer_id,
-              sales_order_id: row.sales_order_id,
+              project_id: row.project?.id || "",
+              customer_id: row.customer?.id || "",
+              customer_name: row.customer?.name || "",
+              sales_order_id: matchedOrder?.id || "",
             });
 
             accountSales.setItems(
@@ -63,6 +78,10 @@ export default function AccountSales() {
             accountSales.setMode("create");
           }}
           onDelete={handleDelete}
+          page={accountSales.page}
+          setPage={accountSales.setPage}
+          total={accountSales.total}
+          limit={accountSales.limit}
         />
       ) : (
         <CreateAccountSales
@@ -71,14 +90,16 @@ export default function AccountSales() {
             accountSales.setForm({
               project_id: "",
               customer_id: "",
+              customer_name: "",
               sales_order_id: "",
             });
+
             accountSales.setItems([]);
             accountSales.setEditing(null);
             accountSales.setMode("list");
           }}
-          projects={projectsOptions}
-          salesOrders={salesOrdersOptions}
+          projectsName={projectName}
+          salesOrders={orders}
           form={accountSales.form}
           updateForm={accountSales.updateForm}
           items={accountSales.items}
@@ -87,6 +108,8 @@ export default function AccountSales() {
           removeItem={accountSales.removeItem}
           onSubmit={accountSales.onSubmit}
           allInventories={allInventories}
+          loadCustomerByProject={loadCustomerByProject}
+          isEdit={!!accountSales.editing}
         />
       )}
     </div>

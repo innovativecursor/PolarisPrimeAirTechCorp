@@ -24,7 +24,7 @@ export default function useReceivingReport() {
     DeliveryReceiptRow[]
   >([]);
   const [invoices, setInvoices] = useState<RRInvoicesRow[]>([]);
-  const [salesOrder, setSalesOrder] = useState<SalesOrderRow[]>([]);
+  // const [salesOrder, setSalesOrder] = useState<SalesOrderRow[]>([]);
   const [createResponse, setCreateResponse] = useState<CreateRRRes | null>(
     null
   );
@@ -47,18 +47,18 @@ export default function useReceivingReport() {
     }
   }, []);
 
-  const loadSalesOrders = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetchDataGet<SalesOrderResponse>(
-        endpoints.salesOrder.getAll
-      );
-      setSalesOrder(res?.salesOrders || []);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // const loadSalesOrders = useCallback(async () => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+  //     const res = await fetchDataGet<SalesOrderResponse>(
+  //       endpoints.salesOrder.getAll
+  //     );
+  //     setSalesOrder(res?.salesOrders || []);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
   const loadInvoices = useCallback(async () => {
     try {
@@ -117,8 +117,8 @@ export default function useReceivingReport() {
     error,
     deliveryReceipts,
     loadDeliveryReceipts,
-    loadSalesOrders,
-    salesOrder,
+    // loadSalesOrders,
+    // salesOrder,
     loadInvoices,
     invoices,
     createReceivingReport,

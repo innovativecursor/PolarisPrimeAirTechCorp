@@ -1,4 +1,4 @@
-import { ProjectOption } from "@/app/purchase-orders/components/types";
+import { ProjectOption } from "@/app/sales-orders/hooks/useSalesOrders";
 import { Supplier } from "../addsupplier/type";
 import { DeliveryReceiptForm, DeliveryReceiptItem } from "./type";
 import {
@@ -13,7 +13,7 @@ import { FiPlus, FiTrash2 } from "react-icons/fi";
 type CreateDRProps = {
   onCancel: () => void;
 
-  projects: ProjectOption[];
+  projectsName: ProjectOption[];
   allSupplier: Supplier[];
 
   form: DeliveryReceiptForm;
@@ -35,7 +35,7 @@ type CreateDRProps = {
 
 export default function CreateDeliveryReceipt({
   onCancel,
-  projects,
+  projectsName,
   allSupplier,
   form,
   updateForm,
@@ -110,7 +110,7 @@ export default function CreateDeliveryReceipt({
                 <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((p) => (
+                {projectsName.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>

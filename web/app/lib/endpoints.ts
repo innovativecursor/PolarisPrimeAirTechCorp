@@ -23,13 +23,15 @@ const endpoints = {
   // ---------- PROJECT ----------
   project: {
     create: full("/project/create-project"), // POST
-    // getAll: full("/project/get-all-project"), // GET
     getAll: (page = 1) => full(`/project/get-all-project?page=${page}`),
     getById: (id: string) => full(`/project/get-project-by/${id}`), // GET
     getCustomerDetails: (id: string) =>
       full(`/project/get-customer-details/${id}`), // GET
     update: (id: string) => full(`/project/edit-project/${id}`), // PUT
     delete: (id: string) => full(`/project/delete-project/${id}`), // DELETE
+  },
+  projectInfo: {
+    getAll: full("/project/get-all-project-info"), // GET
   },
 
   // ---------- CUSTOMER ----------

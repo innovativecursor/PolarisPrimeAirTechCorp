@@ -1,8 +1,4 @@
 import {
-  ProjectOption,
-  SalesOrderOption,
-} from "@/app/purchase-orders/components/types";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -11,42 +7,49 @@ import {
 } from "@/components/ui/select";
 import { AccountSalesForm, InvoiceItem } from "./type";
 import { InventoryItem } from "@/app/warehousing/components/inventory/type";
+import {
+  ProjectOption,
+  SalesOrderRow,
+} from "@/app/sales-orders/hooks/useSalesOrders";
 
 type CreateAccountProps = {
   onCancel: () => void;
-  salesOrders: SalesOrderOption[];
-  projects: ProjectOption[];
+  salesOrders: SalesOrderRow[];
+  projectsName: ProjectOption[];
   saving: boolean;
   form: AccountSalesForm;
-  updateForm: (
-    key: "project_id" | "customer_id" | "sales_order_id",
-    value: string
-  ) => void;
+  updateForm: (key: keyof AccountSalesForm, value: string) => void;
 
   items: InvoiceItem[];
   addItem: () => void;
   updateItem: (i: number, k: keyof InvoiceItem, v: any) => void;
   removeItem: (i: number) => void;
-
+  loadCustomerByProject: (projectId: string) => Promise<any>;
   onSubmit: () => void;
   allInventories: InventoryItem[];
+  isEdit: boolean;
 };
 
 export default function CreateAccountSales({
   onCancel,
-  projects,
+  projectsName,
   saving,
   salesOrders,
   form,
   updateForm,
-
+  loadCustomerByProject,
   items,
   addItem,
   updateItem,
   removeItem,
   onSubmit,
   allInventories,
+  isEdit,
 }: CreateAccountProps) {
+
+
+
+  
   return (
     <>
       <div className="flex items-start justify-between mb-8">
@@ -76,15 +79,19 @@ export default function CreateAccountSales({
             </label>
             <Select
               value={form.project_id}
-              onValueChange={(v) => {
-                const selectedProject = projects.find((p) => p.id === v);
-                updateForm("project_id", v);
+              onValueChange={async (val) => {
+                updateForm("project_id", val);
 
-                const customerId = selectedProject?.customer_id;
-                if (customerId) {
-                  updateForm("customer_id", customerId);
-                } else {
+                if (!isEdit) {
                   updateForm("customer_id", "");
+                  updateForm("customer_name", "");
+
+                  const customer = await loadCustomerByProject(val);
+
+                  if (customer) {
+                    updateForm("customer_id", customer.id);
+                    updateForm("customer_name", customer.name);
+                  }
                 }
               }}
             >
@@ -92,7 +99,7 @@ export default function CreateAccountSales({
                 <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((p) => (
+                {projectsName.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
@@ -103,13 +110,13 @@ export default function CreateAccountSales({
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Customer Id
+              Customer name
             </label>
             <input
-              value={form.customer_id}
+              value={form.customer_name}
               disabled
-              className="w-full rounded-2xl border px-4 py-2.5 text-sm"
-              placeholder="    Customer Id"
+              className="w-full rounded-2xl border px-4 py-2.5 text-sm bg-slate-100 text-slate-700"
+              placeholder="Customer auto-filled from project"
             />
           </div>
 
@@ -127,7 +134,7 @@ export default function CreateAccountSales({
               <SelectContent>
                 {salesOrders.map((so) => (
                   <SelectItem key={so.id} value={so.id}>
-                    {so.name}
+                    {so.salesOrderId}
                   </SelectItem>
                 ))}
               </SelectContent>

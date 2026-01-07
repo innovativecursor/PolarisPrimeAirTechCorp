@@ -16,12 +16,13 @@ import {
 } from "@/components/ui/select";
 import { toast } from "react-toastify";
 import { generateSku } from "@/app/utils/skuGenerator";
+import { ProjectOption, SalesOrderRow } from "@/app/sales-orders/hooks/useSalesOrders";
 
 type CreateReceivingCardProps = {
   onCancel: () => void;
   deliveryReceipts: DeliveryReceiptRow[];
-  prorders: SupplierPORow[];
-  salesOrder: { id: string }[];
+  projectsName: ProjectOption[];
+  salesOrder: SalesOrderRow[];
   invoices: { id: string; invoice_no: string }[];
   createReceivingReport: (payload: CreateRRPayload) => Promise<CreateRRRes>;
   saving: boolean;
@@ -32,7 +33,7 @@ type CreateReceivingCardProps = {
 export default function CreateReceivingCard({
   onCancel,
   deliveryReceipts,
-  prorders,
+  projectsName,
   salesOrder,
   invoices,
   createReceivingReport,
@@ -40,8 +41,6 @@ export default function CreateReceivingCard({
   loadReceivingReports,
   editing,
 }: CreateReceivingCardProps) {
-  console.log(prorders, "iiiii");
-
   const [openScanner, setOpenScanner] = useState(false);
   const [generatedBarcode, setGeneratedBarcode] = useState("");
   const barcodeRef = useRef<SVGSVGElement | null>(null);
@@ -267,9 +266,9 @@ export default function CreateReceivingCard({
                 <SelectValue placeholder="Choose a purchase order" />
               </SelectTrigger>
               <SelectContent>
-                {prorders.map((po) => (
+                {projectsName.map((po) => (
                   <SelectItem key={po?.id} value={po?.id}>
-                    {po?.projectName}
+                    {po?.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -293,7 +292,7 @@ export default function CreateReceivingCard({
               <SelectContent>
                 {salesOrder.map((so) => (
                   <SelectItem key={so?.id} value={so?.id}>
-                    {so?.id}
+                    {so?.salesOrderId}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { fetchWithError } from "@/app/lib/fetchData";
 import { ReceivingReportItem } from "./type";
 import endpoints from "@/app/lib/endpoints";
+import { useSalesOrders } from "@/app/sales-orders/hooks/useSalesOrders";
 
 export default function ReceivingReport() {
   const {
@@ -19,8 +20,8 @@ export default function ReceivingReport() {
     saving,
     deliveryReceipts,
     loadDeliveryReceipts,
-    loadSalesOrders,
-    salesOrder,
+    // loadSalesOrders,
+    // salesOrder,
     loadInvoices,
     invoices,
     createReceivingReport,
@@ -29,7 +30,8 @@ export default function ReceivingReport() {
     setSaving,
   } = useReceivingReport();
 
-  const { orders, loadOrders } = useSupplierPO();
+  const { loadProjectName, projectName, loadOrders, orders } = useSalesOrders();
+  
   const confirmToast = useConfirmToast();
 
   const handleCreateClick = () => {
@@ -47,10 +49,13 @@ export default function ReceivingReport() {
     setEditing(null);
   };
 
+  console.log(invoices, "kllll");
+  
+
   useEffect(() => {
     void loadDeliveryReceipts();
+    void loadProjectName();
     void loadOrders();
-    void loadSalesOrders();
     void loadInvoices();
     void loadReceivingReports();
   }, []);
@@ -94,8 +99,8 @@ export default function ReceivingReport() {
         <CreateReceivingCard
           onCancel={handleCancelForm}
           deliveryReceipts={deliveryReceipts}
-          prorders={orders}
-          salesOrder={salesOrder}
+          projectsName={projectName}
+          salesOrder={orders}
           invoices={invoices}
           createReceivingReport={createReceivingReport}
           saving={saving}
