@@ -84,13 +84,16 @@ func CreateSupplierInvoice(c *gin.Context, db *mongo.Database) {
 }
 
 func GetAllSupplierInvoices(c *gin.Context, db *mongo.Database) {
-
-	_, exists := c.Get("user")
+	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
-
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
 	page := int64(1)
 	limit := int64(10)
 
@@ -185,6 +188,83 @@ func GetAllSupplierInvoices(c *gin.Context, db *mongo.Database) {
 		"page":  page,
 		"limit": limit,
 		"total": total,
+	})
+}
+
+func GetAllSupplierInvoicesWithoutPagination(c *gin.Context, db *mongo.Database) {
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	collection := db.Collection("supplierinvoice")
+
+	pipeline := mongo.Pipeline{
+
+		// 🔹 Join Project
+		bson.D{{Key: "$lookup", Value: bson.M{
+			"from":         "project",
+			"localField":   "project_id",
+			"foreignField": "_id",
+			"as":           "project",
+		}}},
+
+		// 🔹 Unwind project
+		bson.D{{Key: "$unwind", Value: bson.M{
+			"path":                       "$project",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		// 🔹 Sort (latest first)
+		bson.D{{Key: "$sort", Value: bson.M{
+			"created_at": -1,
+		}}},
+
+		// 🔹 Final Projection
+		bson.D{{Key: "$project", Value: bson.M{
+			"_id":               1,
+			"supplier_id":       1,
+			"project_id":        1,
+			"invoice_no":        1,
+			"invoice_date":      1,
+			"delivery_no":       1,
+			"purchase_order_no": 1,
+			"due_date":          1,
+			"delivery_address":  1,
+			"items":             1,
+			"total_sales":       1,
+			"vat":               1,
+			"grand_total":       1,
+			"created_at":        1,
+			"created_by":        1,
+
+			"project_name": "$project.project_name",
+		}}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch invoices"})
+		return
+	}
+	defer cursor.Close(c)
+
+	var invoices []bson.M
+	if err := cursor.All(c, &invoices); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode invoices"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  invoices,
+		"total": len(invoices),
 	})
 }
 
