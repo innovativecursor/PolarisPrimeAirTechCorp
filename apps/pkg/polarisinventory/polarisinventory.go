@@ -310,17 +310,25 @@ func AddOrUpdateReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 }
 
 type ReceivingReportInventoryResponse struct {
-	ID                primitive.ObjectID `bson:"_id" json:"id"`
-	SKU               string             `bson:"sku" json:"sku"`
-	Barcode           string             `bson:"barcode" json:"barcode"`
-	AirconModelNumber string             `bson:"aircon_model_number" json:"aircon_model_number"`
-	AirconName        string             `bson:"aircon_name" json:"aircon_name"`
-	HP                string             `bson:"hp" json:"hp"`
-	TypeOfAircon      string             `bson:"type_of_aircon" json:"type_of_aircon"`
-	IndoorOutdoorUnit string             `bson:"indoor_outdoor_unit" json:"indoor_outdoor_unit"`
-	Quantity          int                `bson:"quantity" json:"quantity"`
-	Price             float64            `bson:"price" json:"price"`
+	ID primitive.ObjectID `bson:"_id" json:"id"`
 
+	SKU               string  `bson:"sku" json:"sku"`
+	Barcode           string  `bson:"barcode" json:"barcode"`
+	AirconModelNumber string  `bson:"aircon_model_number" json:"aircon_model_number"`
+	AirconName        string  `bson:"aircon_name" json:"aircon_name"`
+	HP                string  `bson:"hp" json:"hp"`
+	TypeOfAircon      string  `bson:"type_of_aircon" json:"type_of_aircon"`
+	IndoorOutdoorUnit string  `bson:"indoor_outdoor_unit" json:"indoor_outdoor_unit"`
+	Quantity          int     `bson:"quantity" json:"quantity"`
+	Price             float64 `bson:"price" json:"price"`
+
+	// 🔹 Mongo ObjectIDs
+	SalesOrderObjectID *primitive.ObjectID `bson:"sales_order_object_id,omitempty" json:"sales_order_object_id,omitempty"`
+	POObjectID         *primitive.ObjectID `bson:"po_object_id,omitempty" json:"po_object_id,omitempty"`
+	InvoiceObjectID    *primitive.ObjectID `bson:"invoice_object_id,omitempty" json:"invoice_object_id,omitempty"`
+	DRObjectID         *primitive.ObjectID `bson:"dr_object_id,omitempty" json:"dr_object_id,omitempty"`
+
+	// 🔹 Human-readable IDs
 	SalesOrderID string `bson:"sales_order_id,omitempty" json:"sales_order_id,omitempty"`
 	POID         string `bson:"po_id,omitempty" json:"po_id,omitempty"`
 	InvoiceID    string `bson:"invoice_id,omitempty" json:"invoice_id,omitempty"`
@@ -440,13 +448,20 @@ func GetAllReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 				"created_at":          1,
 				"updated_at":          1,
 
-				// ✅ Correct fields
+				// 🔹 Mongo ObjectIDs
+				"sales_order_object_id": "$salesOrder._id",
+				"po_object_id":          "$po._id",
+				"invoice_object_id":     "$invoice._id",
+				"dr_object_id":          "$dr._id",
+
+				// 🔹 Display IDs
 				"sales_order_id": "$salesOrder.salesOrderId",
 				"po_id":          "$po.poId",
 				"invoice_id":     "$invoice.invoice_no",
 				"dr_number":      "$dr.supplier_dr_no",
 			},
-		}},
+		},
+		},
 	}
 
 	cursor, err := collection.Aggregate(c, pipeline)

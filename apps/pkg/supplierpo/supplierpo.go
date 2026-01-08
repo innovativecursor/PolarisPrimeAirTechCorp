@@ -231,6 +231,67 @@ func GetAllSupplierPO(c *gin.Context, db *mongo.Database) {
 	})
 }
 
+func GetAllSupplierPOinfo(c *gin.Context, db *mongo.Database) {
+	// Auth
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	if _, ok := user.(*models.User); !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	collection := db.Collection("supplier_purchase_orders")
+
+	// 🔹 Mongo Pipeline (ONLY PO DATA)
+	pipeline := mongo.Pipeline{
+		// Sort latest first
+		{{
+			Key:   "$sort",
+			Value: bson.M{"createdAt": -1},
+		}},
+
+		// Final shape (only PO fields)
+		{{
+			Key: "$project",
+			Value: bson.M{
+				"_id":         1,
+				"po_id":       "$poId",
+				"project_id":  "$projectId",
+				"supplier_id": "$supplierId",
+				"so_id":       "$soId",
+				"status":      1,
+				"items":       1,
+				"created_at":  "$createdAt",
+			},
+		}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch Supplier POs",
+		})
+		return
+	}
+	defer cursor.Close(c)
+
+	var result []SupplierPOResponse
+	if err := cursor.All(c, &result); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to decode Supplier POs",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  result,
+		"total": len(result),
+	})
+}
+
 func GetSupplierPOByID(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
