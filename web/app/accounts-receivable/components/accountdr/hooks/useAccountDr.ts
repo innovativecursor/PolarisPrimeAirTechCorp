@@ -40,32 +40,34 @@ export function useAccountDr() {
     }
   }, []);
 
-  const createDeliveryReceipt = useCallback(async () => {
-    if (!selectedInvoice) {
-      toast.error("Please select project");
-      return;
-    }
+  const createDeliveryReceipt = useCallback(
+    async (data: {
+      projectId: string;
+      customerId: string;
+      salesOrderId: string;
+      salesInvoiceId: string;
+    }) => {
+      const payload: DrForm = {
+        project_id: data.projectId,
+        customer_id: data.customerId,
+        sales_order_id: data.salesOrderId,
+        sales_invoice_id: data.salesInvoiceId,
+      };
 
-    const payload: DrForm = {
-      project_id: selectedInvoice.project_id,
-      customer_id: selectedInvoice.customer_id,
-      sales_order_id: selectedInvoice.sales_order_id,
-      sales_invoice_id: selectedInvoice.id,
-    };
-
-    try {
-      setSaving(true);
-      await fetchDataPost(endpoints.deliveryReceipt.create, payload);
-      toast.success("Delivery receipt created");
-      setMode("list");
-      setSelectedInvoice(null);
-      GetAccountDr();
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setSaving(false);
-    }
-  }, [selectedInvoice]);
+      try {
+        setSaving(true);
+        await fetchDataPost(endpoints.deliveryReceipt.create, payload);
+        toast.success("Delivery receipt created");
+        setMode("list");
+        GetAccountDr();
+      } catch (err: any) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [GetAccountDr]
+  );
 
   const deleteAccountDr = useCallback(
     async (id: string) => {
@@ -124,6 +126,6 @@ export function useAccountDr() {
     GetAccountDr,
     allAccountDr,
     deleteAccountDr,
-    updateDeliveryReceiptStatus
+    updateDeliveryReceiptStatus,
   };
 }

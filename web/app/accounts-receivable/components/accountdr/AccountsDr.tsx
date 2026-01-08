@@ -7,11 +7,14 @@ import AccountList from "./AccountList";
 import { useAccountSales } from "../accountsales/hooks/useAccountSales";
 import { useConfirmToast } from "@/app/hooks/useConfirmToast";
 import { DeliveryReceipt } from "./type";
+import { useSalesOrders } from "@/app/sales-orders/hooks/useSalesOrders";
 
 export default function AccountDr() {
   const dr = useAccountDr();
   const { GetAccountSales, allAccountSales } = useAccountSales();
   const confirmToast = useConfirmToast();
+  const { loadProjectName, projectName, loadCustomerByProject } =
+    useSalesOrders();
 
   const handleDelete = useCallback(
     (row: DeliveryReceipt) => {
@@ -30,6 +33,7 @@ export default function AccountDr() {
 
   useEffect(() => {
     void GetAccountSales();
+    void loadProjectName();
     void dr.GetAccountDr();
   }, []);
 
@@ -48,9 +52,11 @@ export default function AccountDr() {
           saving={dr.saving}
           onCancel={() => dr.setMode("list")}
           allAccountSales={allAccountSales}
+          projectsName={projectName}
           selectedInvoice={dr.selectedInvoice}
           onSelectInvoice={dr.onSelectInvoice}
           onSubmit={dr.createDeliveryReceipt}
+          loadCustomerByProject={loadCustomerByProject}
         />
       )}
     </div>

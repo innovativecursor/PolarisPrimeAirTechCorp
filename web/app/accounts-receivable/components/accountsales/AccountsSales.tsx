@@ -55,27 +55,7 @@ export default function AccountSales() {
           }}
           allAccountSales={accountSales.allAccountSales}
           onEdit={(row) => {
-            accountSales.setEditing(row.id);
-
-            const matchedOrder = orders.find(
-              (o) => o.salesOrderId === row.sales_order_id
-            );
-
-            accountSales.setForm({
-              project_id: row.project?.id || "",
-              customer_id: row.customer?.id || "",
-              customer_name: row.customer?.name || "",
-              sales_order_id: matchedOrder?.id || "",
-            });
-
-            accountSales.setItems(
-              row.items?.map((it) => ({
-                sku: it.sku,
-                quantity: it.quantity,
-              })) || []
-            );
-
-            accountSales.setMode("create");
+            accountSales.loadInvoiceForEdit(row.id);
           }}
           onDelete={handleDelete}
           page={accountSales.page}

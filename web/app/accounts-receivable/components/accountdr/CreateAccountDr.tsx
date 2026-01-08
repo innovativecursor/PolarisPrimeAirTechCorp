@@ -6,6 +6,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SalesInvoice } from "../accountsales/type";
+import { ProjectOption } from "@/app/sales-orders/hooks/useSalesOrders";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { fetchDataGet } from "@/app/lib/fetchData";
+import endpoints from "@/app/lib/endpoints";
+import Required from "@/components/ui/Required";
 
 type CreateSupplierProps = {
   onCancel: () => void;
@@ -13,7 +19,15 @@ type CreateSupplierProps = {
   saving: boolean;
   selectedInvoice: SalesInvoice | null;
   onSelectInvoice: (invoice: SalesInvoice | null) => void;
-  onSubmit: () => void;
+  onSubmit: (data: {
+    projectId: string;
+    customerId: string;
+    salesOrderId: string;
+    salesInvoiceId: string;
+  }) => void;
+
+  projectsName: ProjectOption[];
+  loadCustomerByProject: (projectId: string) => Promise<any>;
 };
 
 export default function CreateAccountDr({
@@ -23,7 +37,17 @@ export default function CreateAccountDr({
   selectedInvoice,
   onSelectInvoice,
   onSubmit,
+  projectsName,
+  loadCustomerByProject,
 }: CreateSupplierProps) {
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+
+  const [autoFill, setAutoFill] = useState<{
+    customerId: string;
+    salesOrderId: string;
+    salesInvoiceId: string;
+  } | null>(null);
+
   return (
     <>
       <div className="flex items-start justify-between mb-8">
@@ -49,21 +73,36 @@ export default function CreateAccountDr({
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Project
+              Project <Required />
             </label>
             <Select
-              onValueChange={(invoiceId) => {
-                const found = allAccountSales.find((a) => a.id === invoiceId);
-                onSelectInvoice(found || null);
+              onValueChange={async (projectId) => {
+                setSelectedProjectId(projectId);
+
+                await loadCustomerByProject(projectId);
+
+                const res = await fetchDataGet<any>(
+                  endpoints.salesInvoice.customerByProject(projectId)
+                );
+
+                console.log("FULL API RES ===>", res);
+                console.log("SO ID ===>", res.project.sales_order_id);
+                console.log("SI ID ===>", res.sales_invoice_id);
+
+                setAutoFill({
+                  customerId: res.customer.customername,
+                  salesOrderId: res.project.sales_order_id,
+                  salesInvoiceId: res.project.sales_invoice_id,
+                });
               }}
             >
               <SelectTrigger className="w-full rounded-2xl">
                 <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
-                {allAccountSales.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {a.project_id}
+                {projectsName.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -76,7 +115,7 @@ export default function CreateAccountDr({
             </label>
             <input
               disabled
-              value={selectedInvoice?.customer_id || ""}
+              value={autoFill?.customerId || ""}
               className="w-full rounded-2xl border px-4 py-2.5 text-sm"
               placeholder="Customer Id"
             />
@@ -88,7 +127,7 @@ export default function CreateAccountDr({
             </label>
             <input
               disabled
-              value={selectedInvoice?.sales_order_id || ""}
+              value={autoFill?.salesOrderId || ""}
               className="w-full rounded-2xl border px-4 py-2.5 text-sm"
               placeholder="Sales Order Id"
             />
@@ -100,7 +139,7 @@ export default function CreateAccountDr({
             </label>
             <input
               disabled
-              value={selectedInvoice?.invoice_id || ""}
+              value={autoFill?.salesInvoiceId || ""}
               className="w-full rounded-2xl border px-4 py-2.5 text-sm"
               placeholder="Sales Invoice Id"
             />
@@ -109,10 +148,22 @@ export default function CreateAccountDr({
 
         <div className="flex justify-end ">
           <button
+            className="rounded-full cursor-pointer bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
             type="button"
             disabled={saving}
-            onClick={onSubmit}
-            className="rounded-full cursor-pointer bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
+            onClick={() => {
+              if (!selectedProjectId || !autoFill) {
+                toast.error("Please select project");
+                return;
+              }
+
+              onSubmit({
+                projectId: selectedProjectId,
+                customerId: autoFill.customerId,
+                salesOrderId: autoFill.salesOrderId,
+                salesInvoiceId: autoFill.salesInvoiceId,
+              });
+            }}
           >
             Save delivery receipt
           </button>

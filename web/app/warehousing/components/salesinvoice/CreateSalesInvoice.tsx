@@ -10,6 +10,7 @@ import { FiPlus, FiTrash2 } from "react-icons/fi";
 import { Supplier } from "../addsupplier/type";
 import { InvoiceItem, SalesInvoiceForm } from "./type";
 import { ProjectOption } from "@/app/sales-orders/hooks/useSalesOrders";
+import Required from "@/components/ui/Required";
 
 type CreateSalesInvioceProps = {
   onCancel: () => void;
@@ -83,7 +84,7 @@ export default function CreateSalesInvioce({
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Supplier Name
+              Supplier Name <Required />
             </label>
             <Select
               value={form.supplier_id}
@@ -104,7 +105,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Project name
+              Project name <Required />
             </label>
             <Select
               value={form.project_id}
@@ -125,7 +126,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Invoice Number
+              Invoice Number <Required />
             </label>
             <input
               value={form.invoice_number}
@@ -138,7 +139,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Invoice Date
+              Invoice Date <Required />
             </label>
             <input
               type="date"
@@ -154,7 +155,7 @@ export default function CreateSalesInvioce({
               Delivery Number
             </label>
             <input
-              type="number"
+              type="text"
               value={form.delivery_number}
               onChange={(e) => updateForm("delivery_number", e.target.value)}
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
@@ -169,7 +170,7 @@ export default function CreateSalesInvioce({
             <input
               value={form.po_number}
               onChange={(e) => updateForm("po_number", e.target.value)}
-              type="number"
+              type="text"
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder=" Purchase order no"
             />
@@ -177,7 +178,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Due Date
+              Due Date <Required />
             </label>
             <input
               type="date"
@@ -215,7 +216,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              VAT
+              VAT <Required />
             </label>
             <Select
               value={form.vat_type}
@@ -294,7 +295,7 @@ export default function CreateSalesInvioce({
               {/* Qty */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Quantity
+                  Quantity <Required />
                 </label>
                 <input
                   type="number"
@@ -330,7 +331,7 @@ export default function CreateSalesInvioce({
               {/* Unit Price */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Unit Price
+                  Unit Price <Required />
                 </label>
                 <input
                   type="number"

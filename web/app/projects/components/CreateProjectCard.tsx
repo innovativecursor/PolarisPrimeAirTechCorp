@@ -1,6 +1,7 @@
 import { CustomerRow } from "@/app/customers/hooks/useCustomers";
 import { ProjectFormValues, ProjectRow } from "../hooks/useProjects";
 import { useEffect, useState } from "react";
+import Required from "@/components/ui/Required";
 
 type CreateProjectCardProps = {
   initialValues?: ProjectRow;
@@ -118,10 +119,11 @@ export default function CreateProjectCard({
           {/* Project name -> project_name */}
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-[0.16em]">
-              Project name
+              Project name <Required />
             </label>
             <input
               type="text"
+              required
               value={form.projectName}
               onChange={handleChange("projectName")}
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
@@ -162,10 +164,11 @@ export default function CreateProjectCard({
           {/* Select customer -> customer_id */}
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-[0.16em]">
-              Customer
+              Customer <Required />
             </label>
 
             <select
+              required
               value={form.customerId}
               onChange={(e) => handleCustomerSelect(e.target.value)}
               className="block w-full rounded-2xl cursor-pointer border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"

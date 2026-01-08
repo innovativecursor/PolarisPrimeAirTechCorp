@@ -15,6 +15,7 @@ import {
   SalesOrderRow,
 } from "@/app/sales-orders/hooks/useSalesOrders";
 import { Supplier } from "@/app/warehousing/components/addsupplier/type";
+import Required from "@/components/ui/Required";
 
 type LineItemForm = {
   id: string;
@@ -145,9 +146,10 @@ export default function CreateSupplierPOCard({
           {/* Project */}
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Project name
+              Project name <Required />
             </label>
             <Select
+            required
               value={form.projectId}
               onValueChange={(val) => setForm({ ...form, projectId: val })}
               disabled={isEdit}
@@ -175,9 +177,10 @@ export default function CreateSupplierPOCard({
           {/* Supplier */}
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Supplier name
+              Supplier name <Required />
             </label>
             <Select
+            required
               value={form.supplierId}
               onValueChange={(val) => setForm({ ...form, supplierId: val })}
               disabled={isEdit}
@@ -283,10 +286,11 @@ export default function CreateSupplierPOCard({
               {/* Quantity */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Quantity
+                  Quantity <Required />
                 </label>
                 <input
                   type="number"
+                  required
                   min={0}
                   value={item.quantity}
                   onChange={(e) =>

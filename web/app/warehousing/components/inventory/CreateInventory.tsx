@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { InventoryForm, InventoryItem } from "./type";
 import { generateSku } from "@/app/utils/skuGenerator";
+import Required from "@/components/ui/Required";
 
 type CraeteInventoryProps = {
   onCancel: () => void;
@@ -153,7 +154,7 @@ export default function CraeteInventory({
           </div>
 
           <div>
-            <label className="text-sm font-medium">Barcode number</label>
+            <label className="text-sm font-medium">Barcode number <Required /></label>
 
             <input
               value={form.barcode}
@@ -194,7 +195,7 @@ export default function CraeteInventory({
           </div>
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Aircon model number
+              Aircon model number <Required />
             </label>
             <input
               value={form.aircon_model_number}
@@ -208,7 +209,7 @@ export default function CraeteInventory({
           </div>
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Aircon name
+              Aircon name <Required />
             </label>
             <input
               value={form.aircon_name}
@@ -220,7 +221,7 @@ export default function CraeteInventory({
           </div>
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              HP (Horsepower)
+              HP (Horsepower) <Required />
             </label>
             <input
               value={form.hp}
@@ -233,7 +234,7 @@ export default function CraeteInventory({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              quantity
+              quantity <Required />
             </label>
             <input
               type="number"
@@ -247,7 +248,7 @@ export default function CraeteInventory({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Price
+              Price <Required />
             </label>
             <input
               type="number"
@@ -261,7 +262,7 @@ export default function CraeteInventory({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Type of aircon
+              Type of aircon <Required />
             </label>
 
             <select
@@ -281,7 +282,7 @@ export default function CraeteInventory({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Indoor / outdoor unit
+              Indoor / outdoor unit <Required />
             </label>
 
             <select

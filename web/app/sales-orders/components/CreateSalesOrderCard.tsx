@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
+import Required from "@/components/ui/Required";
 
 type CreateSalesOrderCardProps = {
   initialValues?: SalesOrderRow;
@@ -195,9 +196,10 @@ export default function CreateSalesOrderCard({
           {/* Project */}
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Project name
+              Project name <Required />
             </label>
             <Select
+              required
               value={form.projectId}
               onValueChange={async (val) => {
                 const proj = projectsName.find((p) => p.id === val);
@@ -283,7 +285,7 @@ export default function CreateSalesOrderCard({
               {/* Aircon (shadcn select) */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Select aircon
+                  Select aircon <Required />
                 </label>
 
                 <Select
@@ -310,10 +312,11 @@ export default function CreateSalesOrderCard({
               {/* Quantity */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Quantity
+                  Quantity <Required />
                 </label>
                 <input
                   type="number"
+                  required
                   min={0}
                   value={item.quantity}
                   onChange={(e) =>
@@ -346,10 +349,11 @@ export default function CreateSalesOrderCard({
               {/* Price */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Price
+                  Price <Required />
                 </label>
                 <input
                   type="number"
+                  required
                   min={0}
                   step="0.01"
                   value={item.price}

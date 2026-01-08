@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
+import Required from "@/components/ui/Required";
 
 type CreateDRProps = {
   onCancel: () => void;
@@ -78,9 +79,10 @@ export default function CreateDeliveryReceipt({
           {/* Supplier */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Supplier
+              Supplier <Required />
             </label>
             <Select
+            required
               value={form.supplier_id}
               onValueChange={(v) => updateForm("supplier_id", v)}
             >
@@ -100,7 +102,7 @@ export default function CreateDeliveryReceipt({
           {/* Project */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Project
+              Project <Required />
             </label>
             <Select
               value={form.project_id}
@@ -122,7 +124,7 @@ export default function CreateDeliveryReceipt({
           {/* DR No */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Supplier DR No
+              Supplier DR No <Required />
             </label>
             <input
               value={form.supplier_dr_no}
@@ -135,7 +137,7 @@ export default function CreateDeliveryReceipt({
           {/* PO No */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Your PO No
+              Your PO No <Required />
             </label>
             <input
               value={form.your_po_no}
@@ -147,7 +149,7 @@ export default function CreateDeliveryReceipt({
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Dispatch Date
+              Dispatch Date <Required />
             </label>
             <input
               type="date"
@@ -159,7 +161,7 @@ export default function CreateDeliveryReceipt({
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Ship To
+              Ship To <Required />
             </label>
             <input
               type="text"
@@ -185,7 +187,7 @@ export default function CreateDeliveryReceipt({
 
           {/* Date */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-600">Date</label>
+            <label className="text-sm font-medium text-slate-600">Date <Required /></label>
             <input
               type="date"
               value={form.date}
@@ -316,7 +318,7 @@ export default function CreateDeliveryReceipt({
                 {/* Qty */}
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-slate-600">
-                    Ship Qty
+                    Ship Qty <Required />
                   </label>
 
                   <input

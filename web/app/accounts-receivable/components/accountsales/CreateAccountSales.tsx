@@ -11,6 +11,7 @@ import {
   ProjectOption,
   SalesOrderRow,
 } from "@/app/sales-orders/hooks/useSalesOrders";
+import Required from "@/components/ui/Required";
 
 type CreateAccountProps = {
   onCancel: () => void;
@@ -46,10 +47,6 @@ export default function CreateAccountSales({
   allInventories,
   isEdit,
 }: CreateAccountProps) {
-
-
-
-  
   return (
     <>
       <div className="flex items-start justify-between mb-8">
@@ -75,10 +72,11 @@ export default function CreateAccountSales({
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Project
+              Project <Required />
             </label>
             <Select
               value={form.project_id}
+              disabled={isEdit}
               onValueChange={async (val) => {
                 updateForm("project_id", val);
 
@@ -122,10 +120,11 @@ export default function CreateAccountSales({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Sales order
+              Sales order <Required />
             </label>
             <Select
               value={form.sales_order_id}
+              disabled={isEdit}
               onValueChange={(v) => updateForm("sales_order_id", v)}
             >
               <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
@@ -160,7 +159,7 @@ export default function CreateAccountSales({
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-slate-600">
-                      SKU
+                      SKU <Required />
                     </label>
                     <Select
                       value={item.sku}

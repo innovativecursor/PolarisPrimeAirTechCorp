@@ -94,7 +94,6 @@ export function useProjects() {
       const isEdit = Boolean(editing?._raw?.id || editing?._raw?._id);
 
       if (isEdit) {
-        // ✅ EDIT PAYLOAD
         const payload = {
           project_name: values.projectName,
           customer_id: values.customerId,
@@ -111,7 +110,6 @@ export function useProjects() {
 
         toast.success("Project updated");
       } else {
-        // ✅ CREATE PAYLOAD
         const payload = {
           project_name: values.projectName,
           customer_id: values.customerId,
