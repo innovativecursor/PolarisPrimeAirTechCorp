@@ -193,6 +193,73 @@ func GetAllSupplierDR(c *gin.Context, db *mongo.Database) {
 	})
 }
 
+func GetAllSupplierDRWithoutPagination(c *gin.Context, db *mongo.Database) {
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	if _, ok := user.(*models.User); !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	collection := db.Collection("supplierdeliveryreceipt")
+
+	pipeline := mongo.Pipeline{
+
+		bson.D{{Key: "$lookup", Value: bson.M{
+			"from":         "project",
+			"localField":   "project_id",
+			"foreignField": "_id",
+			"as":           "project",
+		}}},
+
+		bson.D{{Key: "$unwind", Value: bson.M{
+			"path":                       "$project",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		bson.D{{Key: "$sort", Value: bson.M{
+			"created_at": -1,
+		}}},
+
+		bson.D{{Key: "$project", Value: bson.M{
+			"_id":            1,
+			"supplier_id":    1,
+			"project_id":     1,
+			"supplier_dr_no": 1,
+			"your_po_no":     1,
+			"dispatch_date":  1,
+			"ship_to":        1,
+			"reference":      1,
+			"date":           1,
+			"items":          1,
+			"received_by":    1,
+			"created_at":     1,
+			"project_name":   "$project.project_name",
+		}}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch supplier DR"})
+		return
+	}
+	defer cursor.Close(c)
+
+	var data []bson.M
+	if err := cursor.All(c, &data); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode supplier DR"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": data,
+	})
+}
+
 func GetSupplierDRByID(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {

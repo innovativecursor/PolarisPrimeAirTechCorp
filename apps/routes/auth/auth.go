@@ -214,6 +214,9 @@ func Auth(db *mongo.Database) {
 	apiV1.GET("/supplier/dr/get-all", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierdr.GetAllSupplierDR(c, db)
 	})
+	apiV1.GET("/supplier/dr/get-all-info", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierdr.GetAllSupplierDRWithoutPagination(c, db)
+	})
 	apiV1.GET("/supplier/dr-get-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierdr.GetSupplierDRByID(c, db)
 	})
