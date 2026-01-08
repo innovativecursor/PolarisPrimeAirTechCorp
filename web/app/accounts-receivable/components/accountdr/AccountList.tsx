@@ -10,6 +10,9 @@ type AccountListProps = {
   onCreate: () => void;
   loading: boolean;
   allAccountDr: DeliveryReceipt[];
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
   onDelete: (row: DeliveryReceipt) => void;
   onUpdateStatus: (id: string, status: "Ready" | "Issued") => void;
 };
@@ -20,12 +23,14 @@ export default function AccountList({
   allAccountDr,
   onDelete,
   onUpdateStatus,
+  page,
+  onPageChange,
+  totalPages,
 }: AccountListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
       { key: "drnumber", header: "dr_number" },
       { key: "project", header: "Project" },
-
       { key: "customername", header: "Customer Name" },
       { key: "salesorderid", header: "Sales Order Id" },
       { key: "salesinvoiceid", header: "Sales Invoice Id" },
@@ -145,6 +150,28 @@ export default function AccountList({
           );
         }}
       />
+
+      <div className="flex justify-end items-center gap-3 mt-4">
+        <button
+          disabled={page === 1}
+          onClick={() => onPageChange(page - 1)}
+          className="px-3 py-1 text-sm rounded border disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="text-sm text-slate-600">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => onPageChange(page + 1)}
+          className="px-3 py-1 text-sm rounded border disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </>
   );
 }

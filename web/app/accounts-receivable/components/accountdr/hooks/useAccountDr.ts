@@ -23,22 +23,31 @@ export function useAccountDr() {
   const onSelectInvoice = useCallback((invoice: SalesInvoice | null) => {
     setSelectedInvoice(invoice);
   }, []);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const GetAccountDr = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetchDataGet<DeliveryReceiptListRes>(
-        endpoints.deliveryReceipt.getAll
-      );
-      setAllAccountDr(Array.isArray(res?.data) ? res?.data : []);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch inventories");
-      setAllAccountDr([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const GetAccountDr = useCallback(
+    async (pageNo = page) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const res = await fetchDataGet<any>(
+          endpoints.deliveryReceipt.getAll(pageNo)
+        );
+
+        setAllAccountDr(Array.isArray(res?.data) ? res.data : []);
+        setTotalPages(res?.pagination?.totalPages || 1);
+        setPage(pageNo);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch delivery receipts");
+        setAllAccountDr([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [page]
+  );
 
   const createDeliveryReceipt = useCallback(
     async (data: {
@@ -127,5 +136,8 @@ export function useAccountDr() {
     allAccountDr,
     deleteAccountDr,
     updateDeliveryReceiptStatus,
+    page,
+    setPage,
+    totalPages,
   };
 }

@@ -140,10 +140,18 @@ const endpoints = {
       full(`/sales-invoice/customer-by-project/${projectId}`), // GET
   },
 
+  projectinfo: {
+    infobyproject: (projectId: string) =>
+      full(`/project/all-data-by-project/${projectId}`),
+  },
+
   // ---------- DELIVERY RECEIPT ----------
   deliveryReceipt: {
     create: full("/delivery-receipt/create-delivery-receipt"), // POST
-    getAll: full("/delivery-receipt/get-all-delivery-receipts"), // GET
+    // getAll: full("/delivery-receipt/get-all-delivery-receipts"), // GET
+    getAll: (page = 1) =>
+      full(`/delivery-receipt/get-all-delivery-receipts?page=${page}`),
+
     getById: (id: string) =>
       full(`/delivery-receipt/get-delivery-receipt-by-id/${id}`), // GET
     update: (id: string) =>

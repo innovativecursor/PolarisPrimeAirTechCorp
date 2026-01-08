@@ -5,7 +5,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SalesInvoice } from "../accountsales/type";
 import { ProjectOption } from "@/app/sales-orders/hooks/useSalesOrders";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -15,10 +14,7 @@ import Required from "@/components/ui/Required";
 
 type CreateSupplierProps = {
   onCancel: () => void;
-  allAccountSales: SalesInvoice[];
   saving: boolean;
-  selectedInvoice: SalesInvoice | null;
-  onSelectInvoice: (invoice: SalesInvoice | null) => void;
   onSubmit: (data: {
     projectId: string;
     customerId: string;
@@ -27,23 +23,17 @@ type CreateSupplierProps = {
   }) => void;
 
   projectsName: ProjectOption[];
-  loadCustomerByProject: (projectId: string) => Promise<any>;
 };
 
 export default function CreateAccountDr({
   onCancel,
-  allAccountSales,
   saving,
-  selectedInvoice,
-  onSelectInvoice,
   onSubmit,
   projectsName,
-  loadCustomerByProject,
 }: CreateSupplierProps) {
-  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
-
+  const [selectedProjectId, setSelectedProjectId] = useState("");
   const [autoFill, setAutoFill] = useState<{
-    customerId: string;
+    customerName: string;
     salesOrderId: string;
     salesInvoiceId: string;
   } | null>(null);
@@ -77,23 +67,23 @@ export default function CreateAccountDr({
             </label>
             <Select
               onValueChange={async (projectId) => {
-                setSelectedProjectId(projectId);
+                try {
+                  setSelectedProjectId(projectId);
 
-                await loadCustomerByProject(projectId);
+                  const res = await fetchDataGet<any>(
+                    endpoints.projectinfo.infobyproject(projectId)
+                  );
+                  console.log(res, "kllll");
 
-                const res = await fetchDataGet<any>(
-                  endpoints.salesInvoice.customerByProject(projectId)
-                );
-
-                console.log("FULL API RES ===>", res);
-                console.log("SO ID ===>", res.project.sales_order_id);
-                console.log("SI ID ===>", res.sales_invoice_id);
-
-                setAutoFill({
-                  customerId: res.customer.customername,
-                  salesOrderId: res.project.sales_order_id,
-                  salesInvoiceId: res.project.sales_invoice_id,
-                });
+                  setAutoFill({
+                    customerName: res.customer_name,
+                    salesOrderId: res.sales_order_id,
+                    salesInvoiceId: res.invoice_id,
+                  });
+                } catch (err) {
+                  toast.error("Failed to load project data");
+                  setAutoFill(null);
+                }
               }}
             >
               <SelectTrigger className="w-full rounded-2xl">
@@ -115,7 +105,7 @@ export default function CreateAccountDr({
             </label>
             <input
               disabled
-              value={autoFill?.customerId || ""}
+              value={autoFill?.customerName || ""}
               className="w-full rounded-2xl border px-4 py-2.5 text-sm"
               placeholder="Customer Id"
             />
@@ -159,7 +149,7 @@ export default function CreateAccountDr({
 
               onSubmit({
                 projectId: selectedProjectId,
-                customerId: autoFill.customerId,
+                customerId: autoFill.customerName,
                 salesOrderId: autoFill.salesOrderId,
                 salesInvoiceId: autoFill.salesInvoiceId,
               });

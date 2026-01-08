@@ -11,10 +11,9 @@ import { useSalesOrders } from "@/app/sales-orders/hooks/useSalesOrders";
 
 export default function AccountDr() {
   const dr = useAccountDr();
-  const { GetAccountSales, allAccountSales } = useAccountSales();
+  const { GetAccountSales } = useAccountSales();
   const confirmToast = useConfirmToast();
-  const { loadProjectName, projectName, loadCustomerByProject } =
-    useSalesOrders();
+  const { loadProjectName, projectName } = useSalesOrders();
 
   const handleDelete = useCallback(
     (row: DeliveryReceipt) => {
@@ -34,7 +33,10 @@ export default function AccountDr() {
   useEffect(() => {
     void GetAccountSales();
     void loadProjectName();
-    void dr.GetAccountDr();
+  }, []);
+
+  useEffect(() => {
+    dr.GetAccountDr(1);
   }, []);
 
   return (
@@ -44,6 +46,9 @@ export default function AccountDr() {
           loading={dr.loading || dr.saving}
           onCreate={() => dr.setMode("create")}
           allAccountDr={dr.allAccountDr}
+          page={dr.page}
+          totalPages={dr.totalPages}
+          onPageChange={(p) => dr.GetAccountDr(p)}
           onDelete={handleDelete}
           onUpdateStatus={dr.updateDeliveryReceiptStatus}
         />
@@ -51,12 +56,8 @@ export default function AccountDr() {
         <CreateAccountDr
           saving={dr.saving}
           onCancel={() => dr.setMode("list")}
-          allAccountSales={allAccountSales}
           projectsName={projectName}
-          selectedInvoice={dr.selectedInvoice}
-          onSelectInvoice={dr.onSelectInvoice}
           onSubmit={dr.createDeliveryReceipt}
-          loadCustomerByProject={loadCustomerByProject}
         />
       )}
     </div>
