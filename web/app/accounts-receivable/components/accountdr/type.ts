@@ -1,4 +1,3 @@
-
 export type DrForm = {
   project_id: string;
   customer_id: string;
@@ -15,17 +14,28 @@ export type DeliveryReceipt = {
   id: string;
   dr_number: string;
 
-  project_id: string;
-  customer_id: string;
-  sales_order_id: string;
-  sales_invoice_id: string;
+  project: {
+    id: string;
+    name: string;
+  };
 
-  customer_name: string;
-  customer_org: string;
-  customer_tin: string;
-  customer_location: string;
+  customer: {
+    id: string;
+    name: string;
+    org: string;
+    tin: string;
+    location: string;
+  };
 
-  items: DeliveryReceiptItem[];
+  sales_order: {
+    id: string;
+    name: string;
+  };
+
+  sales_invoice: {
+    id: string;
+    name: string;
+  };
 
   status: "Issued" | "Ready" | string;
 
@@ -36,7 +46,6 @@ export type DeliveryReceipt = {
 export type DeliveryReceiptListRes = {
   data: DeliveryReceipt[];
 };
-
 
 // export type DeliveryReceiptStatus = "Ready" | "Issued" | "Delivered";
 

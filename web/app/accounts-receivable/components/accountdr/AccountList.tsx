@@ -79,19 +79,33 @@ export default function AccountList({
             );
           }
           if (key === "project") {
-            return <span className="text-slate-900">-</span>;
-          }
-          if (key === "customername") {
-            return <span className="text-slate-900">{o?.customer_name}</span>;
-          }
-          if (key === "salesorderid") {
-            return <span className="text-slate-700">{o?.sales_order_id}</span>;
-          }
-          if (key === "salesinvoiceid") {
             return (
-              <span className="text-slate-700">{o?.sales_invoice_id}</span>
+              <span className="text-slate-900">{o.project?.name || "-"}</span>
             );
           }
+
+          if (key === "customername") {
+            return (
+              <span className="text-slate-900">{o.customer?.name || "-"}</span>
+            );
+          }
+
+          if (key === "salesorderid") {
+            return (
+              <span className="text-slate-700">
+                {o.sales_order?.name || "-"}
+              </span>
+            );
+          }
+
+          if (key === "salesinvoiceid") {
+            return (
+              <span className="text-slate-700">
+                {o.sales_invoice?.name || "-"}
+              </span>
+            );
+          }
+
           if (key === "status") {
             const isReady = o.status === "Ready";
             const isIssued = o.status === "Issued";

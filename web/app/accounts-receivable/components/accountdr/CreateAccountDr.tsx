@@ -33,9 +33,14 @@ export default function CreateAccountDr({
 }: CreateSupplierProps) {
   const [selectedProjectId, setSelectedProjectId] = useState("");
   const [autoFill, setAutoFill] = useState<{
+    projectMongoId: string;
+    customerMongoId: string;
+    salesOrderMongoId: string;
+    salesInvoiceMongoId: string;
+
     customerName: string;
-    salesOrderId: string;
-    salesInvoiceId: string;
+    salesOrderCode: string;
+    salesInvoiceCode: string;
   } | null>(null);
 
   return (
@@ -73,12 +78,16 @@ export default function CreateAccountDr({
                   const res = await fetchDataGet<any>(
                     endpoints.projectinfo.infobyproject(projectId)
                   );
-                  console.log(res, "kllll");
 
                   setAutoFill({
+                    projectMongoId: res.project_mongo_id,
+                    customerMongoId: res.customer_mongo_id,
+                    salesOrderMongoId: res.sales_order_mongo_id,
+                    salesInvoiceMongoId: res.invoice_mongo_id,
+
                     customerName: res.customer_name,
-                    salesOrderId: res.sales_order_id,
-                    salesInvoiceId: res.invoice_id,
+                    salesOrderCode: res.sales_order_id,
+                    salesInvoiceCode: res.invoice_id,
                   });
                 } catch (err) {
                   toast.error("Failed to load project data");
@@ -117,7 +126,7 @@ export default function CreateAccountDr({
             </label>
             <input
               disabled
-              value={autoFill?.salesOrderId || ""}
+              value={autoFill?.salesOrderCode || ""}
               className="w-full rounded-2xl border px-4 py-2.5 text-sm"
               placeholder="Sales Order Id"
             />
@@ -129,7 +138,7 @@ export default function CreateAccountDr({
             </label>
             <input
               disabled
-              value={autoFill?.salesInvoiceId || ""}
+              value={autoFill?.salesInvoiceCode || ""}
               className="w-full rounded-2xl border px-4 py-2.5 text-sm"
               placeholder="Sales Invoice Id"
             />
@@ -148,10 +157,10 @@ export default function CreateAccountDr({
               }
 
               onSubmit({
-                projectId: selectedProjectId,
-                customerId: autoFill.customerName,
-                salesOrderId: autoFill.salesOrderId,
-                salesInvoiceId: autoFill.salesInvoiceId,
+                projectId: autoFill.projectMongoId,
+                customerId: autoFill.customerMongoId,
+                salesOrderId: autoFill.salesOrderMongoId,
+                salesInvoiceId: autoFill.salesInvoiceMongoId,
               });
             }}
           >

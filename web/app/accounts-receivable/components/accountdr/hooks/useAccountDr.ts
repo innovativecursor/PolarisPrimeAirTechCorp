@@ -37,7 +37,11 @@ export function useAccountDr() {
         );
 
         setAllAccountDr(Array.isArray(res?.data) ? res.data : []);
-        setTotalPages(res?.pagination?.totalPages || 1);
+
+        const total = res?.total || 0;
+        const limit = res?.limit || 10;
+
+        setTotalPages(Math.ceil(total / limit));
         setPage(pageNo);
       } catch (err: any) {
         setError(err.message || "Failed to fetch delivery receipts");

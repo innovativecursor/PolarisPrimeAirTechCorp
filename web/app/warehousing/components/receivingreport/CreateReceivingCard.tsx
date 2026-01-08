@@ -60,6 +60,12 @@ export default function CreateReceivingCard({
     price: 0,
   });
 
+
+  console.log(deliveryReceipts, "kkkk");
+  
+
+
+
   const updateForm = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
