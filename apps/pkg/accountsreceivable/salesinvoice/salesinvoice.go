@@ -113,11 +113,17 @@ func GetInvoiceDetailsByProjectID(c *gin.Context, db *mongo.Database) {
 		{{Key: "$unwind", Value: "$customer"}},
 
 		{{Key: "$project", Value: bson.M{
-			"_id":            0,
+			"_id": 0,
+
 			"invoice_id":     "$invoice_id",
 			"sales_order_id": "$salesOrder.salesOrderId",
 			"customer_name":  "$customer.customername",
 			"created_at":     "$created_at",
+
+			"invoice_mongo_id":     "$_id",
+			"sales_order_mongo_id": "$salesOrder._id",
+			"project_mongo_id":     "$project._id",
+			"customer_mongo_id":    "$customer._id",
 		}}},
 	}
 
