@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import JsBarcode from "jsbarcode";
+
 import {
   CreateRRPayload,
   CreateRRRes,
@@ -22,6 +22,7 @@ import {
   SalesOrderRow,
 } from "@/app/sales-orders/hooks/useSalesOrders";
 import Required from "@/components/ui/Required";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 type CreateReceivingCardProps = {
   onCancel: () => void;
@@ -47,8 +48,6 @@ export default function CreateReceivingCard({
   supplierPo,
 }: CreateReceivingCardProps) {
   const [openScanner, setOpenScanner] = useState(false);
-  const [generatedBarcode, setGeneratedBarcode] = useState("");
-  const barcodeRef = useRef<SVGSVGElement | null>(null);
   const [form, setForm] = useState<CreateRRPayload>({
     supplier_dr_id: "",
     supplier_invoice_id: "",
@@ -77,68 +76,35 @@ export default function CreateReceivingCard({
   }, [editing]);
 
   useEffect(() => {
-    if (editing) return;
-
-    const code = "RR-" + Math.floor(100000 + Math.random() * 900000);
-    setGeneratedBarcode(code);
-
-    setForm((p) => ({ ...p, barcode: "" }));
-  }, [editing]);
-
-  useEffect(() => {
-    if (!barcodeRef.current || !generatedBarcode) return;
-
-    JsBarcode(barcodeRef.current, generatedBarcode, {
-      format: "CODE128",
-      width: 2,
-      height: 60,
-      displayValue: false,
-    });
-  }, [generatedBarcode]);
-
-  useEffect(() => {
     if (!openScanner) return;
 
     let scanner: any;
 
-    (async () => {
-      const { Html5QrcodeScanner } = await import("html5-qrcode");
+    scanner = new Html5QrcodeScanner(
+      "rr-barcode-reader",
+      {
+        fps: 8,
+        qrbox: { width: 360, height: 220 },
+        aspectRatio: 1,
+        disableFlip: true,
+      },
+      false
+    );
 
-      scanner = new Html5QrcodeScanner(
-        "rr-barcode-reader",
-        {
-          fps: 10,
-          qrbox: 250,
-        },
-        false
-      );
-
-      scanner.render(
-        (decodedText: string) => {
-          const scanned = decodedText.trim().toUpperCase();
-          const generated = generatedBarcode.trim().toUpperCase();
-
-          if (scanned !== generated) {
-            toast.error("Scanned barcode does not match generated barcode");
-            return;
-          }
-
-          setForm((p) => ({ ...p, barcode: decodedText }));
-          toast.success("Barcode verified successfully");
-
-          setOpenScanner(false);
-          scanner.clear();
-        },
-        () => {}
-      );
-    })();
+    scanner.render(
+      (decodedText: string) => {
+        setForm((p) => ({ ...p, barcode: decodedText }));
+        toast.success("Barcode scanned");
+        setOpenScanner(false);
+        scanner.clear();
+      },
+      () => {}
+    );
 
     return () => {
-      if (scanner) {
-        scanner.clear().catch(() => {});
-      }
+      scanner?.clear().catch(() => {});
     };
-  }, [openScanner, generatedBarcode]);
+  }, [openScanner]);
 
   useEffect(() => {
     if (!editing) return;
@@ -159,26 +125,7 @@ export default function CreateReceivingCard({
       quantity: editing.quantity ?? 0,
       price: editing.price ?? 0,
     });
-
-    setGeneratedBarcode(editing.barcode ?? "");
   }, [editing]);
-
-  const validateReceivingBarcode = () => {
-    if (!form.barcode) {
-      toast.error("Please scan the barcode");
-      return false;
-    }
-
-    const scanned = form.barcode.trim().toUpperCase();
-    const generated = generatedBarcode.trim().toUpperCase();
-
-    if (scanned !== generated) {
-      toast.error("Scanned barcode does not match generated barcode");
-      return false;
-    }
-
-    return true;
-  };
 
   const handleSave = async () => {
     if (
@@ -190,7 +137,11 @@ export default function CreateReceivingCard({
       toast.error("Please select DR, PO, SO and Invoice");
       return;
     }
-    if (!validateReceivingBarcode()) return;
+    if (!form.barcode) {
+      toast.error("Please scan the barcode");
+      return;
+    }
+
     if (!form.price || Number(form.price) <= 0) {
       toast.error("Please enter a valid price");
       return;
@@ -341,10 +292,6 @@ export default function CreateReceivingCard({
           </p>
 
           {/* GENERATED BARCODE */}
-
-          <div className="mt-6 inline-flex rounded-2xl border border-slate-300 bg-white p-6">
-            <svg ref={barcodeRef} />
-          </div>
         </div>
 
         <div className="space-y-3">
@@ -353,10 +300,15 @@ export default function CreateReceivingCard({
           </label>
           <input
             value={form.barcode}
-            onChange={(e) => updateForm("barcode", e.target.value)}
+            // onChange={(e) => updateForm("barcode", e.target.value)}
+            readOnly
             placeholder="Scan barcode"
             className="w-full rounded-2xl border bg-slate-100 px-4 py-3 text-sm"
           />
+          <p className="text-xs text-slate-500 ">
+            Tip: Reduce phone brightness to ~50%, don’t zoom, tilt phone
+            slightly
+          </p>
 
           <button
             type="button"

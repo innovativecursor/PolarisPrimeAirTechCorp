@@ -1,9 +1,9 @@
-import JsBarcode from "jsbarcode";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { InventoryForm, InventoryItem } from "./type";
 import { generateSku } from "@/app/utils/skuGenerator";
 import Required from "@/components/ui/Required";
+import { Html5Qrcode, Html5QrcodeScanner } from "html5-qrcode";
 
 type CraeteInventoryProps = {
   onCancel: () => void;
@@ -24,70 +24,36 @@ export default function CraeteInventory({
 }: CraeteInventoryProps) {
   const [openScanner, setOpenScanner] = useState(false);
 
-  const usedSkusRef = useRef<Set<string>>(new Set());
-  const [generatedBarcode, setGeneratedBarcode] = useState("");
-  const barcodeRef = useRef<SVGSVGElement | null>(null);
-
-  useEffect(() => {
-    if (editing?.barcode) {
-      setGeneratedBarcode(editing.barcode);
-    } else {
-      const code = "AC-" + Math.floor(100000 + Math.random() * 900000);
-      setGeneratedBarcode(code);
-    }
-  }, [editing]);
-
-  useEffect(() => {
-    if (!barcodeRef.current || !generatedBarcode) return;
-
-    JsBarcode(barcodeRef.current, generatedBarcode, {
-      format: "CODE128",
-      width: 2,
-      height: 60,
-      displayValue: false,
-    });
-  }, [generatedBarcode]);
-
   useEffect(() => {
     if (!openScanner) return;
 
     let scanner: any;
 
-    (async () => {
-      const { Html5QrcodeScanner } = await import("html5-qrcode");
+    scanner = new Html5QrcodeScanner(
+      "rr-barcode-reader",
+      {
+        fps: 8,
+        qrbox: { width: 360, height: 220 },
+        aspectRatio: 1,
+        disableFlip: true,
+      },
+      false
+    );
 
-      scanner = new Html5QrcodeScanner(
-        "rr-barcode-reader",
-        { fps: 10, qrbox: 250 },
-        false
-      );
-
-      scanner.render(
-        (decodedText: string) => {
-          const scanned = decodedText.trim().toUpperCase();
-          const generated = generatedBarcode.trim().toUpperCase();
-
-          if (scanned !== generated) {
-            toast.error("Scanned barcode does not match generated barcode");
-            return;
-          }
-
-          setForm((p) => ({ ...p, barcode: decodedText }));
-          toast.success("Barcode verified successfully");
-
-          setOpenScanner(false);
-          scanner.clear();
-        },
-        () => {}
-      );
-    })();
+    scanner.render(
+      (decodedText: string) => {
+        setForm((p) => ({ ...p, barcode: decodedText }));
+        toast.success("Barcode scanned");
+        setOpenScanner(false);
+        scanner.clear();
+      },
+      () => {}
+    );
 
     return () => {
-      if (scanner) {
-        scanner.clear().catch(() => {});
-      }
+      scanner?.clear().catch(() => {});
     };
-  }, [openScanner, generatedBarcode]);
+  }, [openScanner]);
 
   useEffect(() => {
     if (!editing) {
@@ -100,15 +66,6 @@ export default function CraeteInventory({
       toast.error("Please scan the barcode");
       return false;
     }
-
-    const scanned = form.barcode.trim().toUpperCase();
-    const generated = generatedBarcode.trim().toUpperCase();
-
-    if (scanned !== generated) {
-      toast.error("Scanned barcode does not match generated barcode");
-      return false;
-    }
-
     return true;
   };
 
@@ -145,23 +102,24 @@ export default function CraeteInventory({
       <form className="space-y-8" onSubmit={handleFormSubmit}>
         <div className="space-y-8">
           {/* GENERATED BARCODE */}
-          <div>
-            <h3 className="font-semibold mb-2">Scan barcode</h3>
-
-            <div className="inline-flex rounded-xl border p-4 bg-white">
-              <svg ref={barcodeRef} />
-            </div>
-          </div>
 
           <div>
-            <label className="text-sm font-medium">Barcode number <Required /></label>
+            <label className="text-sm font-medium">
+              Barcode number <Required />
+            </label>
 
             <input
               value={form.barcode}
-              onChange={(e) => updateForm("barcode", e.target.value)}
+              // onChange={(e) => updateForm("barcode", e.target.value)}
+              readOnly
               placeholder="Scan or type barcode"
               className="w-full mt-1 rounded-xl border px-4 py-3 bg-slate-100"
             />
+
+            <p className="text-xs text-slate-500 mb-2">
+              Tip: Reduce phone brightness to ~50%, don’t zoom, tilt phone
+              slightly
+            </p>
 
             <button
               type="button"
