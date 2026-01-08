@@ -2,15 +2,8 @@ import { useCallback, useState } from "react";
 import {
   CreateRRPayload,
   CreateRRRes,
-  DeliveryReceiptRow,
-  GetReceivingReportRes,
   ReceivingReportItem,
-  RRInvoicesResponse,
-  RRInvoicesRow,
-  SalesOrderResponse,
-  SalesOrderRow,
   supplierdeliveryR,
-  SupplierDRResponse,
   supplierInvoice,
 } from "../type";
 import { fetchDataGet, fetchDataPost } from "@/app/lib/fetchData";
@@ -22,10 +15,7 @@ export default function useReceivingReport() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deliveryReceipts, setDeliveryReceipts] = useState<
-    DeliveryReceiptRow[]
-  >([]);
-  const [invoices, setInvoices] = useState<RRInvoicesRow[]>([]);
+
   const [createResponse, setCreateResponse] = useState<CreateRRRes | null>(
     null
   );
@@ -62,34 +52,6 @@ export default function useReceivingReport() {
       }))
     );
   };
-
-  const loadDeliveryReceipts = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetchDataGet<SupplierDRResponse>(
-        endpoints.supplierDR.getAll
-      );
-
-      setDeliveryReceipts(res?.data || res?.supplierDR || []);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadInvoices = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const res = await fetchDataGet<RRInvoicesResponse>(
-        endpoints.supplierInvoice.getAll
-      );
-      setInvoices(res?.invoices || []);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const createReceivingReport = useCallback(
     async (payload: CreateRRPayload): Promise<CreateRRRes> => {
@@ -143,12 +105,7 @@ export default function useReceivingReport() {
     saving,
     setSaving,
     error,
-    deliveryReceipts,
-    loadDeliveryReceipts,
-    // loadSalesOrders,
-    // salesOrder,
-    loadInvoices,
-    invoices,
+
     createReceivingReport,
     receivingReports,
     loadSupplierInvoice,

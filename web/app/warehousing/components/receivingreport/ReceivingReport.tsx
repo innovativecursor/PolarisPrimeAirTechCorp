@@ -18,12 +18,7 @@ export default function ReceivingReport() {
     editing,
     loading,
     saving,
-    deliveryReceipts,
-    loadDeliveryReceipts,
-    // loadSalesOrders,
-    // salesOrder,
-    loadInvoices,
-    invoices,
+
     createReceivingReport,
     receivingReports,
     loadReceivingReports,
@@ -55,13 +50,9 @@ export default function ReceivingReport() {
     setEditing(null);
   };
 
- 
-
   useEffect(() => {
-    void loadDeliveryReceipts();
     void loadProjectName();
     void loadOrders();
-    void loadInvoices();
     void loadReceivingReports(1);
     void loadSupplierInvoice();
     void loadSupplierDeliveryR();
@@ -108,10 +99,8 @@ export default function ReceivingReport() {
       ) : (
         <CreateReceivingCard
           onCancel={handleCancelForm}
-          deliveryReceipts={deliveryReceipts}
           projectsName={projectName}
           salesOrder={orders}
-          invoices={invoices}
           createReceivingReport={createReceivingReport}
           saving={saving}
           loadReceivingReports={loadReceivingReports}

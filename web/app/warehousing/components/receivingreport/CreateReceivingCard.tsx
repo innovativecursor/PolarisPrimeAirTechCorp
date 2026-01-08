@@ -26,12 +26,10 @@ import Required from "@/components/ui/Required";
 
 type CreateReceivingCardProps = {
   onCancel: () => void;
-  deliveryReceipts: DeliveryReceiptRow[];
   projectsName: ProjectOption[];
   supplierDeliveryR: supplierdeliveryR[];
   supplierInvoice: supplierInvoice[];
   salesOrder: SalesOrderRow[];
-  invoices: { id: string; invoice_no: string }[];
   createReceivingReport: (payload: CreateRRPayload) => Promise<CreateRRRes>;
   saving: boolean;
   loadReceivingReports: () => Promise<void>;
@@ -40,10 +38,8 @@ type CreateReceivingCardProps = {
 
 export default function CreateReceivingCard({
   onCancel,
-  deliveryReceipts,
   projectsName,
   salesOrder,
-  invoices,
   createReceivingReport,
   saving,
   loadReceivingReports,
@@ -179,12 +175,8 @@ export default function CreateReceivingCard({
         editing.invoice_id // "inv-122"
       ),
 
-      sales_order_id: findIdByCode(
-        salesOrder,
-        editing.sales_order_id // "SO-2026-00001"
-      ),
+      sales_order_id: findIdByCode(salesOrder, editing.sales_order_id),
 
-      // ❗ purchase order edit me backend nahi deta
       purchase_order_id: "",
 
       sku: editing.sku,
