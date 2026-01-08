@@ -233,6 +233,10 @@ func Auth(db *mongo.Database) {
 		supplierinvoice.GetAllSupplierInvoices(c, db)
 	})
 
+	apiV1.GET("/supplier/invoice/get-all-info", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierinvoice.GetAllSupplierInvoicesWithoutPagination(c, db)
+	})
+
 	apiV1.GET("/supplier/invoice-get-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierinvoice.GetSupplierInvoiceByID(c, db)
 	})
@@ -307,6 +311,10 @@ func Auth(db *mongo.Database) {
 	// extra: get customer by project
 	apiV1.GET("/sales-invoice/customer-by-project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		salesinvoice.GetCustomerByProjectID(c, db)
+	})
+
+	apiV1.GET("/project/all-data-by-project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesinvoice.GetInvoiceDetailsByProjectID(c, db)
 	})
 
 	// delivery receipt

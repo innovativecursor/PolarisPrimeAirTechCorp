@@ -59,6 +59,90 @@ func GetCustomerByProjectID(c *gin.Context, db *mongo.Database) {
 	})
 }
 
+func GetInvoiceDetailsByProjectID(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	if _, ok := user.(*models.User); !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user"})
+		return
+	}
+
+	projectID := c.Param("id")
+	objID, err := primitive.ObjectIDFromHex(projectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection := db.Collection("sales_invoices")
+
+	pipeline := mongo.Pipeline{
+
+		{{Key: "$match", Value: bson.M{
+			"project_id": objID,
+		}}},
+
+		{{Key: "$lookup", Value: bson.M{
+			"from":         "salesorder",
+			"localField":   "sales_order_id",
+			"foreignField": "_id",
+			"as":           "salesOrder",
+		}}},
+		{{Key: "$unwind", Value: "$salesOrder"}},
+
+		{{Key: "$lookup", Value: bson.M{
+			"from":         "project",
+			"localField":   "project_id",
+			"foreignField": "_id",
+			"as":           "project",
+		}}},
+		{{Key: "$unwind", Value: "$project"}},
+
+		{{Key: "$lookup", Value: bson.M{
+			"from":         "customer",
+			"localField":   "project.customer_id",
+			"foreignField": "_id",
+			"as":           "customer",
+		}}},
+		{{Key: "$unwind", Value: "$customer"}},
+
+		{{Key: "$project", Value: bson.M{
+			"_id":            0,
+			"invoice_id":     "$invoice_id",
+			"sales_order_id": "$salesOrder.salesOrderId",
+			"customer_name":  "$customer.customername",
+			"created_at":     "$created_at",
+		}}},
+	}
+
+	cursor, err := collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer cursor.Close(ctx)
+
+	var result []bson.M
+	if err := cursor.All(ctx, &result); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if len(result) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Invoice not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, result[0])
+
+}
+
 func CreateSalesInvoice(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
