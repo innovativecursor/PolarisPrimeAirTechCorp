@@ -33,6 +33,12 @@ const endpoints = {
   projectInfo: {
     getAll: full("/project/get-all-project-info"), // GET
   },
+  supplierinvoice: {
+    getAll: full("/supplier/invoice/get-all-info"), // GET
+  },
+  supplierdeliveryR: {
+    getAll: full("/supplier/dr/get-all-info"), // GET
+  },
 
   // ---------- CUSTOMER ----------
   customer: {
@@ -113,7 +119,7 @@ const endpoints = {
   // ---------- RECEIVING REPORT (RR) ----------
   receivingReport: {
     create: full("/receiving-r/rr-create"), // POST
-    getAll: full("/receiving-r/rr-get-all"), // GET
+    getAll: (page = 1) => full(`/receiving-r/rr-get-all?page=${page}`),
     getById: (id: string) => full(`/receiving-r/rr-get-by-id/${id}`), // GET
     // delete: full("/receiving-r/rr-delete"), // DELETE
     delete: (id: string) => full(`/receiving-r/rr-delete/${id}`),

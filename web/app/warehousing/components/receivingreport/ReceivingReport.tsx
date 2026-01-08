@@ -28,10 +28,16 @@ export default function ReceivingReport() {
     receivingReports,
     loadReceivingReports,
     setSaving,
+    loadSupplierInvoice,
+    loadSupplierDeliveryR,
+    supplierInvoice,
+    supplierDeliveryR,
+    page,
+    totalPages,
   } = useReceivingReport();
 
   const { loadProjectName, projectName, loadOrders, orders } = useSalesOrders();
-  
+
   const confirmToast = useConfirmToast();
 
   const handleCreateClick = () => {
@@ -49,15 +55,16 @@ export default function ReceivingReport() {
     setEditing(null);
   };
 
-  console.log(invoices, "kllll");
-  
+ 
 
   useEffect(() => {
     void loadDeliveryReceipts();
     void loadProjectName();
     void loadOrders();
     void loadInvoices();
-    void loadReceivingReports();
+    void loadReceivingReports(1);
+    void loadSupplierInvoice();
+    void loadSupplierDeliveryR();
   }, []);
 
   const handleDelete = (row: ReceivingReportItem) => {
@@ -94,6 +101,9 @@ export default function ReceivingReport() {
           onCreate={handleCreateClick}
           receivingReports={receivingReports}
           onDelete={handleDelete}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(p) => loadReceivingReports(p)}
         />
       ) : (
         <CreateReceivingCard
@@ -106,6 +116,8 @@ export default function ReceivingReport() {
           saving={saving}
           loadReceivingReports={loadReceivingReports}
           editing={editing}
+          supplierInvoice={supplierInvoice}
+          supplierDeliveryR={supplierDeliveryR}
         />
       )}
     </div>

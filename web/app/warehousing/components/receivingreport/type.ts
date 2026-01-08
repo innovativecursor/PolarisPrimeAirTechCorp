@@ -82,6 +82,8 @@ export type ReceivingReportItem = {
   barcode?: string;
   aircon_model_number: string;
   aircon_name: string;
+  dr_number: string;
+  invoice_id: string;
   price: number;
   hp: string;
   type_of_aircon: string;
@@ -100,3 +102,7 @@ export type GetReceivingReportRes = {
   data: ReceivingReportItem[];
   message: string;
 };
+
+
+export type supplierInvoice = { id: string; name: string };
+export type supplierdeliveryR = { id: string; name: string };

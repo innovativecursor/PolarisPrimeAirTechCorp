@@ -6,6 +6,8 @@ import {
   CreateRRRes,
   DeliveryReceiptRow,
   ReceivingReportItem,
+  supplierdeliveryR,
+  supplierInvoice,
 } from "./type";
 import {
   Select,
@@ -16,12 +18,18 @@ import {
 } from "@/components/ui/select";
 import { toast } from "react-toastify";
 import { generateSku } from "@/app/utils/skuGenerator";
-import { ProjectOption, SalesOrderRow } from "@/app/sales-orders/hooks/useSalesOrders";
+import {
+  ProjectOption,
+  SalesOrderRow,
+} from "@/app/sales-orders/hooks/useSalesOrders";
+import Required from "@/components/ui/Required";
 
 type CreateReceivingCardProps = {
   onCancel: () => void;
   deliveryReceipts: DeliveryReceiptRow[];
   projectsName: ProjectOption[];
+  supplierDeliveryR: supplierdeliveryR[];
+  supplierInvoice: supplierInvoice[];
   salesOrder: SalesOrderRow[];
   invoices: { id: string; invoice_no: string }[];
   createReceivingReport: (payload: CreateRRPayload) => Promise<CreateRRRes>;
@@ -40,6 +48,8 @@ export default function CreateReceivingCard({
   saving,
   loadReceivingReports,
   editing,
+  supplierDeliveryR,
+  supplierInvoice,
 }: CreateReceivingCardProps) {
   const [openScanner, setOpenScanner] = useState(false);
   const [generatedBarcode, setGeneratedBarcode] = useState("");
@@ -60,11 +70,17 @@ export default function CreateReceivingCard({
     price: 0,
   });
 
+  const findIdByCode = (
+    list: { id: string; name?: string; salesOrderId?: string }[],
+    code?: string
+  ) => {
+    if (!code) return "";
+    return (
+      list.find((i) => i.name === code || i.salesOrderId === code)?.id || ""
+    );
+  };
 
-  console.log(deliveryReceipts, "kkkk");
-  
-
-
+  console.log(editing, "kkkk");
 
   const updateForm = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -144,11 +160,33 @@ export default function CreateReceivingCard({
   useEffect(() => {
     if (!editing) return;
 
+    if (
+      supplierDeliveryR.length === 0 ||
+      supplierInvoice.length === 0 ||
+      salesOrder.length === 0
+    ) {
+      return;
+    }
+
     setForm({
-      supplier_dr_id: editing.supplier_dr_id,
-      supplier_invoice_id: editing.supplier_invoice_id,
-      purchase_order_id: editing.purchase_order_id,
-      sales_order_id: editing.sales_order_id,
+      supplier_dr_id: findIdByCode(
+        supplierDeliveryR,
+        editing.dr_number // "dr-000"
+      ),
+
+      supplier_invoice_id: findIdByCode(
+        supplierInvoice,
+        editing.invoice_id // "inv-122"
+      ),
+
+      sales_order_id: findIdByCode(
+        salesOrder,
+        editing.sales_order_id // "SO-2026-00001"
+      ),
+
+      // ❗ purchase order edit me backend nahi deta
+      purchase_order_id: "",
+
       sku: editing.sku,
       barcode: editing.barcode ?? "",
       aircon_model_number: editing.aircon_model_number,
@@ -161,7 +199,7 @@ export default function CreateReceivingCard({
     });
 
     setGeneratedBarcode(editing.barcode ?? "");
-  }, [editing]);
+  }, [editing, supplierDeliveryR, supplierInvoice, salesOrder]);
 
   const validateReceivingBarcode = () => {
     if (!form.barcode) {
@@ -235,7 +273,7 @@ export default function CreateReceivingCard({
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              Supplier delivery receipt
+              Supplier delivery receipt <Required />
             </label>
 
             <Select
@@ -248,9 +286,9 @@ export default function CreateReceivingCard({
                 <SelectValue placeholder="Choose a delivery receipt" />
               </SelectTrigger>
               <SelectContent>
-                {deliveryReceipts.map((dr) => (
-                  <SelectItem key={dr?.id} value={dr?.id}>
-                    {dr?.supplier_dr_no}
+                {supplierDeliveryR.map((sdr) => (
+                  <SelectItem key={sdr?.id} value={sdr?.id}>
+                    {sdr?.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -259,7 +297,7 @@ export default function CreateReceivingCard({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              Supplier purchase order
+              Supplier purchase order <Required />
             </label>
 
             <Select
@@ -283,7 +321,7 @@ export default function CreateReceivingCard({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              Select sales order
+              Select sales order <Required />
             </label>
 
             <Select
@@ -307,7 +345,7 @@ export default function CreateReceivingCard({
 
           <div className="space-y-2 md:col-span-1">
             <label className="text-sm font-medium text-slate-600">
-              Supplier invoice number
+              Supplier invoice number <Required />
             </label>
 
             <Select
@@ -320,9 +358,9 @@ export default function CreateReceivingCard({
                 <SelectValue placeholder="Choose supplier invoice" />
               </SelectTrigger>
               <SelectContent>
-                {invoices.map((inv) => (
-                  <SelectItem key={inv?.id} value={inv?.id}>
-                    {inv?.invoice_no}
+                {supplierInvoice.map((si) => (
+                  <SelectItem key={si?.id} value={si?.id}>
+                    {si?.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -349,7 +387,7 @@ export default function CreateReceivingCard({
 
         <div className="space-y-3">
           <label className="text-sm font-medium text-slate-600">
-            Barcode number
+            Barcode number <Required />
           </label>
           <input
             value={form.barcode}
@@ -423,7 +461,9 @@ export default function CreateReceivingCard({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-600">Price</label>
+            <label className="text-sm font-medium text-slate-600">
+              Price <Required />
+            </label>
             <input
               type="number"
               min="1"
@@ -436,10 +476,11 @@ export default function CreateReceivingCard({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              quantity
+              quantity <Required />
             </label>
             <input
               value={form.quantity}
+              required
               onChange={(e) => updateForm("quantity", e.target.value)}
               placeholder="quantity"
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
