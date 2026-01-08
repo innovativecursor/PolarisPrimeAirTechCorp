@@ -274,6 +274,7 @@ func GetAllSalesInvoices(c *gin.Context, db *mongo.Database) {
 			page = v
 		}
 	}
+
 	if l := c.Query("limit"); l != "" {
 		if v, err := strconv.ParseInt(l, 10, 64); err == nil && v > 0 {
 			limit = v
@@ -281,6 +282,7 @@ func GetAllSalesInvoices(c *gin.Context, db *mongo.Database) {
 	}
 
 	skip := (page - 1) * limit
+
 	collection := db.Collection("sales_invoices")
 
 	pipeline := mongo.Pipeline{
@@ -302,10 +304,13 @@ func GetAllSalesInvoices(c *gin.Context, db *mongo.Database) {
 				"as":           "project",
 			},
 		}},
-		{{Key: "$unwind", Value: bson.M{
-			"path":                       "$project",
-			"preserveNullAndEmptyArrays": true,
-		}}},
+		{{
+			Key: "$unwind",
+			Value: bson.M{
+				"path":                       "$project",
+				"preserveNullAndEmptyArrays": true,
+			},
+		}},
 
 		// Lookup Customer
 		{{
@@ -317,12 +322,15 @@ func GetAllSalesInvoices(c *gin.Context, db *mongo.Database) {
 				"as":           "customer",
 			},
 		}},
-		{{Key: "$unwind", Value: bson.M{
-			"path":                       "$customer",
-			"preserveNullAndEmptyArrays": true,
-		}}},
+		{{
+			Key: "$unwind",
+			Value: bson.M{
+				"path":                       "$customer",
+				"preserveNullAndEmptyArrays": true,
+			},
+		}},
 
-		// Lookup Sales Order
+		// Lookup Sales Order (ONLY SalesOrderID)
 		{{
 			Key: "$lookup",
 			Value: bson.M{
@@ -332,39 +340,27 @@ func GetAllSalesInvoices(c *gin.Context, db *mongo.Database) {
 				"as":           "salesOrder",
 			},
 		}},
-		{{Key: "$unwind", Value: bson.M{
-			"path":                       "$salesOrder",
-			"preserveNullAndEmptyArrays": true,
-		}}},
+		{{
+			Key: "$unwind",
+			Value: bson.M{
+				"path":                       "$salesOrder",
+				"preserveNullAndEmptyArrays": true,
+			},
+		}},
 
 		// Shape response
 		{{
 			Key: "$project",
 			Value: bson.M{
-				"_id":        1,
-				"invoice_id": 1,
-				"sales_order_id": bson.M{
-					"id":   "$salesOrder._id",          // MongoDB ObjectID
-					"code": "$salesOrder.salesOrderId", // Original sales order code
-				},
-				"items": bson.M{
-					"$map": bson.M{
-						"input": "$items",
-						"as":    "item",
-						"in": bson.M{
-							"sku":      "$$item.sku",
-							"quantity": "$$item.quantity",
-						},
-					},
-				},
-				"total_amount": 1,
-				"created_at":   1,
-
+				"_id":            1,
+				"invoice_id":     1,
+				"sales_order_id": "$salesOrder.salesOrderId",
+				"total_amount":   1,
+				"created_at":     1,
 				"project": bson.M{
 					"id":   "$project._id",
 					"name": "$project.project_name",
 				},
-
 				"customer": bson.M{
 					"id":   "$customer._id",
 					"name": "$customer.customername",
@@ -380,7 +376,7 @@ func GetAllSalesInvoices(c *gin.Context, db *mongo.Database) {
 	}
 	defer cursor.Close(c)
 
-	var invoices []bson.M
+	var invoices []SalesInvoiceListResponse
 	if err := cursor.All(c, &invoices); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode invoices"})
 		return
