@@ -6,6 +6,7 @@ export type InvoiceItem = {
 export type AccountSalesForm = {
   project_id: string;
   customer_id: string;
+  customer_name: string;
   sales_order_id: string;
 };
 
@@ -18,14 +19,26 @@ export type SalesInvoiceItem = {
 export type SalesInvoice = {
   id: string;
   invoice_id: string;
+
+  project?: {
+    id: string;
+    name: string;
+  };
+
+  customer?: {
+    id: string;
+    name: string;
+  };
+
   project_id: string;
   customer_id: string;
+  customer_name?: string;
+
   sales_order_id: string;
   items: SalesInvoiceItem[];
   total_amount: number;
-  created_at: string;
-  updated_at: string;
 };
+
 export type SalesInvoiceListRes = {
   data: SalesInvoice[];
 };

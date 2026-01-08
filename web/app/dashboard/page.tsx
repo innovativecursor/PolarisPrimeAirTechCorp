@@ -31,7 +31,7 @@ export default function DashboardPage() {
         </header>
 
         {/* Top stat cards */}
-        <section className="grid gap-4 md:grid-cols-4">
+        <section className="grid gap-4 cursor-pointer md:grid-cols-4">
           <StatCard
             label="Available units"
             value="4,382"
@@ -59,7 +59,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Middle row: line chart + donut */}
-        <section className="grid gap-4 lg:grid-cols-2 w-full">
+        <section className="grid gap-4 cursor-pointer lg:grid-cols-2 w-full">
           {/* Line chart */}
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6">
             <div className="flex items-center justify-between mb-4">
@@ -119,7 +119,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Bottom 3 cards */}
-        <section className="grid gap-4 lg:grid-cols-3">
+        <section className="grid gap-4 cursor-pointer lg:grid-cols-3">
           {/* Inventory */}
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6 flex flex-col">
             <div className="flex items-start justify-between mb-4">

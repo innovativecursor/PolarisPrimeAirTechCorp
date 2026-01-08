@@ -11,6 +11,9 @@ type ReceivingListCardProps = {
   receivingReports: ReceivingReportItem[];
   onDelete: (row: ReceivingReportItem) => void;
   onEdit: (row: ReceivingReportItem) => void;
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 };
 
 export default function ReceivingListCard({
@@ -19,14 +22,18 @@ export default function ReceivingListCard({
   receivingReports,
   onDelete,
   onEdit,
+  page,
+  totalPages,
+  onPageChange,
 }: ReceivingListCardProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "id", header: "Receiving Report ID" },
-      { key: "deliveryreceipt", header: "Delivery Receipt" },
-      { key: "purchaseorder", header: "Purchase Order" },
-      { key: "salesorder", header: "Sales Order" },
-      { key: "supplierinvoice", header: "Supplier Invoice" },
+      { key: "drnumber", header: "DR Number" },
+      { key: "invoiceid", header: "Invoice ID" },
+      { key: "barcode", header: "Barcode" },
+      { key: "salesorder", header: "Sales Order ID" },
+      { key: "sku", header: "Sku" },
+      { key: "price", header: "Price" },
       { key: "actions", header: "Actions", align: "right" },
     ],
     []
@@ -49,7 +56,7 @@ export default function ReceivingListCard({
           type="button"
           onClick={onCreate}
           disabled={loading}
-          className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+          className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
         >
           Create Receiving Report
         </button>
@@ -62,25 +69,30 @@ export default function ReceivingListCard({
         getCell={(row, key) => {
           const o = row as ReceivingReportItem;
 
-          if (key === "id") {
+          if (key === "drnumber") {
             return (
-              <span className="font-mono text-xs text-slate-700">{o.id}</span>
+              <span className="font-mono text-xs text-slate-700">
+                {o.dr_number}
+              </span>
             );
           }
-          if (key === "deliveryreceipt") {
-            return <span className="text-slate-900">{o.supplier_dr_id}</span>;
+          if (key === "invoiceid") {
+            return <span className="text-slate-900">{o.invoice_id}</span>;
           }
-          if (key === "purchaseorder") {
-            return (
-              <span className="text-slate-700">{o.purchase_order_id}</span>
-            );
+          if (key === "barcode") {
+            return <span className="text-slate-700">{o.barcode}</span>;
           }
           if (key === "salesorder") {
             return <span className="text-slate-700">{o.sales_order_id}</span>;
           }
-          if (key === "supplierinvoice") {
+          if (key === "sku") {
+            return <span className="text-slate-700">{o.sku}</span>;
+          }
+          if (key === "price") {
             return (
-              <span className="text-slate-700">{o.supplier_invoice_id}</span>
+              <span className="font-medium text-slate-800">
+                ₱ {o.price.toLocaleString()}
+              </span>
             );
           }
 
@@ -89,7 +101,7 @@ export default function ReceivingListCard({
               <button
                 type="button"
                 onClick={() => onEdit(o)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
+                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
               >
                 <FiEdit2 className="h-3.5 w-3.5" />
               </button>
@@ -97,7 +109,7 @@ export default function ReceivingListCard({
               <button
                 type="button"
                 onClick={() => onDelete(o)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
               >
                 <FiTrash2 className="h-3.5 w-3.5" />
               </button>
@@ -105,6 +117,27 @@ export default function ReceivingListCard({
           );
         }}
       />
+      <div className="flex justify-end items-center gap-3 mt-4">
+        <button
+          disabled={page === 1}
+          onClick={() => onPageChange(page - 1)}
+          className="px-3 py-1 text-sm rounded border disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="text-sm text-slate-600">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => onPageChange(page + 1)}
+          className="px-3 py-1 text-sm rounded border disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

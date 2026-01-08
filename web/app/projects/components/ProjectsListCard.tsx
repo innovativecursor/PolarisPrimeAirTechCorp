@@ -8,6 +8,11 @@ import { FiEdit2, FiTrash2 } from "react-icons/fi";
 type ProjectsListProps = {
   projects: ProjectRow[];
   loading: boolean;
+  page: number;
+  total: number;
+  limit: number;
+  onNext: () => void;
+  onPrev: () => void;
   onCreate: () => void;
   onEdit: (row: ProjectRow) => void;
   onDelete: (row: ProjectRow) => void;
@@ -15,6 +20,11 @@ type ProjectsListProps = {
 
 export default function ProjectsListCard({
   projects,
+  page,
+  total,
+  limit,
+  onNext,
+  onPrev,
   onCreate,
   onEdit,
   onDelete,
@@ -24,12 +34,18 @@ export default function ProjectsListCard({
       { key: "projectid", header: "Project ID" },
       { key: "name", header: "Project name" },
       { key: "customer", header: "Customer" },
-      { key: "salesorderid", header: "Sales Order Id" },
-      { key: "salesdrid", header: "Sales DR Id" },
+      { key: "customerorganization", header: "Customer Organization" },
+      { key: "notes", header: "Notes" },
       { key: "actions", header: "Actions", align: "right" },
     ],
     []
   );
+
+  const truncateWords = (text = "", maxWords = 10) => {
+    const words = text.trim().split(/\s+/);
+    if (words.length <= maxWords) return text;
+    return words.slice(0, maxWords).join(" ") + " ...";
+  };
 
   const columnWidths = "1.2fr 2.4fr 2.2fr 1.6fr 1.1fr 1.2fr";
 
@@ -49,7 +65,7 @@ export default function ProjectsListCard({
         <button
           type="button"
           onClick={onCreate}
-          className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48]"
+          className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48]"
         >
           Create project
         </button>
@@ -75,11 +91,16 @@ export default function ProjectsListCard({
           if (key === "customer") {
             return <span className="text-slate-600">{p.customer}</span>;
           }
-          if (key === "salesorderid") {
-            return <span className="text-slate-800">{p.salesorderid}</span>;
+          if (key === "customerorganization") {
+            return <span className="text-slate-600">{p.organization}</span>;
           }
-          if (key === "salesdrid") {
-            return <span className="text-slate-600">{p.salesdrid}</span>;
+
+          if (key === "notes") {
+            return (
+              <span className="text-slate-600">
+                {truncateWords(p.notes, 10)}
+              </span>
+            );
           }
 
           return (
@@ -88,7 +109,7 @@ export default function ProjectsListCard({
               <button
                 type="button"
                 onClick={() => onEdit(p)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-slate-300 bg-[#eef1f8] px-3 py-1.5 text-xs text-slate-600 hover:bg-[#e4e8f3]"
+                className="inline-flex  cursor-pointer items-center gap-1.5 rounded-full border border-slate-300 bg-[#eef1f8] px-3 py-1.5 text-xs text-slate-600 hover:bg-[#e4e8f3]"
               >
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-500">
                   <FiEdit2 className="h-3.5 w-3.5" />
@@ -99,7 +120,7 @@ export default function ProjectsListCard({
               <button
                 type="button"
                 onClick={() => onDelete(p)}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[#f9a8b8] bg-[#ffe6eb] px-3 py-1.5 text-xs text-[#e11d48] hover:bg-[#ffd7e0]"
+                className="inline-flex  cursor-pointer items-center gap-1.5 rounded-full border border-[#f9a8b8] bg-[#ffe6eb] px-3 py-1.5 text-xs text-[#e11d48] hover:bg-[#ffd7e0]"
               >
                 <span className="inline-flex h-5 w-5 items-center justify-center rounded-full text-[#e11d48]">
                   <FiTrash2 className="h-3.5 w-3.5" />
@@ -109,6 +130,30 @@ export default function ProjectsListCard({
           );
         }}
       />
+
+      <div className="mt-6 flex items-center justify-between">
+        <span className="text-xs text-slate-500">
+          Page {page} of {Math.ceil(total / limit)}
+        </span>
+
+        <div className="flex gap-2">
+          <button
+            disabled={page === 1}
+            onClick={onPrev}
+            className="rounded-md cursor-pointer border px-4 py-1.5 text-xs disabled:opacity-50"
+          >
+            Prev
+          </button>
+
+          <button
+            disabled={page * limit >= total}
+            onClick={onNext}
+            className="rounded-md cursor-pointer border px-4 py-1.5 text-xs disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </section>
   );
 }

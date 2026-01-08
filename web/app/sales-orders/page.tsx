@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import AppShell from "../components/layout/AppShell";
 import { useConfirmToast } from "../hooks/useConfirmToast";
 import CreateSalesOrderCard from "./components/CreateSalesOrderCard";
@@ -13,12 +14,16 @@ export default function SalesOrdersPage() {
   const handleDelete = (row: any) => {
     confirmToast.confirm({
       title: "Delete Sales Order",
-      message: `Delete sales order "${row.id}"?`,
+      message: `Delete sales order "${row.salesOrderId}"?`,
       confirmText: "Delete",
       cancelText: "Cancel",
       onConfirm: () => so.deleteOrder(row),
     });
   };
+
+  useEffect(() => {
+    so.loadProjectName();
+  }, []);
 
   return (
     <AppShell>
@@ -37,7 +42,7 @@ export default function SalesOrdersPage() {
         <CreateSalesOrderCard
           saving={so.saving}
           initialValues={so.editing ?? undefined}
-          projects={so.projects}
+          projectsName={so.projectName}
           customers={so.customers}
           aircons={so.aircons}
           onCancel={() => {
@@ -45,6 +50,7 @@ export default function SalesOrdersPage() {
             so.setEditing(null);
           }}
           onSubmit={so.saveOrder}
+          loadCustomerByProject={so.loadCustomerByProject}
         />
       )}
     </AppShell>

@@ -5,6 +5,7 @@ import { useConfirmToast } from "../hooks/useConfirmToast";
 import AppShell from "../components/layout/AppShell";
 import ProjectsListCard from "./components/ProjectsListCard";
 import CreateProjectCard from "./components/CreateProjectCard";
+import { useEffect } from "react";
 
 export default function ProjectsPage() {
   const projectsHook = useProjects();
@@ -21,12 +22,23 @@ export default function ProjectsPage() {
     });
   };
 
+  useEffect(() => {
+    projectsHook.loadProjects();
+  }, [projectsHook.page]);
+
   return (
     <AppShell>
       {projectsHook.mode === "list" ? (
         <ProjectsListCard
           loading={projectsHook.loading || projectsHook.saving}
           projects={projectsHook.projects}
+          page={projectsHook.page}
+          total={projectsHook.total}
+          limit={projectsHook.limit}
+          onNext={() => projectsHook.setPage(projectsHook.page + 1)}
+          onPrev={() =>
+            projectsHook.setPage(Math.max(1, projectsHook.page - 1))
+          }
           onCreate={() => {
             projectsHook.setEditing(null);
             projectsHook.setMode("create");

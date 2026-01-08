@@ -11,6 +11,10 @@ type DeliveryRLProps = {
   allDr: SupplierDeliveryReceipt[];
   onEdit: (id: string) => void;
   onDelete: (row: SupplierDeliveryReceipt) => void;
+  page: number;
+  setPage: (p: number) => void;
+  total: number;
+  limit: number;
 };
 
 export default function DeliveryReceiptList({
@@ -19,14 +23,19 @@ export default function DeliveryReceiptList({
   allDr,
   onEdit,
   onDelete,
+  page,
+  setPage,
+  total,
+  limit,
 }: DeliveryRLProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
-      { key: "supplierdrno", header: "Supplier DR ID" },
+      { key: "supplierdrno", header: "Supplier DR No" },
       { key: "projectname", header: "Project Name" },
-      { key: "salesorder", header: "Sales order" },
-      { key: "salesinvoice", header: "	Sales invoice" },
-      { key: "date", header: "date" },
+      { key: "yourpono", header: "Your PO No" },
+      { key: "shipto", header: "Ship To" },
+      { key: "date", header: "Date" },
+      { key: "dispatchdate", header: "Dispatch Date" },
       { key: "actions", header: "Actions", align: "right" },
     ],
     []
@@ -47,7 +56,7 @@ export default function DeliveryReceiptList({
           type="button"
           onClick={onCreate}
           disabled={loading}
-          className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+          className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
         >
           Create Delivery Receipt
         </button>
@@ -63,33 +72,51 @@ export default function DeliveryReceiptList({
           if (key === "supplierdrno") {
             return (
               <span className="font-mono text-xs text-slate-700">
-                {o?.supplier_dr_no}
+                {o.supplier_dr_no || "-"}
               </span>
             );
           }
+
           if (key === "projectname") {
-            return <span className="text-slate-900">-</span>;
+            return (
+              <span className="text-slate-900">{o.project_name || "-"}</span>
+            );
           }
-          if (key === "salesorder") {
-            return <span className="text-slate-700">-</span>;
+
+          if (key === "yourpono") {
+            return (
+              <span className="text-slate-900">{o.your_po_no || "-"}</span>
+            );
           }
-          if (key === "salesinvoice") {
-            return <span className="text-slate-700">-</span>;
+
+          if (key === "shipto") {
+            return <span className="text-slate-900">{o.ship_to || "-"}</span>;
           }
 
           if (key === "date") {
             return (
               <span className="text-slate-700">
-                {o?.date ? new Date(o.date).toLocaleDateString() : "-"}
+                {o.date ? new Date(o.date).toLocaleDateString() : "-"}
               </span>
             );
           }
+
+          if (key === "dispatchdate") {
+            return (
+              <span className="text-slate-700">
+                {o.dispatch_date
+                  ? new Date(o.dispatch_date).toLocaleDateString()
+                  : "-"}
+              </span>
+            );
+          }
+
           return (
             <div className="flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => onEdit(o.id)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
+                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
               >
                 <FiEdit2 className="h-3.5 w-3.5" />
               </button>
@@ -97,7 +124,7 @@ export default function DeliveryReceiptList({
               <button
                 type="button"
                 onClick={() => onDelete(o)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
               >
                 <FiTrash2 className="h-3.5 w-3.5" />
               </button>
@@ -105,6 +132,27 @@ export default function DeliveryReceiptList({
           );
         }}
       />
+      <div className="mt-6 flex items-center justify-end gap-3">
+        <button
+          disabled={page <= 1}
+          onClick={() => setPage(page - 1)}
+          className="px-4 py-2 text-xs rounded-lg border disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="text-xs text-slate-600">
+          Page {page} of {Math.ceil(total / limit)}
+        </span>
+
+        <button
+          disabled={page * limit >= total}
+          onClick={() => setPage(page + 1)}
+          className="px-4 py-2 text-xs rounded-lg border disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </>
   );
 }

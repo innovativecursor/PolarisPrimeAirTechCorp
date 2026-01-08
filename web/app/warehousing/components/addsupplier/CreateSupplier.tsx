@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Supplier, SupplierForm } from "./type";
+import Required from "@/components/ui/Required";
 
 type CreateSupplierProps = {
   onCancel: () => void;
@@ -70,7 +71,7 @@ export default function CreateSupplier({
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Supplier name
+              Supplier name <Required />
             </label>
             <input
               name="supplier_name"
@@ -84,7 +85,7 @@ export default function CreateSupplier({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Supplier code
+              Supplier code <Required />
             </label>
             <input
               name="supplier_code"
@@ -98,7 +99,7 @@ export default function CreateSupplier({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              TIN number
+              TIN number <Required />
             </label>
             <input
               name="tin_number"
@@ -112,7 +113,7 @@ export default function CreateSupplier({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Organization name
+              Organization name <Required />
             </label>
             <input
               name="organization"
@@ -126,7 +127,7 @@ export default function CreateSupplier({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Location
+              Location <Required />
             </label>
 
             <select
@@ -136,7 +137,7 @@ export default function CreateSupplier({
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
             >
               <option value="" hidden>
-                Choose a location
+                Choose a location 
               </option>
               <option value="apac">APAC</option>
               <option value="emea">EMEA</option>
@@ -146,7 +147,7 @@ export default function CreateSupplier({
         </div>
         <div className="flex items-center justify-end gap-4 pt-4">
           <button
-            className="rounded-full px-6 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+            className="rounded-full  cursor-pointer px-6 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700"
             type="button"
             onClick={onCancel}
           >

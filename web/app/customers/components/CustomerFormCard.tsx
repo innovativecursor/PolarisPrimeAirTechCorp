@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CustomerFormValues, CustomerRow } from "../hooks/useCustomers";
+import Required from "@/components/ui/Required";
 
 type CustomerFormCardProps = {
   initialValues?: CustomerRow;
@@ -51,7 +52,7 @@ export default function CustomerFormCard({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -63,7 +64,7 @@ export default function CustomerFormCard({
           {/* Customer ID (readonly / informational) */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold tracking-[0.16em] uppercase text-slate-500">
-              Customer ID
+              Customer ID 
             </label>
             <input
               type="text"
@@ -76,12 +77,13 @@ export default function CustomerFormCard({
           {/* Customer name */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold tracking-[0.16em] uppercase text-slate-500">
-              Customer name
+              Customer name <Required />
             </label>
             <input
               type="text"
               value={form.name}
               onChange={handleChange("name")}
+              required
               placeholder="Eg. MetroCool Services"
               className="block w-full rounded-2xl border border-slate-200 bg-[#f7f8fb] px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
             />
@@ -90,12 +92,13 @@ export default function CustomerFormCard({
           {/* TIN number */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold tracking-[0.16em] uppercase text-slate-500">
-              TIN number
+              TIN number <Required />
             </label>
             <input
               type="text"
               value={form.tin}
               onChange={handleChange("tin")}
+              required
               placeholder="1as"
               className="block w-full rounded-2xl border border-slate-200 bg-[#f7f8fb] px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
             />
@@ -104,12 +107,13 @@ export default function CustomerFormCard({
           {/* Customer organization */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold tracking-[0.16em] uppercase text-slate-500">
-              Customer organization
+              Customer organization <Required />
             </label>
             <input
               type="text"
               value={form.org}
               onChange={handleChange("org")}
+              required
               placeholder="Business unit"
               className="block w-full rounded-2xl border border-slate-200 bg-[#f7f8fb] px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
             />
@@ -118,12 +122,13 @@ export default function CustomerFormCard({
           {/* Customer location */}
           <div className="space-y-2 md:col-span-2">
             <label className="block text-xs font-semibold tracking-[0.16em] uppercase text-slate-500">
-              Customer location
+              Customer location <Required />
             </label>
             <input
               type="text"
               value={form.location}
               onChange={handleChange("location")}
+              required
               placeholder="Choose a location or type an address"
               className="block w-full rounded-2xl border border-slate-200 bg-[#f7f8fb] px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
             />
@@ -135,7 +140,7 @@ export default function CustomerFormCard({
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center rounded-[999px] bg-[#1f285c] px-6 py-2.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex cursor-pointer items-center rounded-[999px] bg-[#1f285c] px-6 py-2.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {saving ? "Saving…" : "Save customer"}
           </button>

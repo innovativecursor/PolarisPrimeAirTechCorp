@@ -10,6 +10,9 @@ type AccountListProps = {
   onCreate: () => void;
   loading: boolean;
   allAccountDr: DeliveryReceipt[];
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
   onDelete: (row: DeliveryReceipt) => void;
   onUpdateStatus: (id: string, status: "Ready" | "Issued") => void;
 };
@@ -20,12 +23,14 @@ export default function AccountList({
   allAccountDr,
   onDelete,
   onUpdateStatus,
+  page,
+  onPageChange,
+  totalPages,
 }: AccountListProps) {
   const columns: PolarisTableColumn[] = useMemo(
     () => [
       { key: "drnumber", header: "dr_number" },
       { key: "project", header: "Project" },
-
       { key: "customername", header: "Customer Name" },
       { key: "salesorderid", header: "Sales Order Id" },
       { key: "salesinvoiceid", header: "Sales Invoice Id" },
@@ -74,26 +79,40 @@ export default function AccountList({
             );
           }
           if (key === "project") {
-            return <span className="text-slate-900">-</span>;
-          }
-          if (key === "customername") {
-            return <span className="text-slate-900">{o?.customer_name}</span>;
-          }
-          if (key === "salesorderid") {
-            return <span className="text-slate-700">{o?.sales_order_id}</span>;
-          }
-          if (key === "salesinvoiceid") {
             return (
-              <span className="text-slate-700">{o?.sales_invoice_id}</span>
+              <span className="text-slate-900">{o.project?.name || "-"}</span>
             );
           }
+
+          if (key === "customername") {
+            return (
+              <span className="text-slate-900">{o.customer?.name || "-"}</span>
+            );
+          }
+
+          if (key === "salesorderid") {
+            return (
+              <span className="text-slate-700">
+                {o.sales_order?.name || "-"}
+              </span>
+            );
+          }
+
+          if (key === "salesinvoiceid") {
+            return (
+              <span className="text-slate-700">
+                {o.sales_invoice?.name || "-"}
+              </span>
+            );
+          }
+
           if (key === "status") {
             const isReady = o.status === "Ready";
             const isIssued = o.status === "Issued";
 
             return (
               <span
-                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
+                className={`inline-flex  items-center rounded-full px-3 py-1 text-xs font-medium
         ${
           isIssued
             ? "bg-emerald-50 text-emerald-600"
@@ -109,7 +128,7 @@ export default function AccountList({
 
           return (
             <div className="flex justify-end items-center gap-2">
-              <div className="inline-flex rounded-full border border-slate-200 bg-slate-50 p-1">
+              <div className="inline-flex  rounded-full border border-slate-200 bg-slate-50 p-1">
                 {(["Ready", "Issued"] as const).map((status) => {
                   const active = o.status === status;
 
@@ -118,7 +137,7 @@ export default function AccountList({
                       key={status}
                       type="button"
                       onClick={() => onUpdateStatus(o.id, status)}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition
+                      className={`px-3 py-1  cursor-pointer text-xs font-medium rounded-full transition
           ${
             active
               ? status === "Issued"
@@ -136,7 +155,7 @@ export default function AccountList({
               <button
                 type="button"
                 onClick={() => onDelete(o)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full
+                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full
                  bg-rose-50 text-rose-500 hover:bg-rose-100"
               >
                 <FiTrash2 className="h-3.5 w-3.5" />
@@ -145,6 +164,28 @@ export default function AccountList({
           );
         }}
       />
+
+      <div className="flex justify-end items-center gap-3 mt-4">
+        <button
+          disabled={page === 1}
+          onClick={() => onPageChange(page - 1)}
+          className="px-3 py-1 text-sm rounded border disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="text-sm text-slate-600">
+          Page {page} of {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => onPageChange(page + 1)}
+          className="px-3 py-1 text-sm rounded border disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </>
   );
 }

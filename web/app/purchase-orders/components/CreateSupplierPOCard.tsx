@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -10,13 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SupplierPORow, SupplierPOFormValues } from "./types";
 import {
-  SupplierPORow,
   ProjectOption,
-  SupplierOption,
-  SalesOrderOption,
-  SupplierPOFormValues,
-} from "./types";
+  SalesOrderRow,
+} from "@/app/sales-orders/hooks/useSalesOrders";
+import { Supplier } from "@/app/warehousing/components/addsupplier/type";
+import Required from "@/components/ui/Required";
 
 type LineItemForm = {
   id: string;
@@ -27,9 +26,9 @@ type LineItemForm = {
 
 type CreateSupplierPOCardProps = {
   initialValues?: SupplierPORow;
-  projects: ProjectOption[];
-  suppliers: SupplierOption[];
-  salesOrders: SalesOrderOption[];
+  projectsName: ProjectOption[];
+  suppliers: Supplier[];
+  salesOrders: SalesOrderRow[];
   saving: boolean;
   onCancel: () => void;
   onSubmit: (values: SupplierPOFormValues) => Promise<void> | void;
@@ -37,7 +36,7 @@ type CreateSupplierPOCardProps = {
 
 export default function CreateSupplierPOCard({
   initialValues,
-  projects,
+  projectsName,
   suppliers,
   salesOrders,
   saving,
@@ -45,15 +44,12 @@ export default function CreateSupplierPOCard({
   onSubmit,
 }: CreateSupplierPOCardProps) {
   const [form, setForm] = useState<SupplierPOFormValues>(() => {
-    console.log("Initializing form with initialValues:", initialValues);
-
-    // Extract line items from initialValues if editing
     let items: LineItemForm[] = [
       {
         id: crypto.randomUUID(),
         description: "",
         quantity: "0",
-        uom: "NOS",
+        uom: "unit",
       },
     ];
 
@@ -62,16 +58,17 @@ export default function CreateSupplierPOCard({
         id: crypto.randomUUID(),
         description: item.description || "",
         quantity: String(item.quantity || 0),
-        uom: item.uom || item.UOM || "NOS",
+        uom: item.uom || item.UOM || "unit",
       }));
     }
     const status = initialValues?._raw?.status || "draft";
 
-    const projectId =
-      initialValues?._raw?.projectId || initialValues?._raw?.project_id || "";
-    const supplierId =
-      initialValues?._raw?.supplierId || initialValues?._raw?.supplier_id || "";
-    const soId = initialValues?._raw?.soId || initialValues?._raw?.so_id || "";
+    const projectId = initialValues?._raw?.project?.id || "";
+    const supplierId = initialValues?._raw?.supplier?.id || "";
+    const soId =
+      salesOrders.find(
+        (so) => so.salesOrderId === initialValues?._raw?.sales_order_id
+      )?.id || "";
 
     return {
       projectId,
@@ -103,7 +100,7 @@ export default function CreateSupplierPOCard({
           id: crypto.randomUUID(),
           description: "",
           quantity: "0",
-          uom: "NOS",
+          uom: "unit",
         },
       ],
     }));
@@ -137,7 +134,7 @@ export default function CreateSupplierPOCard({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -149,17 +146,26 @@ export default function CreateSupplierPOCard({
           {/* Project */}
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Project name
+              Project name <Required />
             </label>
             <Select
+            required
               value={form.projectId}
               onValueChange={(val) => setForm({ ...form, projectId: val })}
+              disabled={isEdit}
             >
-              <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
+              <SelectTrigger
+                disabled={isEdit}
+                className={`w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm ${
+                  isEdit
+                    ? "bg-slate-100 cursor-not-allowed opacity-70"
+                    : "bg-slate-50"
+                }`}
+              >
                 <SelectValue placeholder="Choose project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((p) => (
+                {projectsName.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
@@ -171,19 +177,28 @@ export default function CreateSupplierPOCard({
           {/* Supplier */}
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Supplier name
+              Supplier name <Required />
             </label>
             <Select
+            required
               value={form.supplierId}
               onValueChange={(val) => setForm({ ...form, supplierId: val })}
+              disabled={isEdit}
             >
-              <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
+              <SelectTrigger
+                disabled={isEdit}
+                className={`w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm ${
+                  isEdit
+                    ? "bg-slate-100 cursor-not-allowed opacity-70"
+                    : "bg-slate-50"
+                }`}
+              >
                 <SelectValue placeholder="Choose supplier" />
               </SelectTrigger>
               <SelectContent>
                 {suppliers.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
-                    {s.name}
+                    {s.supplier_name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -199,14 +214,22 @@ export default function CreateSupplierPOCard({
           <Select
             value={form.soId || undefined}
             onValueChange={(val) => setForm({ ...form, soId: val })}
+            disabled={isEdit}
           >
-            <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
+            <SelectTrigger
+              disabled={isEdit}
+              className={`w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm ${
+                isEdit
+                  ? "bg-slate-100 cursor-not-allowed opacity-70"
+                  : "bg-slate-50"
+              }`}
+            >
               <SelectValue placeholder="Choose sales order (optional)" />
             </SelectTrigger>
             <SelectContent>
               {salesOrders.map((so) => (
                 <SelectItem key={so.id} value={so.id}>
-                  {so.name}
+                  {so.salesOrderId}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -263,10 +286,11 @@ export default function CreateSupplierPOCard({
               {/* Quantity */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Quantity
+                  Quantity <Required />
                 </label>
                 <input
                   type="number"
+                  required
                   min={0}
                   value={item.quantity}
                   onChange={(e) =>
@@ -279,15 +303,23 @@ export default function CreateSupplierPOCard({
               {/* UOM */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  UOM
+                  Unit of measurement
                 </label>
-                <input
-                  type="text"
+
+                <Select
                   value={item.uom}
-                  onChange={(e) => updateItem(item.id, { uom: e.target.value })}
-                  className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
-                  placeholder="NOS"
-                />
+                  onValueChange={(val) => updateItem(item.id, { uom: val })}
+                >
+                  <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
+                    <SelectValue placeholder="Select UOM" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="unit">unit</SelectItem>
+                    <SelectItem value="pcs">pcs</SelectItem>
+                    <SelectItem value="set">set</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Remove line */}
@@ -311,7 +343,7 @@ export default function CreateSupplierPOCard({
           <button
             type="button"
             onClick={addItem}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="inline-flex  cursor-pointer items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
           >
             <FiPlus className="h-4 w-4" />
             Add line
@@ -320,7 +352,7 @@ export default function CreateSupplierPOCard({
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+            className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save supplier PO"}
           </button>

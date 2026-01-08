@@ -23,49 +23,64 @@ export function useAccountDr() {
   const onSelectInvoice = useCallback((invoice: SalesInvoice | null) => {
     setSelectedInvoice(invoice);
   }, []);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const GetAccountDr = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetchDataGet<DeliveryReceiptListRes>(
-        endpoints.deliveryReceipt.getAll
-      );
-      setAllAccountDr(Array.isArray(res?.data) ? res?.data : []);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch inventories");
-      setAllAccountDr([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const GetAccountDr = useCallback(
+    async (pageNo = page) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const createDeliveryReceipt = useCallback(async () => {
-    if (!selectedInvoice) {
-      toast.error("Please select project");
-      return;
-    }
+        const res = await fetchDataGet<any>(
+          endpoints.deliveryReceipt.getAll(pageNo)
+        );
 
-    const payload: DrForm = {
-      project_id: selectedInvoice.project_id,
-      customer_id: selectedInvoice.customer_id,
-      sales_order_id: selectedInvoice.sales_order_id,
-      sales_invoice_id: selectedInvoice.id,
-    };
+        setAllAccountDr(Array.isArray(res?.data) ? res.data : []);
 
-    try {
-      setSaving(true);
-      await fetchDataPost(endpoints.deliveryReceipt.create, payload);
-      toast.success("Delivery receipt created");
-      setMode("list");
-      setSelectedInvoice(null);
-      GetAccountDr();
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setSaving(false);
-    }
-  }, [selectedInvoice]);
+        const total = res?.total || 0;
+        const limit = res?.limit || 10;
+
+        setTotalPages(Math.ceil(total / limit));
+        setPage(pageNo);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch delivery receipts");
+        setAllAccountDr([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [page]
+  );
+
+  const createDeliveryReceipt = useCallback(
+    async (data: {
+      projectId: string;
+      customerId: string;
+      salesOrderId: string;
+      salesInvoiceId: string;
+    }) => {
+      const payload: DrForm = {
+        project_id: data.projectId,
+        customer_id: data.customerId,
+        sales_order_id: data.salesOrderId,
+        sales_invoice_id: data.salesInvoiceId,
+      };
+
+      try {
+        setSaving(true);
+        await fetchDataPost(endpoints.deliveryReceipt.create, payload);
+        toast.success("Delivery receipt created");
+        setMode("list");
+        GetAccountDr();
+      } catch (err: any) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setSaving(false);
+      }
+    },
+    [GetAccountDr]
+  );
 
   const deleteAccountDr = useCallback(
     async (id: string) => {
@@ -124,6 +139,9 @@ export function useAccountDr() {
     GetAccountDr,
     allAccountDr,
     deleteAccountDr,
-    updateDeliveryReceiptStatus
+    updateDeliveryReceiptStatus,
+    page,
+    setPage,
+    totalPages,
   };
 }

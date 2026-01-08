@@ -42,6 +42,7 @@ export type SupplierDeliveryReceipt = {
   supplier_dr_no: string;
   your_po_no: string;
   dispatch_date: string;
+  project_name: string;
   ship_to: string;
   reference: string;
   date: string;

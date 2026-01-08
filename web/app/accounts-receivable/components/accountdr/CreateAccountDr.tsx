@@ -5,25 +5,44 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SalesInvoice } from "../accountsales/type";
+import { ProjectOption } from "@/app/sales-orders/hooks/useSalesOrders";
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { fetchDataGet } from "@/app/lib/fetchData";
+import endpoints from "@/app/lib/endpoints";
+import Required from "@/components/ui/Required";
 
 type CreateSupplierProps = {
   onCancel: () => void;
-  allAccountSales: SalesInvoice[];
   saving: boolean;
-  selectedInvoice: SalesInvoice | null;
-  onSelectInvoice: (invoice: SalesInvoice | null) => void;
-  onSubmit: () => void;
+  onSubmit: (data: {
+    projectId: string;
+    customerId: string;
+    salesOrderId: string;
+    salesInvoiceId: string;
+  }) => void;
+
+  projectsName: ProjectOption[];
 };
 
 export default function CreateAccountDr({
   onCancel,
-  allAccountSales,
   saving,
-  selectedInvoice,
-  onSelectInvoice,
   onSubmit,
+  projectsName,
 }: CreateSupplierProps) {
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [autoFill, setAutoFill] = useState<{
+    projectMongoId: string;
+    customerMongoId: string;
+    salesOrderMongoId: string;
+    salesInvoiceMongoId: string;
+
+    customerName: string;
+    salesOrderCode: string;
+    salesInvoiceCode: string;
+  } | null>(null);
+
   return (
     <>
       <div className="flex items-start justify-between mb-8">
@@ -49,21 +68,40 @@ export default function CreateAccountDr({
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Project
+              Project <Required />
             </label>
             <Select
-              onValueChange={(invoiceId) => {
-                const found = allAccountSales.find((a) => a.id === invoiceId);
-                onSelectInvoice(found || null);
+              onValueChange={async (projectId) => {
+                try {
+                  setSelectedProjectId(projectId);
+
+                  const res = await fetchDataGet<any>(
+                    endpoints.projectinfo.infobyproject(projectId)
+                  );
+
+                  setAutoFill({
+                    projectMongoId: res.project_mongo_id,
+                    customerMongoId: res.customer_mongo_id,
+                    salesOrderMongoId: res.sales_order_mongo_id,
+                    salesInvoiceMongoId: res.invoice_mongo_id,
+
+                    customerName: res.customer_name,
+                    salesOrderCode: res.sales_order_id,
+                    salesInvoiceCode: res.invoice_id,
+                  });
+                } catch (err) {
+                  toast.error("Failed to load project data");
+                  setAutoFill(null);
+                }
               }}
             >
               <SelectTrigger className="w-full rounded-2xl">
                 <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
-                {allAccountSales.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    {a.project_id}
+                {projectsName.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -76,7 +114,7 @@ export default function CreateAccountDr({
             </label>
             <input
               disabled
-              value={selectedInvoice?.customer_id || ""}
+              value={autoFill?.customerName || ""}
               className="w-full rounded-2xl border px-4 py-2.5 text-sm"
               placeholder="Customer Id"
             />
@@ -88,7 +126,7 @@ export default function CreateAccountDr({
             </label>
             <input
               disabled
-              value={selectedInvoice?.sales_order_id || ""}
+              value={autoFill?.salesOrderCode || ""}
               className="w-full rounded-2xl border px-4 py-2.5 text-sm"
               placeholder="Sales Order Id"
             />
@@ -100,7 +138,7 @@ export default function CreateAccountDr({
             </label>
             <input
               disabled
-              value={selectedInvoice?.invoice_id || ""}
+              value={autoFill?.salesInvoiceCode || ""}
               className="w-full rounded-2xl border px-4 py-2.5 text-sm"
               placeholder="Sales Invoice Id"
             />
@@ -109,10 +147,22 @@ export default function CreateAccountDr({
 
         <div className="flex justify-end ">
           <button
+            className="rounded-full cursor-pointer bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
             type="button"
             disabled={saving}
-            onClick={onSubmit}
-            className="rounded-full cursor-pointer bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
+            onClick={() => {
+              if (!selectedProjectId || !autoFill) {
+                toast.error("Please select project");
+                return;
+              }
+
+              onSubmit({
+                projectId: autoFill.projectMongoId,
+                customerId: autoFill.customerMongoId,
+                salesOrderId: autoFill.salesOrderMongoId,
+                salesInvoiceId: autoFill.salesInvoiceMongoId,
+              });
+            }}
           >
             Save delivery receipt
           </button>

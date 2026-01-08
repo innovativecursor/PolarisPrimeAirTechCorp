@@ -7,14 +7,15 @@ import { useCallback, useEffect } from "react";
 import { useSupplier } from "../addsupplier/hooks/useSupplier";
 import { useConfirmToast } from "@/app/hooks/useConfirmToast";
 import { SupplierInvoice } from "./type";
+import { useSalesOrders } from "@/app/sales-orders/hooks/useSalesOrders";
 
 export default function SalesInvioce() {
   const salesInvoice = useSalesInvoice();
-  const { projectsOptions, loadOptions } = useSupplierPO();
+  const { loadProjectName, projectName } = useSalesOrders();
   const { GetSupplier, allSupplier } = useSupplier();
   const confirmToast = useConfirmToast();
   useEffect(() => {
-    void loadOptions();
+    void loadProjectName();
     void GetSupplier();
     void salesInvoice.GetSalesInvoice();
   }, []);
@@ -27,7 +28,8 @@ export default function SalesInvioce() {
         confirmText: "Delete",
         cancelText: "Cancel",
         onConfirm: async () => {
-          await salesInvoice.deleteSalesInvoice(invoice.id);
+         await salesInvoice.deleteSalesInvoice(invoice._id);
+
         },
       });
     },
@@ -46,11 +48,17 @@ export default function SalesInvioce() {
             salesInvoice.setMode("create");
           }}
           onDelete={handleDelete}
+          page={salesInvoice.page}
+          totalPages={salesInvoice.totalPages}
+          onPageChange={(p) => {
+            salesInvoice.setPage(p);
+            salesInvoice.GetSalesInvoice(p);
+          }}
         />
       ) : (
         <CreateSalesInvioce
           {...salesInvoice}
-          projects={projectsOptions}
+          projectsName={projectName}
           allSupplier={allSupplier}
           onCancel={() => {
             salesInvoice.setMode("list");

@@ -1,30 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from "react";
-import {
-  fetchDataGet,
-  fetchDataPost,
-  fetchWithError,
-} from "../../lib/fetchData";
+import { fetchDataGet, fetchWithError } from "../../lib/fetchData";
 import endpoints from "../../lib/endpoints";
 import { useToast } from "../../hooks/useToast";
 import { useConfirmToast } from "../../hooks/useConfirmToast";
-import {
-  SupplierPORow,
-  ProjectOption,
-  SupplierOption,
-  SalesOrderOption,
-} from "../components/types";
+import { SupplierPORow } from "../components/types";
 
 export function useSupplierPO() {
   const [mode, setMode] = useState<"list" | "create">("list");
-  const [orders, setOrders] = useState<SupplierPORow[]>([]);
-  const [projectsOptions, setProjectsOptions] = useState<ProjectOption[]>([]);
-  const [suppliersOptions, setSuppliersOptions] = useState<SupplierOption[]>(
-    []
-  );
-  const [salesOrdersOptions, setSalesOrdersOptions] = useState<
-    SalesOrderOption[]
-  >([]);
+  const [supplierPO, setSupplierPO] = useState<SupplierPORow[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +21,7 @@ export function useSupplierPO() {
   const confirmToast = useConfirmToast();
 
   // Load supplier POs
-
-  const loadOrders = useCallback(
+  const loadSupplierPO = useCallback(
     async (pageNumber: number = 1) => {
       try {
         setLoading(true);
@@ -50,13 +33,13 @@ export function useSupplierPO() {
 
         const list = res?.data || [];
 
-        setOrders(
+        setSupplierPO(
           list.map((po: any) => ({
             id: po.id || po._id || "",
-            poId: po.poId || "",
-            projectName: "",
-            supplierName: "",
-            soId: po.soId || "",
+            poId: po.po_id || "",
+            soId: po.sales_order_id || "",
+            projectName: po.project?.name || "",
+            supplierName: po.supplier?.name || "",
             status: po.status || "draft",
             totalAmount: po.totalAmount || 0,
             _raw: po,
@@ -79,49 +62,6 @@ export function useSupplierPO() {
 
   const totalPages = Math.ceil(total / limit);
 
-  // Load projects, suppliers, and sales orders
-  const loadOptions = useCallback(async () => {
-    try {
-      const [projectsRes, suppliersRes, salesOrdersRes] = await Promise.all([
-        fetchDataGet<{ projects: any[] }>(endpoints.project.getAll),
-        fetchDataGet<any>(endpoints.supplier.getAll),
-        fetchDataGet<any>(endpoints.salesOrder.getAll),
-      ]);
-
-      const projectsData = projectsRes?.projects || [];
-      const suppliersData = Array.isArray(suppliersRes)
-        ? suppliersRes
-        : suppliersRes?.data || suppliersRes?.suppliers || [];
-      const salesOrdersData = Array.isArray(salesOrdersRes)
-        ? salesOrdersRes
-        : salesOrdersRes?.salesOrders || salesOrdersRes?.data || [];
-
-      setProjectsOptions(
-        projectsData.map((p: any) => ({
-          id: p._id || p.id || "",
-          name: p.project_name || p.projectName || p.name || "",
-          customer_id: p.customer_id || p.customerid || "",
-        }))
-      );
-
-      setSuppliersOptions(
-        suppliersData.map((s: any) => ({
-          id: s._id || s.id || "",
-          name: s.supplier_name || s.supplierName || s.name || "",
-        }))
-      );
-
-      setSalesOrdersOptions(
-        salesOrdersData.map((so: any) => ({
-          id: so._id || so.id || "",
-          name: `SO-${so._id || so.id || ""}`,
-        }))
-      );
-    } catch (e: any) {
-      console.error("Failed to load options:", e);
-    }
-  }, []);
-
   // Handle edit
   const handleEdit = useCallback((row: SupplierPORow) => {
     setEditing(row);
@@ -139,7 +79,7 @@ export function useSupplierPO() {
 
       confirmToast.confirm({
         title: "Delete Supplier PO",
-        message: "Are you sure you want to delete this Supplier PO?",
+        message: `Delete sales order "${row.poId}"?`,
         confirmText: "Delete",
         cancelText: "Cancel",
         onConfirm: async () => {
@@ -152,7 +92,7 @@ export function useSupplierPO() {
 
             toast.success("Supplier PO deleted successfully");
 
-            await loadOrders(page);
+            await loadSupplierPO(page);
           } catch (e: any) {
             toast.error(e?.message || "Failed to delete Supplier PO");
           } finally {
@@ -161,16 +101,13 @@ export function useSupplierPO() {
         },
       });
     },
-    [confirmToast, toast, page, loadOrders]
+    [confirmToast, toast, page, loadSupplierPO]
   );
 
   return {
     mode,
     setMode,
-    orders,
-    projectsOptions,
-    suppliersOptions,
-    salesOrdersOptions,
+    supplierPO,
     page,
     totalPages,
     setPage,
@@ -181,8 +118,7 @@ export function useSupplierPO() {
     setError,
     editing,
     setEditing,
-    loadOrders,
-    loadOptions,
+    loadSupplierPO,
     handleEdit,
     handleDelete,
   };

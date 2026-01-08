@@ -1,4 +1,4 @@
-import { ProjectOption } from "@/app/purchase-orders/components/types";
+import { ProjectOption } from "@/app/sales-orders/hooks/useSalesOrders";
 import { Supplier } from "../addsupplier/type";
 import { DeliveryReceiptForm, DeliveryReceiptItem } from "./type";
 import {
@@ -9,11 +9,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
+import Required from "@/components/ui/Required";
 
 type CreateDRProps = {
   onCancel: () => void;
 
-  projects: ProjectOption[];
+  projectsName: ProjectOption[];
   allSupplier: Supplier[];
 
   form: DeliveryReceiptForm;
@@ -35,7 +36,7 @@ type CreateDRProps = {
 
 export default function CreateDeliveryReceipt({
   onCancel,
-  projects,
+  projectsName,
   allSupplier,
   form,
   updateForm,
@@ -60,7 +61,7 @@ export default function CreateDeliveryReceipt({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -78,9 +79,10 @@ export default function CreateDeliveryReceipt({
           {/* Supplier */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Supplier
+              Supplier <Required />
             </label>
             <Select
+            required
               value={form.supplier_id}
               onValueChange={(v) => updateForm("supplier_id", v)}
             >
@@ -100,7 +102,7 @@ export default function CreateDeliveryReceipt({
           {/* Project */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Project
+              Project <Required />
             </label>
             <Select
               value={form.project_id}
@@ -110,7 +112,7 @@ export default function CreateDeliveryReceipt({
                 <SelectValue placeholder="Select project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((p) => (
+                {projectsName.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
@@ -122,7 +124,7 @@ export default function CreateDeliveryReceipt({
           {/* DR No */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Supplier DR No
+              Supplier DR No <Required />
             </label>
             <input
               value={form.supplier_dr_no}
@@ -135,7 +137,7 @@ export default function CreateDeliveryReceipt({
           {/* PO No */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Your PO No
+              Your PO No <Required />
             </label>
             <input
               value={form.your_po_no}
@@ -147,7 +149,7 @@ export default function CreateDeliveryReceipt({
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Dispatch Date
+              Dispatch Date <Required />
             </label>
             <input
               type="date"
@@ -159,7 +161,7 @@ export default function CreateDeliveryReceipt({
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-slate-600">
-              Ship To
+              Ship To <Required />
             </label>
             <input
               type="text"
@@ -185,7 +187,7 @@ export default function CreateDeliveryReceipt({
 
           {/* Date */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-600">Date</label>
+            <label className="text-sm font-medium text-slate-600">Date <Required /></label>
             <input
               type="date"
               value={form.date}
@@ -204,7 +206,7 @@ export default function CreateDeliveryReceipt({
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  className="text-red-600 text-xs flex items-center gap-1"
+                  className="text-red-600  cursor-pointer text-xs flex items-center gap-1"
                 >
                   <FiTrash2 />
                   Remove
@@ -316,7 +318,7 @@ export default function CreateDeliveryReceipt({
                 {/* Qty */}
                 <div className="space-y-1.5">
                   <label className="block text-sm font-medium text-slate-600">
-                    Ship Qty
+                    Ship Qty <Required />
                   </label>
 
                   <input
@@ -357,7 +359,7 @@ export default function CreateDeliveryReceipt({
           <button
             type="button"
             onClick={addItem}
-            className="flex items-center gap-2 border rounded-2xl px-4 py-2 text-xs"
+            className="flex items-center  cursor-pointer gap-2 border rounded-2xl px-4 py-2 text-xs"
           >
             <FiPlus />
             Add item
@@ -366,7 +368,7 @@ export default function CreateDeliveryReceipt({
           <button
             type="submit"
             disabled={saving}
-            className="rounded-full bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
+            className="rounded-full  cursor-pointer bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
           >
             {saving
               ? "Saving..."

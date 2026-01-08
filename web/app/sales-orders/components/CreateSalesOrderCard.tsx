@@ -6,7 +6,7 @@ import {
   SalesOrderFormValues,
   SalesOrderRow,
 } from "../hooks/useSalesOrders";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -15,30 +15,33 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
+import Required from "@/components/ui/Required";
 
 type CreateSalesOrderCardProps = {
   initialValues?: SalesOrderRow;
-  projects: ProjectOption[];
+  projectsName: ProjectOption[];
   customers: CustomerOption[];
   aircons: AirconOption[];
   saving: boolean;
   onCancel: () => void;
   onSubmit: (values: SalesOrderFormValues) => Promise<void> | void;
+  loadCustomerByProject: (projectId: string) => Promise<any>;
 };
 
 export default function CreateSalesOrderCard({
   initialValues,
-  projects,
+  projectsName,
   customers,
   aircons,
   saving,
   onCancel,
   onSubmit,
+  loadCustomerByProject,
 }: CreateSalesOrderCardProps) {
   const [form, setForm] = useState<SalesOrderFormValues>(() => {
     console.log("Initializing form with initialValues:", initialValues);
     console.log("Available aircons:", aircons);
-    console.log("Available projects:", projects);
+    console.log("Available projects:", projectsName);
     console.log("Available customers:", customers);
 
     // Extract line items from initialValues if editing
@@ -79,8 +82,8 @@ export default function CreateSalesOrderCard({
       initialValues?._raw?.customerId || initialValues?._raw?.customer_id || "";
 
     // If IDs not found, try to match by name
-    if (!projectId && initialValues?.projectName && projects.length > 0) {
-      const matchedProject = projects.find(
+    if (!projectId && initialValues?.projectName && projectsName.length > 0) {
+      const matchedProject = projectsName.find(
         (p) => p.name === initialValues.projectName
       );
       projectId = matchedProject?.id || "";
@@ -105,6 +108,26 @@ export default function CreateSalesOrderCard({
       items,
     };
   });
+
+  useEffect(() => {
+    if (!initialValues) return;
+    if (form.customerId) return;
+    if (!form.projectId) return;
+
+    const loadCustomer = async () => {
+      const customer = await loadCustomerByProject(form.projectId);
+
+      if (customer) {
+        setForm((prev) => ({
+          ...prev,
+          customerId: customer.id,
+          customerName: customer.name,
+        }));
+      }
+    };
+
+    loadCustomer();
+  }, [initialValues, form.projectId]);
 
   const isEdit = Boolean(initialValues);
 
@@ -161,7 +184,7 @@ export default function CreateSalesOrderCard({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -173,24 +196,37 @@ export default function CreateSalesOrderCard({
           {/* Project */}
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Project name
+              Project name <Required />
             </label>
             <Select
+              required
               value={form.projectId}
-              onValueChange={(val) => {
-                const proj = projects.find((p) => p.id === val);
+              onValueChange={async (val) => {
+                const proj = projectsName.find((p) => p.id === val);
                 setForm((prev) => ({
                   ...prev,
                   projectId: val,
                   projectName: proj?.name || "",
+                  customerId: "",
+                  customerName: "",
                 }));
+
+                const customer = await loadCustomerByProject(val);
+
+                if (customer) {
+                  setForm((prev) => ({
+                    ...prev,
+                    customerId: customer.id,
+                    customerName: customer.name,
+                  }));
+                }
               }}
             >
               <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
                 <SelectValue placeholder="Choose project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((p) => (
+                {projectsName.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
@@ -204,28 +240,11 @@ export default function CreateSalesOrderCard({
             <label className="block text-sm font-medium text-slate-600">
               Customer name
             </label>
-            <Select
-              value={form.customerId}
-              onValueChange={(val) => {
-                const cust = customers.find((c) => c.id === val);
-                setForm((prev) => ({
-                  ...prev,
-                  customerId: val,
-                  customerName: cust?.name || "",
-                }));
-              }}
-            >
-              <SelectTrigger className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white">
-                <SelectValue placeholder="Choose customer" />
-              </SelectTrigger>
-              <SelectContent>
-                {customers.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <input
+              value={form.customerName}
+              disabled
+              className="block w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm text-slate-700 cursor-not-allowed"
+            />
           </div>
         </div>
 
@@ -266,7 +285,7 @@ export default function CreateSalesOrderCard({
               {/* Aircon (shadcn select) */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Select aircon
+                  Select aircon <Required />
                 </label>
 
                 <Select
@@ -293,10 +312,11 @@ export default function CreateSalesOrderCard({
               {/* Quantity */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Quantity
+                  Quantity <Required />
                 </label>
                 <input
                   type="number"
+                  required
                   min={0}
                   value={item.quantity}
                   onChange={(e) =>
@@ -329,10 +349,11 @@ export default function CreateSalesOrderCard({
               {/* Price */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Price
+                  Price <Required />
                 </label>
                 <input
                   type="number"
+                  required
                   min={0}
                   step="0.01"
                   value={item.price}
@@ -373,7 +394,7 @@ export default function CreateSalesOrderCard({
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+            className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save sales order"}
           </button>
