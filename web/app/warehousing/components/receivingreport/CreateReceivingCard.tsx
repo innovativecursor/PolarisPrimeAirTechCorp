@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import JsBarcode from "jsbarcode";
-import { SupplierPORow } from "@/app/purchase-orders/components/types";
 import {
   CreateRRPayload,
   CreateRRRes,
-  DeliveryReceiptRow,
   ReceivingReportItem,
   supplierdeliveryR,
   supplierInvoice,
+  supplierpo,
 } from "./type";
 import {
   Select,
@@ -26,7 +25,7 @@ import Required from "@/components/ui/Required";
 
 type CreateReceivingCardProps = {
   onCancel: () => void;
-  projectsName: ProjectOption[];
+  supplierPo: supplierpo[];
   supplierDeliveryR: supplierdeliveryR[];
   supplierInvoice: supplierInvoice[];
   salesOrder: SalesOrderRow[];
@@ -38,7 +37,6 @@ type CreateReceivingCardProps = {
 
 export default function CreateReceivingCard({
   onCancel,
-  projectsName,
   salesOrder,
   createReceivingReport,
   saving,
@@ -46,6 +44,7 @@ export default function CreateReceivingCard({
   editing,
   supplierDeliveryR,
   supplierInvoice,
+  supplierPo,
 }: CreateReceivingCardProps) {
   const [openScanner, setOpenScanner] = useState(false);
   const [generatedBarcode, setGeneratedBarcode] = useState("");
@@ -65,18 +64,6 @@ export default function CreateReceivingCard({
     quantity: 0,
     price: 0,
   });
-
-  const findIdByCode = (
-    list: { id: string; name?: string; salesOrderId?: string }[],
-    code?: string
-  ) => {
-    if (!code) return "";
-    return (
-      list.find((i) => i.name === code || i.salesOrderId === code)?.id || ""
-    );
-  };
-
-  console.log(editing, "kkkk");
 
   const updateForm = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -156,42 +143,25 @@ export default function CreateReceivingCard({
   useEffect(() => {
     if (!editing) return;
 
-    if (
-      supplierDeliveryR.length === 0 ||
-      supplierInvoice.length === 0 ||
-      salesOrder.length === 0
-    ) {
-      return;
-    }
-
     setForm({
-      supplier_dr_id: findIdByCode(
-        supplierDeliveryR,
-        editing.dr_number // "dr-000"
-      ),
-
-      supplier_invoice_id: findIdByCode(
-        supplierInvoice,
-        editing.invoice_id // "inv-122"
-      ),
-
-      sales_order_id: findIdByCode(salesOrder, editing.sales_order_id),
-
-      purchase_order_id: "",
+      supplier_dr_id: editing.dr_object_id ?? "",
+      supplier_invoice_id: editing.invoice_object_id ?? "",
+      purchase_order_id: editing.po_object_id ?? "",
+      sales_order_id: editing.sales_order_object_id ?? "",
 
       sku: editing.sku,
       barcode: editing.barcode ?? "",
-      aircon_model_number: editing.aircon_model_number,
-      aircon_name: editing.aircon_name,
-      type_of_aircon: editing.type_of_aircon,
-      hp: editing.hp,
-      indoor_outdoor_unit: editing.indoor_outdoor_unit,
-      quantity: editing.quantity,
-      price: editing.price,
+      aircon_model_number: editing.aircon_model_number ?? "",
+      aircon_name: editing.aircon_name ?? "",
+      type_of_aircon: editing.type_of_aircon ?? "",
+      hp: editing.hp ?? "",
+      indoor_outdoor_unit: editing.indoor_outdoor_unit ?? "",
+      quantity: editing.quantity ?? 0,
+      price: editing.price ?? 0,
     });
 
     setGeneratedBarcode(editing.barcode ?? "");
-  }, [editing, supplierDeliveryR, supplierInvoice, salesOrder]);
+  }, [editing]);
 
   const validateReceivingBarcode = () => {
     if (!form.barcode) {
@@ -302,7 +272,7 @@ export default function CreateReceivingCard({
                 <SelectValue placeholder="Choose a purchase order" />
               </SelectTrigger>
               <SelectContent>
-                {projectsName.map((po) => (
+                {supplierPo.map((po) => (
                   <SelectItem key={po?.id} value={po?.id}>
                     {po?.name}
                   </SelectItem>
@@ -471,6 +441,7 @@ export default function CreateReceivingCard({
               quantity <Required />
             </label>
             <input
+              type="number"
               value={form.quantity}
               required
               onChange={(e) => updateForm("quantity", e.target.value)}

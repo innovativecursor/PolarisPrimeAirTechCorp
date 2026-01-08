@@ -29,9 +29,11 @@ export default function ReceivingReport() {
     supplierDeliveryR,
     page,
     totalPages,
+    loadSupplierPO,
+    supplierPo,
   } = useReceivingReport();
 
-  const { loadProjectName, projectName, loadOrders, orders } = useSalesOrders();
+  const { loadOrders, orders } = useSalesOrders();
 
   const confirmToast = useConfirmToast();
 
@@ -51,17 +53,17 @@ export default function ReceivingReport() {
   };
 
   useEffect(() => {
-    void loadProjectName();
     void loadOrders();
     void loadReceivingReports(1);
     void loadSupplierInvoice();
     void loadSupplierDeliveryR();
+    void loadSupplierPO();
   }, []);
 
   const handleDelete = (row: ReceivingReportItem) => {
     confirmToast.confirm({
       title: "Delete Receiving Report",
-      message: `Are you sure you want to delete receiving report "${row.id}"?`,
+      message: `Are you sure you want to delete receiving report "${row.dr_number}"?`,
       confirmText: "Delete",
       cancelText: "Cancel",
       onConfirm: async () => {
@@ -99,7 +101,6 @@ export default function ReceivingReport() {
       ) : (
         <CreateReceivingCard
           onCancel={handleCancelForm}
-          projectsName={projectName}
           salesOrder={orders}
           createReceivingReport={createReceivingReport}
           saving={saving}
@@ -107,6 +108,7 @@ export default function ReceivingReport() {
           editing={editing}
           supplierInvoice={supplierInvoice}
           supplierDeliveryR={supplierDeliveryR}
+          supplierPo={supplierPo}
         />
       )}
     </div>

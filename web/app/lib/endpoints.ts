@@ -39,6 +39,9 @@ const endpoints = {
   supplierdeliveryR: {
     getAll: full("/supplier/dr/get-all-info"), // GET
   },
+  supplierpo: {
+    getAll: full("/supplierpo/get-all-info"), // GET
+  },
 
   // ---------- CUSTOMER ----------
   customer: {

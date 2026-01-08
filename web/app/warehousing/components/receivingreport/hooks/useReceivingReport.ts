@@ -5,6 +5,7 @@ import {
   ReceivingReportItem,
   supplierdeliveryR,
   supplierInvoice,
+  supplierpo,
 } from "../type";
 import { fetchDataGet, fetchDataPost } from "@/app/lib/fetchData";
 import endpoints from "@/app/lib/endpoints";
@@ -23,6 +24,7 @@ export default function useReceivingReport() {
   const [totalPages, setTotalPages] = useState(1);
 
   const [supplierInvoice, setSupplierInvoice] = useState<supplierInvoice[]>([]);
+  const [supplierPo, setSupplierPo] = useState<supplierpo[]>([]);
   const [supplierDeliveryR, setSupplierDeliveryR] = useState<
     supplierdeliveryR[]
   >([]);
@@ -38,6 +40,17 @@ export default function useReceivingReport() {
       list.map((p: any) => ({
         id: p._id || p.id,
         name: p.invoice_no || p.name,
+      }))
+    );
+  };
+
+  const loadSupplierPO = async () => {
+    const res = await fetchDataGet<any>(endpoints.supplierpo.getAll);
+    const list = res?.data || res || [];
+    setSupplierPo(
+      list.map((p: any) => ({
+        id: p.id || p._id,
+        name: p.po_id || p.name,
       }))
     );
   };
@@ -115,5 +128,7 @@ export default function useReceivingReport() {
     page,
     totalPages,
     loadReceivingReports,
+    loadSupplierPO,
+    supplierPo,
   };
 }
