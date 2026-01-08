@@ -131,6 +131,10 @@ func Auth(db *mongo.Database) {
 		supplierpo.GetAllSupplierPO(c, db)
 	})
 
+	apiV1.GET("/supplierpo/get-all-info", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.GetAllSupplierPOinfo(c, db)
+	})
+
 	apiV1.GET("/supplierpo/get-po-by/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierpo.GetSupplierPOByID(c, db)
 	})
@@ -265,7 +269,7 @@ func Auth(db *mongo.Database) {
 		polarisinventory.GetReceivingReportInventoryByID(c, db)
 	})
 
-	apiV1.DELETE("/receiving-r/rr-delete", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.DELETE("/receiving-r/rr-delete/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		polarisinventory.DeleteReceivingReportInventory(c, db)
 	})
 
