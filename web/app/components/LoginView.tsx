@@ -1,9 +1,11 @@
 "use client";
 
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import useLogin from "../hooks/useLogin";
+import SignupForm from "./SignupForm";
 
 export default function LoginView() {
+  const [mode, setMode] = useState<"login" | "signup">("login");
   const { handleLogin, loading } = useLogin();
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -64,80 +66,97 @@ export default function LoginView() {
               </p>
             </div>
 
-            <form
-              onSubmit={onSubmit}
-              autoComplete="on"
-              className="space-y-5"
-              noValidate
-            >
-              {/* Email */}
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-slate-700"
+            {mode === "login" ? (
+              <>
+                <form
+                  onSubmit={onSubmit}
+                  autoComplete="on"
+                  className="space-y-5"
+                  noValidate
                 >
-                  Corporate email
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="captain@polarisairtech.com"
-                  defaultValue="vaishnav.parte@gmail.com"
-                  required
-                  className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900"
-                />
-              </div>
+                  {/* Email */}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-slate-700"
+                    >
+                      Corporate email
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="captain@polarisairtech.com"
+                      defaultValue="vaishnav.parte@gmail.com"
+                      required
+                      className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900"
+                    />
+                  </div>
 
-              {/* Password */}
-              <div className="space-y-1.5">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-slate-700"
-                >
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  placeholder="Enter your password"
-                  defaultValue="Admin@123"
-                  required
-                  className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900"
-                />
-              </div>
+                  {/* Password */}
+                  <div className="space-y-1.5">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium text-slate-700"
+                    >
+                      Password
+                    </label>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      defaultValue="Admin@123"
+                      required
+                      className="block w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900"
+                    />
+                  </div>
 
-              {/* Remember + Forgot */}
-              <div className="flex  flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-[13px]">
-                <label className="inline-flex items-center gap-2 text-slate-600">
-                  <input
-                    type="checkbox"
-                    name="remember"
-                    className="h-4 w-4 cursor-pointer rounded border-slate-300 text-slate-900 focus:ring-slate-900"
-                  />
-                  <span>Keep me signed in</span>
-                </label>
+                  {/* Remember + Forgot */}
+                  <div className="flex  flex-col gap-3 sm:flex-row sm:items-center sm:justify-between text-xs sm:text-[13px]">
+                    <label className="inline-flex items-center gap-2 text-slate-600">
+                      <input
+                        type="checkbox"
+                        name="remember"
+                        className="h-4 w-4 cursor-pointer rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                      />
+                      <span>Keep me signed in</span>
+                    </label>
 
-                {/* <button
+                    {/* <button
                   type="button"
                   className="self-start text-slate-500 hover:text-slate-900 font-medium"
                 >
                   Forgot password?
                 </button> */}
-              </div>
+                  </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-1 inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-              >
-                {loading ? "Signing in..." : "Sign in"}
-              </button>
-            </form>
+                  {/* Submit */}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="mt-1 inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {loading ? "Signing in..." : "Sign in"}
+                  </button>
+                </form>
+
+                <p className="mt-4 text-xs text-slate-500 text-center">
+                  Don&apos;t have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setMode("signup")}
+                    className="font-medium cursor-pointer text-slate-900 underline"
+                  >
+                    Sign up
+                  </button>
+                </p>
+              </>
+            ) : (
+              <SignupForm onBackToLogin={() => setMode("login")} />
+            )}
 
             <p className="mt-6 text-[11px] sm:text-xs leading-relaxed text-slate-400">
               By continuing you agree to Polaris Air Tech&apos;s{" "}

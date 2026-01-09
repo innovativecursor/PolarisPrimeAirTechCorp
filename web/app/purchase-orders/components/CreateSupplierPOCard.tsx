@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import {
@@ -149,7 +147,7 @@ export default function CreateSupplierPOCard({
               Project name <Required />
             </label>
             <Select
-            required
+              required
               value={form.projectId}
               onValueChange={(val) => setForm({ ...form, projectId: val })}
               disabled={isEdit}
@@ -180,7 +178,7 @@ export default function CreateSupplierPOCard({
               Supplier name <Required />
             </label>
             <Select
-            required
+              required
               value={form.supplierId}
               onValueChange={(val) => setForm({ ...form, supplierId: val })}
               disabled={isEdit}

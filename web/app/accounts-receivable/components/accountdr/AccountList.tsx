@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-// import { DeliveryReceipt } from "../accountsales/type";
 import PolarisTable, {
   PolarisTableColumn,
 } from "@/app/components/table/PolarisTable";

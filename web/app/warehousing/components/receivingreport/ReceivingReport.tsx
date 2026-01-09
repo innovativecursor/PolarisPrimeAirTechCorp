@@ -2,7 +2,6 @@ import ReceivingListCard from "./ReceivingListCard";
 import CreateReceivingCard from "./CreateReceivingCard";
 import useReceivingReport from "./hooks/useReceivingReport";
 import { useEffect } from "react";
-import { useSupplierPO } from "@/app/purchase-orders/hooks/useSupplierPO";
 import { useConfirmToast } from "@/app/hooks/useConfirmToast";
 import { toast } from "react-toastify";
 import { fetchWithError } from "@/app/lib/fetchData";

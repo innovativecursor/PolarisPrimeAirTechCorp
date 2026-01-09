@@ -12,7 +12,6 @@ export default function CustomersPage() {
     customers,
     loading,
     saving,
-    error,
     editing,
     setMode,
     setEditing,
@@ -20,15 +19,6 @@ export default function CustomersPage() {
     deleteCustomer,
   } = useCustomers();
   const confirmToast = useConfirmToast();
-  const handleCreateClick = () => {
-    setEditing(null);
-    setMode("create");
-  };
-
-  const handleEdit = (row: CustomerRow) => {
-    setEditing(row);
-    setMode("create");
-  };
 
   const handleDelete = (row: CustomerRow) => {
     confirmToast.confirm({
