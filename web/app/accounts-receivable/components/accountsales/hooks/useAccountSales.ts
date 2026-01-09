@@ -30,6 +30,7 @@ export function useAccountSales() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
   const updateForm = (key: keyof typeof form, value: string) => {
     setForm((p) => ({ ...p, [key]: value }));
@@ -55,95 +56,52 @@ export function useAccountSales() {
     setItems((p) => p.filter((_, i) => i !== index));
   };
 
-  const GetAccountSales = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const GetAccountSales = useCallback(
+    async (showSkeleton: boolean = true) => {
+      try {
+        if (showSkeleton) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
+        setError(null);
 
-      const res = await fetchDataGet<any>(
-        `${endpoints.salesInvoice.getAll}?page=${page}`
-      );
+        const res = await fetchDataGet<any>(
+          `${endpoints.salesInvoice.getAll}?page=${page}`
+        );
 
-      setAllAccountSales(res?.data || []);
-      setTotal(res?.total || 0);
-      setLimit(res?.limit || 10);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch inventories");
-      setAllAccountSales([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page]);
-
-  // const createSalesInvoice = useCallback(async () => {
-  //   if (!form.project_id || !form.customer_id || !form.sales_order_id) {
-  //     toast.error("Required fields missing");
-  //     return;
-  //   }
-
-  //   if (
-  //     items.length === 0 ||
-  //     items.some((it) => !it.sku || it.sku.trim() === "")
-  //   ) {
-  //     toast.error("SKU is required for all items");
-  //     return;
-  //   }
-
-  //   setSaving(true);
-  //   setError(null);
-
-  //   try {
-  //     const payload = {
-  //       project_id: form.project_id,
-  //       customer_id: form.customer_id,
-  //       sales_order_id: form.sales_order_id,
-  //       items: items.map((it) => ({
-  //         sku: it.sku,
-  //         quantity: it.quantity,
-  //       })),
-  //     };
-
-  //     if (editing) {
-  //       await fetchDataPut(endpoints.salesInvoice.update(editing), payload);
-  //       toast.success("Sales invoice updated");
-  //     } else {
-  //       await fetchDataPost(endpoints.salesInvoice.create, payload);
-  //       toast.success("Sales invoice created");
-  //     }
-
-  //     setForm(initialForm);
-  //     setItems([]);
-
-  //     setMode("list");
-  //     setEditing(null);
-  //     GetAccountSales();
-  //   } catch (err: any) {
-  //     setError(err?.message || "Something went wrong");
-  //   } finally {
-  //     setSaving(false);
-  //   }
-  // }, [form, items, editing, GetAccountSales]);
+        setAllAccountSales(res?.data || []);
+        setTotal(res?.total || 0);
+        setLimit(res?.limit || 10);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch inventories");
+        setAllAccountSales([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [page]
+  );
 
   const loadInvoiceForEdit = useCallback(async (id: string) => {
     try {
-      setLoading(true);
+      setSaving(true);
 
       const res = await fetchDataGet<any>(endpoints.salesInvoice.getById(id));
 
       const invoice = res.data ?? res;
 
-      // 🔹 STEP 1: project + customer id set karo
       setForm({
         project_id: invoice.project?.id || invoice.project_id || "",
 
         customer_id: invoice.customer?.id || invoice.customer_id || "",
 
-        customer_name: "", // abhi blank hi rehne do
+        customer_name: "",
 
         sales_order_id: invoice.sales_order?.id || invoice.sales_order_id || "",
       });
 
-      // 🔹 STEP 2: ITEMS set karo
       setItems(
         invoice.items?.map((it: any) => ({
           sku: it.sku,
@@ -151,7 +109,6 @@ export function useAccountSales() {
         })) || []
       );
 
-      // 🔹 STEP 3: PROJECT se CUSTOMER NAME load karo (IMPORTANT)
       const projectId = invoice.project?.id || invoice.project_id;
 
       if (projectId) {
@@ -170,7 +127,7 @@ export function useAccountSales() {
     } catch {
       toast.error("Failed to load invoice");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   }, []);
 
@@ -215,7 +172,7 @@ export function useAccountSales() {
       setItems([]);
       setEditing(null);
       setMode("list");
-      GetAccountSales();
+      GetAccountSales(false);
     } catch (err: any) {
       toast.error(err?.message || "Something went wrong");
     } finally {
@@ -228,17 +185,17 @@ export function useAccountSales() {
       if (!id) return;
 
       try {
-        setLoading(true);
+        setSaving(true);
         setError(null);
 
         await fetchDataDelete(endpoints.salesInvoice.delete(id));
 
         toast.success("Sales invoice deleted");
-        GetAccountSales();
+        GetAccountSales(false);
       } catch (err: any) {
         setError(err?.message || "Delete failed");
       } finally {
-        setLoading(false);
+        setSaving(false);
       }
     },
     [GetAccountSales]

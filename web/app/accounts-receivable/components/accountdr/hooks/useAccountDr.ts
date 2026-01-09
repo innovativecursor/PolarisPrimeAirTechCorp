@@ -19,6 +19,8 @@ export function useAccountDr() {
   const [selectedInvoice, setSelectedInvoice] = useState<SalesInvoice | null>(
     null
   );
+  const [refreshing, setRefreshing] = useState(false);
+
   const [allAccountDr, setAllAccountDr] = useState<DeliveryReceipt[]>([]);
   const onSelectInvoice = useCallback((invoice: SalesInvoice | null) => {
     setSelectedInvoice(invoice);
@@ -27,9 +29,13 @@ export function useAccountDr() {
   const [totalPages, setTotalPages] = useState(1);
 
   const GetAccountDr = useCallback(
-    async (pageNo = page) => {
+    async (pageNo = page, showSkeleton: boolean = true) => {
       try {
-        setLoading(true);
+        if (showSkeleton) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
         setError(null);
 
         const res = await fetchDataGet<any>(
@@ -48,6 +54,7 @@ export function useAccountDr() {
         setAllAccountDr([]);
       } finally {
         setLoading(false);
+        setRefreshing(false);
       }
     },
     [page]
@@ -72,7 +79,7 @@ export function useAccountDr() {
         await fetchDataPost(endpoints.deliveryReceipt.create, payload);
         toast.success("Delivery receipt created");
         setMode("list");
-        GetAccountDr();
+        GetAccountDr(page, false);
       } catch (err: any) {
         setError(err.message || "Something went wrong");
       } finally {
@@ -87,17 +94,17 @@ export function useAccountDr() {
       if (!id) return;
 
       try {
-        setLoading(true);
+        setSaving(true);
         setError(null);
 
         await fetchDataDelete(endpoints.deliveryReceipt.delete(id));
 
         toast.success("Account DR deleted");
-        GetAccountDr();
+        GetAccountDr(page, false);
       } catch (err: any) {
         setError(err?.message || "Delete failed");
       } finally {
-        setLoading(false);
+        setSaving(false);
       }
     },
     [GetAccountDr]
@@ -114,7 +121,7 @@ export function useAccountDr() {
         });
 
         toast.success("Delivery receipt updated");
-        GetAccountDr();
+        GetAccountDr(page, false);
       } catch (err: any) {
         toast.error(err.message || "Update failed");
       } finally {

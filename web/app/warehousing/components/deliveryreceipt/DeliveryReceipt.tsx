@@ -1,4 +1,3 @@
-import { useSupplierPO } from "@/app/purchase-orders/hooks/useSupplierPO";
 import CreateDeliveryReceipt from "./CreateDeliveryReceipt";
 import DeliveryReceiptList from "./DeliveryReceiptList";
 import { useDeliveryReceipt } from "./hooks/useDeliveryReceipt";
@@ -35,8 +34,8 @@ export default function DeliveryReceipt() {
   }, []);
 
   useEffect(() => {
-    dr.GetDrReceipts();
-  }, [dr.GetDrReceipts]);
+    dr.GetDrReceipts(1, true);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -46,7 +45,7 @@ export default function DeliveryReceipt() {
             dr.setEditing(null);
             dr.setMode("create");
           }}
-          loading={dr.loading || dr.saving}
+          loading={dr.loading}
           allDr={dr.allDrReceipts}
           onEdit={(id) => {
             dr.setEditing(id);
@@ -56,7 +55,7 @@ export default function DeliveryReceipt() {
           page={dr.page}
           total={dr.total}
           limit={dr.limit}
-          setPage={dr.setPage}
+          onPageChange={(p) => dr.GetDrReceipts(p, true)}
         />
       ) : (
         <CreateDeliveryReceipt

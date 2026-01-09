@@ -21,6 +21,7 @@ export function useSalesInvoice() {
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [refreshing, setRefreshing] = useState(false);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<SalesInvoiceForm>({
@@ -89,25 +90,34 @@ export function useSalesInvoice() {
     return totalSales + vatAmount;
   }, [totalSales, vatAmount]);
 
-  const GetSalesInvoice = useCallback(async (pageNumber: number = page) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetchDataGet<any>(
-        endpoints.supplierInvoice.getAll + `?page=${pageNumber}`
-      );
+  const GetSalesInvoice = useCallback(
+    async (pageNumber: number = page, showSkeleton: boolean = true) => {
+      try {
+        if (showSkeleton) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
+        setError(null);
 
-      setAllSalesInvoice(Array.isArray(res?.data) ? res.data : []);
-      setPage(res.page || pageNumber);
-      setLimit(res.limit || 10);
-      setTotal(res.total || 0);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch inventories");
-      setAllSalesInvoice([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        const res = await fetchDataGet<any>(
+          endpoints.supplierInvoice.getAll + `?page=${pageNumber}`
+        );
+
+        setAllSalesInvoice(Array.isArray(res?.data) ? res.data : []);
+        setPage(res.page || pageNumber);
+        setLimit(res.limit || 10);
+        setTotal(res.total || 0);
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch inventories");
+        setAllSalesInvoice([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [page]
+  );
 
   const loadInvoiceForEdit = useCallback(async (id: string) => {
     const res = await fetchDataGet<{ invoice: SupplierInvoice }>(
@@ -234,7 +244,7 @@ export function useSalesInvoice() {
     setItems([]);
     setEditing(null);
     setMode("list");
-    GetSalesInvoice();
+    GetSalesInvoice(page, false);
   }, [editing, form, items, totalSales, vatAmount, grandTotal]);
 
   const deleteSalesInvoice = useCallback(
@@ -254,7 +264,7 @@ export function useSalesInvoice() {
         });
 
         toast.success("Supplier deleted successfully");
-        await GetSalesInvoice();
+        await GetSalesInvoice(page, false);
       } catch (err) {
         const error = err as Error;
         toast.error(error.message || "Failed to delete supplier");

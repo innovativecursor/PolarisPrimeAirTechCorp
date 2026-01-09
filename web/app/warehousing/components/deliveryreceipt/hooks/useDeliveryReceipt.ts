@@ -23,6 +23,8 @@ export function useDeliveryReceipt() {
   const [allDrReceipts, setAllDrReceipts] = useState<SupplierDeliveryReceipt[]>(
     []
   );
+  const [refreshing, setRefreshing] = useState(false);
+
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 10;
@@ -75,44 +77,46 @@ export function useDeliveryReceipt() {
     setItems((p) => p.filter((_, i) => i !== index));
   };
 
-  const GetDrReceipts = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const GetDrReceipts = useCallback(
+    async (pageNo = page, showSkeleton: boolean = true) => {
+      try {
+        if (showSkeleton) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
+        setError(null);
 
-      const res = await fetchDataGet<any>(
-        `${endpoints.supplierDR.getAll}?page=${page}&limit=${limit}`
-      );
+        const res = await fetchDataGet<any>(
+          `${endpoints.supplierDR.getAll}?page=${pageNo}&limit=${limit}`
+        );
 
-      const list = res?.data || res?.supplierDR || [];
-      setTotal(res?.total || 0);
+        const list = res?.data || res?.supplierDR || [];
+        setTotal(res?.total || 0);
+        setPage(pageNo);
 
-      setAllDrReceipts(
-        list.map((d: any) => ({
-          id: d._id,
-
-          supplier_dr_no: d.supplier_dr_no || "",
-
-          project_name: d.project_name || "",
-
-          your_po_no: d.your_po_no || "",
-
-          ship_to: d.ship_to || "",
-
-          date: d.date || "",
-
-          dispatch_date: d.dispatch_date || "",
-
-          _raw: d,
-        }))
-      );
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch delivery receipts");
-      setAllDrReceipts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page]);
+        setAllDrReceipts(
+          list.map((d: any) => ({
+            id: d._id,
+            supplier_dr_no: d.supplier_dr_no || "",
+            project_name: d.project_name || "",
+            your_po_no: d.your_po_no || "",
+            ship_to: d.ship_to || "",
+            date: d.date || "",
+            dispatch_date: d.dispatch_date || "",
+            _raw: d,
+          }))
+        );
+      } catch (err: any) {
+        setError(err.message || "Failed to fetch delivery receipts");
+        setAllDrReceipts([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [page, limit]
+  );
 
   const loadDrForEdit = useCallback(async (id: string) => {
     const res = await fetchDataGet<{ supplierDR: any }>(
@@ -216,7 +220,7 @@ export function useDeliveryReceipt() {
     setItems([]);
     setEditing(null);
     setMode("list");
-    GetDrReceipts();
+    GetDrReceipts(page, false);
   }, [editing, form, items]);
 
   const deleteDr = useCallback(
@@ -236,7 +240,7 @@ export function useDeliveryReceipt() {
         });
 
         toast.success("Dr deleted successfully");
-        await GetDrReceipts();
+        await GetDrReceipts(page, false);
       } catch (err) {
         const error = err as Error;
         toast.error(error.message || "Failed to delete supplier");

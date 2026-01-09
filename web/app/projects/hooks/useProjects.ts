@@ -35,6 +35,7 @@ export function useProjects() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<ProjectRow | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 10;
@@ -42,9 +43,14 @@ export function useProjects() {
   const toast = useToast();
 
   // ---------- LOAD ----------
-  const loadProjects = async () => {
+
+  const loadProjects = async (showSkeleton = true) => {
     try {
-      setLoading(true);
+      if (showSkeleton) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
 
       const res = await fetchDataGet<{
         data: any[];
@@ -83,6 +89,7 @@ export function useProjects() {
       toast.error(e.message ?? "Failed to load projects");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -125,7 +132,7 @@ export function useProjects() {
 
       setMode("list");
       setEditing(null);
-      await loadProjects();
+      await loadProjects(false);
     } catch (e: any) {
       toast.error(e.message ?? "Failed to save project");
     } finally {
@@ -141,7 +148,7 @@ export function useProjects() {
         endpoints.project.delete(row._raw?.id || row._raw?._id || row.id)
       );
       toast.success("Project deleted");
-      await loadProjects();
+      await loadProjects(false);
     } catch (e: any) {
       toast.error(e.message ?? "Failed to delete project");
     } finally {
@@ -149,13 +156,6 @@ export function useProjects() {
     }
   };
 
-
-
-
-
-
-
-  
   return {
     mode,
     projects,

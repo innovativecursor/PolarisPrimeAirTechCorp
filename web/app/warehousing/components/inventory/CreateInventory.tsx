@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { InventoryForm, InventoryItem } from "./type";
 import { generateSku } from "@/app/utils/skuGenerator";
 import Required from "@/components/ui/Required";
-import { Html5Qrcode, Html5QrcodeScanner } from "html5-qrcode";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 type CraeteInventoryProps = {
   onCancel: () => void;

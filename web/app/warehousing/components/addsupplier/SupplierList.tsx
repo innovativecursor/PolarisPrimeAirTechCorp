@@ -4,6 +4,8 @@ import PolarisTable, {
 import { Supplier } from "./type";
 import { useMemo } from "react";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import CardHeaderSkeleton from "@/app/components/skeletons/CardHeaderSkeleton";
+import TableSkeleton from "@/app/components/skeletons/TableSkeleton";
 
 type SupplierListProps = {
   onCreate: () => void;
@@ -36,14 +38,18 @@ export default function SupplierList({
   return (
     <>
       <div className="flex items-start justify-between mb-6">
-        <div>
-          <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
-            Warehousing
-          </p>
-          <h2 className="text-lg md:text-xl font-semibold text-slate-900">
-            Supplier Registry
-          </h2>
-        </div>
+        {loading ? (
+          <CardHeaderSkeleton />
+        ) : (
+          <div>
+            <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
+              Warehousing
+            </p>
+            <h2 className="text-lg md:text-xl font-semibold text-slate-900">
+              Supplier Registry
+            </h2>
+          </div>
+        )}
 
         <button
           type="button"
@@ -54,53 +60,57 @@ export default function SupplierList({
           Add Supplier
         </button>
       </div>
-      <PolarisTable
-        columns={columns}
-        data={allSupplier}
-        columnWidths={columnWidths}
-        getCell={(row, key) => {
-          const o = row as Supplier;
+      {loading ? (
+        <TableSkeleton rows={5} columns={6} />
+      ) : (
+        <PolarisTable
+          columns={columns}
+          data={allSupplier}
+          columnWidths={columnWidths}
+          getCell={(row, key) => {
+            const o = row as Supplier;
 
-          if (key === "suppliercode") {
-            return <span className="text-slate-900">{o?.supplier_code}</span>;
-          }
-          if (key === "suppliername") {
-            return <span className="text-slate-700">{o?.supplier_name}</span>;
-          }
+            if (key === "suppliercode") {
+              return <span className="text-slate-900">{o?.supplier_code}</span>;
+            }
+            if (key === "suppliername") {
+              return <span className="text-slate-700">{o?.supplier_name}</span>;
+            }
 
-          if (key === "tinnumber") {
-            return <span className="text-slate-700">{o?.tin_number}</span>;
-          }
+            if (key === "tinnumber") {
+              return <span className="text-slate-700">{o?.tin_number}</span>;
+            }
 
-          if (key === "organization") {
-            return <span className="text-slate-700">{o?.organization}</span>;
-          }
+            if (key === "organization") {
+              return <span className="text-slate-700">{o?.organization}</span>;
+            }
 
-          if (key === "location") {
-            return <span className="text-slate-700">{o?.location}</span>;
-          }
+            if (key === "location") {
+              return <span className="text-slate-700">{o?.location}</span>;
+            }
 
-          return (
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => onEdit(o?.id)}
-                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
-              >
-                <FiEdit2 className="h-3.5 w-3.5" />
-              </button>
+            return (
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => onEdit(o?.id)}
+                  className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
+                >
+                  <FiEdit2 className="h-3.5 w-3.5" />
+                </button>
 
-              <button
-                type="button"
-                onClick={() => onDelete(o)}
-                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
-              >
-                <FiTrash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          );
-        }}
-      />
+                <button
+                  type="button"
+                  onClick={() => onDelete(o)}
+                  className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+                >
+                  <FiTrash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            );
+          }}
+        />
+      )}
     </>
   );
 }

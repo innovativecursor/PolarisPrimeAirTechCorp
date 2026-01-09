@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   fetchDataGet,
   fetchDataPost,
@@ -33,13 +33,19 @@ export function useCustomers() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<CustomerRow | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const hasLoadedOnce = useRef(false);
 
   const toast = useToast();
 
   // -------- LOAD --------
-  const loadCustomers = async () => {
+  const loadCustomers = async (showSkeleton = true) => {
     try {
-      setLoading(true);
+      if (showSkeleton) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
       setError(null);
 
       const apiData = await fetchDataGet<any>(endpoints.customer.getAll);
@@ -68,6 +74,7 @@ export function useCustomers() {
       toast.error(e.message ?? "Failed to load customers");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -90,7 +97,7 @@ export function useCustomers() {
       toast.success(values.id ? "Customer updated" : "Customer created");
       setMode("list");
       setEditing(null);
-      await loadCustomers();
+      await loadCustomers(false);
     } catch (e: any) {
       setError(e.message ?? "Failed to save customer");
       toast.error(e.message ?? "Failed to save customer");
@@ -109,7 +116,7 @@ export function useCustomers() {
         body: JSON.stringify({ id }),
       });
       toast.success("Customer deleted");
-      await loadCustomers();
+      await loadCustomers(false);
     } catch (e: any) {
       toast.error(e.message ?? "Failed to delete customer");
     } finally {
@@ -118,7 +125,10 @@ export function useCustomers() {
   };
 
   useEffect(() => {
-    void loadCustomers();
+    if (hasLoadedOnce.current) return;
+
+    hasLoadedOnce.current = true;
+    void loadCustomers(true);
   }, []);
 
   return {

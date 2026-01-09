@@ -41,7 +41,7 @@ export default function SupplierPOPage() {
 
   // Load data on mount
   useEffect(() => {
-    void loadSupplierPO(page);
+    void loadSupplierPO(page, true);
   }, [page]);
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function SupplierPOPage() {
         toast.success("Supplier PO created successfully");
       }
 
-      await loadSupplierPO(page);
+      await loadSupplierPO(page, false);
 
       setMode("list");
       setEditing(null);
@@ -151,7 +151,7 @@ export default function SupplierPOPage() {
 
         {mode === "list" ? (
           <SupplierPOListCard
-            loading={loading || saving}
+            loading={loading}
             orders={supplierPO}
             onCreate={handleCreateClick}
             onEdit={handleEdit}

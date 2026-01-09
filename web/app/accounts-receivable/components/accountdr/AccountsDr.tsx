@@ -36,19 +36,19 @@ export default function AccountDr() {
   }, []);
 
   useEffect(() => {
-    dr.GetAccountDr(1);
+    dr.GetAccountDr(1, true);
   }, []);
 
   return (
     <div className="space-y-6">
       {dr.mode === "list" ? (
         <AccountList
-          loading={dr.loading || dr.saving}
+          loading={dr.loading}
           onCreate={() => dr.setMode("create")}
           allAccountDr={dr.allAccountDr}
           page={dr.page}
           totalPages={dr.totalPages}
-          onPageChange={(p) => dr.GetAccountDr(p)}
+          onPageChange={(p) => dr.GetAccountDr(p, true)}
           onDelete={handleDelete}
           onUpdateStatus={dr.updateDeliveryReceiptStatus}
         />

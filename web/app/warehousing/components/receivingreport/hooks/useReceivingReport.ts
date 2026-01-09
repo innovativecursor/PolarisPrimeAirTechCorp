@@ -16,6 +16,7 @@ export default function useReceivingReport() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [createResponse, setCreateResponse] = useState<CreateRRRes | null>(
     null
@@ -84,11 +85,15 @@ export default function useReceivingReport() {
     },
     []
   );
-
   const loadReceivingReports = useCallback(
-    async (pageNo = page) => {
+    async (pageNo = page, showSkeleton = true) => {
       try {
-        setLoading(true);
+        if (showSkeleton) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
+
         setError(null);
 
         const res = await fetchDataGet<any>(
@@ -104,6 +109,7 @@ export default function useReceivingReport() {
         setPage(pageNo);
       } finally {
         setLoading(false);
+        setRefreshing(false);
       }
     },
     [page]

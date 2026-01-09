@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   CreateRRPayload,
@@ -32,7 +32,11 @@ type CreateReceivingCardProps = {
   salesOrder: SalesOrderRow[];
   createReceivingReport: (payload: CreateRRPayload) => Promise<CreateRRRes>;
   saving: boolean;
-  loadReceivingReports: () => Promise<void>;
+  loadReceivingReports: (
+    pageNo?: number,
+    showSkeleton?: boolean
+  ) => Promise<void>;
+  page: number;
   editing?: ReceivingReportItem | null;
 };
 
@@ -46,6 +50,7 @@ export default function CreateReceivingCard({
   supplierDeliveryR,
   supplierInvoice,
   supplierPo,
+  page,
 }: CreateReceivingCardProps) {
   const [openScanner, setOpenScanner] = useState(false);
   const [form, setForm] = useState<CreateRRPayload>({
@@ -153,7 +158,8 @@ export default function CreateReceivingCard({
       quantity: Number(form.quantity),
       price: Number(form.price),
     });
-    await loadReceivingReports();
+    await loadReceivingReports(page, false);
+
     toast.success(res.message);
     onCancel();
   };
