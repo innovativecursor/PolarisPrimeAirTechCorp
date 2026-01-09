@@ -29,7 +29,7 @@ export default function Sidebar() {
     pathname === href || (href === "/dashboard" && pathname === "/");
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("authToken");
     router.replace("/");
   };
 
