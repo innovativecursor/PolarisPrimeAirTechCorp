@@ -8,6 +8,7 @@ import { SupplierPORow } from "../components/types";
 export function useSupplierPO() {
   const [mode, setMode] = useState<"list" | "create">("list");
   const [supplierPO, setSupplierPO] = useState<SupplierPORow[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -21,44 +22,48 @@ export function useSupplierPO() {
   const confirmToast = useConfirmToast();
 
   // Load supplier POs
-  const loadSupplierPO = useCallback(
-    async (pageNumber: number = 1) => {
-      try {
+  const loadSupplierPO = async (
+    pageNumber: number = 1,
+    showSkeleton: boolean = true
+  ) => {
+    try {
+      if (showSkeleton) {
         setLoading(true);
-        setError(null);
-
-        const res = await fetchDataGet<any>(
-          endpoints.supplierPO.getAll(pageNumber)
-        );
-
-        const list = res?.data || [];
-
-        setSupplierPO(
-          list.map((po: any) => ({
-            id: po.id || po._id || "",
-            poId: po.po_id || "",
-            soId: po.sales_order_id || "",
-            projectName: po.project?.name || "",
-            supplierName: po.supplier?.name || "",
-            status: po.status || "draft",
-            totalAmount: po.totalAmount || 0,
-            _raw: po,
-          }))
-        );
-
-        setPage(res.page || pageNumber);
-        setTotal(res.total || 0);
-      } catch (e: any) {
-        const errorMsg =
-          e?.message || "Failed to load supplier purchase orders";
-        setError(errorMsg);
-        toast.error(errorMsg);
-      } finally {
-        setLoading(false);
+      } else {
+        setRefreshing(true);
       }
-    },
-    [toast]
-  );
+      setError(null);
+
+      const res = await fetchDataGet<any>(
+        endpoints.supplierPO.getAll(pageNumber)
+      );
+
+      const list = res?.data || [];
+
+      setSupplierPO(
+        list.map((po: any) => ({
+          id: po.id || po._id || "",
+          poId: po.po_id || "",
+          soId: po.sales_order_id || "",
+          projectName: po.project?.name || "",
+          supplierName: po.supplier?.name || "",
+          status: po.status || "draft",
+          totalAmount: po.totalAmount || 0,
+          _raw: po,
+        }))
+      );
+
+      setPage(res.page || pageNumber);
+      setTotal(res.total || 0);
+    } catch (e: any) {
+      const errorMsg = e?.message || "Failed to load supplier purchase orders";
+      setError(errorMsg);
+      toast.error(errorMsg);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   const totalPages = Math.ceil(total / limit);
 
@@ -84,7 +89,7 @@ export function useSupplierPO() {
         cancelText: "Cancel",
         onConfirm: async () => {
           try {
-            setLoading(true);
+            setSaving(true);
 
             await fetchWithError(endpoints.supplierPO.delete(poId), {
               method: "DELETE",
@@ -92,11 +97,11 @@ export function useSupplierPO() {
 
             toast.success("Supplier PO deleted successfully");
 
-            await loadSupplierPO(page);
+            await loadSupplierPO(page, false);
           } catch (e: any) {
             toast.error(e?.message || "Failed to delete Supplier PO");
           } finally {
-            setLoading(false);
+            setSaving(false);
           }
         },
       });

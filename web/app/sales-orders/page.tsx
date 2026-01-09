@@ -29,7 +29,7 @@ export default function SalesOrdersPage() {
     <AppShell>
       {so.mode === "list" ? (
         <SalesOrdersListCard
-          loading={so.loading || so.saving}
+          loading={so.loading}
           orders={so.orders}
           onCreate={() => {
             so.setEditing(null);

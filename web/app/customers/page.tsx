@@ -37,7 +37,7 @@ export default function CustomersPage() {
       {mode === "list" ? (
         <CustomersListCard
           customers={customers}
-          loading={loading || saving}
+          loading={loading}
           onCreate={() => {
             setEditing(null);
             setMode("create");

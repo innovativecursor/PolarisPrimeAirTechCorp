@@ -4,6 +4,8 @@ import PolarisTable, {
 import { SalesInvoice } from "./type";
 import { useMemo } from "react";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import CardHeaderSkeleton from "@/app/components/skeletons/CardHeaderSkeleton";
+import TableSkeleton from "@/app/components/skeletons/TableSkeleton";
 
 type AccountListProps = {
   onCreate: () => void;
@@ -46,14 +48,18 @@ export default function AccountSalesList({
   return (
     <>
       <div className="flex items-start justify-between mb-6">
-        <div>
-          <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
-            Accounts Receivable
-          </p>
-          <h2 className="text-lg md:text-xl font-semibold text-slate-900">
-            Sales Invoice Registry
-          </h2>
-        </div>
+        {loading ? (
+          <CardHeaderSkeleton />
+        ) : (
+          <div>
+            <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
+              Accounts Receivable
+            </p>
+            <h2 className="text-lg md:text-xl font-semibold text-slate-900">
+              Sales Invoice Registry
+            </h2>
+          </div>
+        )}
 
         <button
           type="button"
@@ -65,56 +71,65 @@ export default function AccountSalesList({
         </button>
       </div>
 
-      <PolarisTable
-        columns={columns}
-        data={allAccountSales}
-        columnWidths={columnWidths}
-        getCell={(row, key) => {
-          const o = row as SalesInvoice;
+      {loading ? (
+        <TableSkeleton rows={5} columns={6} />
+      ) : (
+        <PolarisTable
+          columns={columns}
+          data={allAccountSales}
+          columnWidths={columnWidths}
+          getCell={(row, key) => {
+            const o = row as SalesInvoice;
 
-          if (key === "invoiceid") {
+            if (key === "invoiceid") {
+              return (
+                <span className="font-mono text-xs text-slate-700">
+                  {o?.invoice_id}
+                </span>
+              );
+            }
+            if (key === "projectname") {
+              return <span>{o?.project?.name || "-"}</span>;
+            }
+
+            if (key === "customer") {
+              return <span>{o?.customer?.name || "-"}</span>;
+            }
+
+            if (key === "salesorderid") {
+              return (
+                <span className="text-slate-700">{o?.sales_order_id}</span>
+              );
+            }
+            if (key === "totalamount") {
+              return (
+                <span className="text-slate-700"> ₱{o?.total_amount}</span>
+              );
+            }
+
             return (
-              <span className="font-mono text-xs text-slate-700">
-                {o?.invoice_id}
-              </span>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => onEdit(o)}
+                  className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
+                >
+                  <FiEdit2 className="h-3.5 w-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onDelete(o)}
+                  className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+                >
+                  <FiTrash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
             );
-          }
-          if (key === "projectname") {
-            return <span>{o?.project?.name || "-"}</span>;
-          }
+          }}
+        />
+      )}
 
-          if (key === "customer") {
-            return <span>{o?.customer?.name || "-"}</span>;
-          }
-
-          if (key === "salesorderid") {
-            return <span className="text-slate-700">{o?.sales_order_id}</span>;
-          }
-          if (key === "totalamount") {
-            return <span className="text-slate-700"> ₱{o?.total_amount}</span>;
-          }
-
-          return (
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => onEdit(o)}
-                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:bg-slate-100"
-              >
-                <FiEdit2 className="h-3.5 w-3.5" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onDelete(o)}
-                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
-              >
-                <FiTrash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          );
-        }}
-      />
       <div className="mt-6 flex items-center justify-end gap-3">
         <button
           disabled={page <= 1}

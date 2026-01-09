@@ -18,16 +18,21 @@ export function useSupplier() {
   const [error, setError] = useState<string | null>(null);
   const [allSupplier, setAllSupplier] = useState<Supplier[]>([]);
 
-  const GetSupplier = useCallback(async () => {
+  const GetSupplier = useCallback(async (showSkeleton = true) => {
     try {
-      setLoading(true);
+      if (showSkeleton) {
+        setLoading(true);
+      }
+
       setError(null);
+
       const res = await fetchDataGet<SupplierListResponse>(
         endpoints.supplier.getAll
       );
-      setAllSupplier(Array.isArray(res?.suppliers) ? res?.suppliers : []);
+
+      setAllSupplier(Array.isArray(res?.suppliers) ? res.suppliers : []);
     } catch (err: any) {
-      setError(err.message || "Failed to fetch inventories");
+      setError(err.message || "Failed to fetch suppliers");
       setAllSupplier([]);
     } finally {
       setLoading(false);
@@ -58,7 +63,7 @@ export function useSupplier() {
 
         setMode("list");
         setEditing(null);
-        await GetSupplier();
+        await GetSupplier(false);
       } catch (err) {
         const error = err as Error;
         toast.error(error.message || "Failed to save supplier");
@@ -86,7 +91,7 @@ export function useSupplier() {
         });
 
         toast.success("Supplier deleted successfully");
-        await GetSupplier();
+        await GetSupplier(false);
       } catch (err) {
         const error = err as Error;
         toast.error(error.message || "Failed to delete supplier");

@@ -23,14 +23,14 @@ export default function ProjectsPage() {
   };
 
   useEffect(() => {
-    projectsHook.loadProjects();
+    projectsHook.loadProjects(true);
   }, [projectsHook.page]);
 
   return (
     <AppShell>
       {projectsHook.mode === "list" ? (
         <ProjectsListCard
-          loading={projectsHook.loading || projectsHook.saving}
+          loading={projectsHook.loading}
           projects={projectsHook.projects}
           page={projectsHook.page}
           total={projectsHook.total}

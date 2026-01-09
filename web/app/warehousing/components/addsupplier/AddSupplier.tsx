@@ -50,7 +50,7 @@ export default function AddSupplier() {
   );
 
   useEffect(() => {
-    void GetSupplier();
+    void GetSupplier(true);
   }, []);
 
   return (
@@ -58,7 +58,7 @@ export default function AddSupplier() {
       {mode === "list" ? (
         <SupplierList
           onCreate={handleCreateClick}
-          loading={loading || saving}
+          loading={loading}
           allSupplier={allSupplier}
           onEdit={handleEditClick}
           onDelete={handleDelete}

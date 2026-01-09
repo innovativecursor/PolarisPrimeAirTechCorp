@@ -26,7 +26,7 @@ export default function AccountSales() {
   }, []);
 
   useEffect(() => {
-    accountSales.GetAccountSales();
+    accountSales.GetAccountSales(true);
   }, [accountSales.page]);
 
   const handleDelete = useCallback(
@@ -48,7 +48,7 @@ export default function AccountSales() {
     <div className="space-y-6">
       {accountSales.mode === "list" ? (
         <AccountSalesList
-          loading={accountSales.loading || accountSales.saving}
+          loading={accountSales.loading}
           onCreate={() => {
             accountSales.setEditing(null);
             accountSales.setMode("create");

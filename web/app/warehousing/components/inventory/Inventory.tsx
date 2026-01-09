@@ -40,7 +40,7 @@ export default function Inventory() {
   };
 
   useEffect(() => {
-    void GetInventories();
+    void GetInventories(true);
   }, []);
 
   return (
@@ -53,7 +53,7 @@ export default function Inventory() {
       {mode === "list" ? (
         <InventoryList
           onCreate={handleCreateClick}
-          loading={loading || saving}
+          loading={loading}
           allInventories={allInventories}
           onEdit={handleEdit}
           onDelete={handleDelete}

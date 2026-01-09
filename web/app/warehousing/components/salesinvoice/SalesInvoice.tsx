@@ -16,7 +16,7 @@ export default function SalesInvioce() {
   useEffect(() => {
     void loadProjectName();
     void GetSupplier();
-    void salesInvoice.GetSalesInvoice();
+    void salesInvoice.GetSalesInvoice(1, true);
   }, []);
 
   const handleDelete = useCallback(
@@ -27,8 +27,7 @@ export default function SalesInvioce() {
         confirmText: "Delete",
         cancelText: "Cancel",
         onConfirm: async () => {
-         await salesInvoice.deleteSalesInvoice(invoice._id);
-
+          await salesInvoice.deleteSalesInvoice(invoice._id);
         },
       });
     },
@@ -40,7 +39,7 @@ export default function SalesInvioce() {
       {salesInvoice.mode === "list" ? (
         <SalesInvioceList
           onCreate={() => salesInvoice.setMode("create")}
-          loading={salesInvoice.loading || salesInvoice.saving}
+          loading={salesInvoice.loading}
           allSalesInvoice={salesInvoice.allSalesInvoice}
           onEdit={(id) => {
             salesInvoice.setEditing(id);
@@ -51,7 +50,7 @@ export default function SalesInvioce() {
           totalPages={salesInvoice.totalPages}
           onPageChange={(p) => {
             salesInvoice.setPage(p);
-            salesInvoice.GetSalesInvoice(p);
+            salesInvoice.GetSalesInvoice(p, true);
           }}
         />
       ) : (

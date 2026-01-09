@@ -57,15 +57,20 @@ export function useSalesOrders() {
   const [projectName, setProjectName] = useState<ProjectOption[]>([]);
   const [customers, setCustomers] = useState<CustomerOption[]>([]);
   const [aircons, setAircons] = useState<AirconOption[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   /* ---------- LOAD LIST ---------- */
-  const loadOrders = async () => {
+  const loadOrders = async (showSkeleton = true) => {
     try {
-      setLoading(true);
+      if (showSkeleton) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
       setError(null);
 
       const res = await fetchDataGet<any>(endpoints.salesOrder.getAll);
@@ -90,6 +95,7 @@ export function useSalesOrders() {
       toast.error(e.message ?? "Failed to load sales orders");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -148,7 +154,7 @@ export function useSalesOrders() {
   /* ---------- EDIT FETCH ---------- */
   const editOrder = async (row: SalesOrderRow) => {
     try {
-      setLoading(true);
+      setSaving(true);
       const id = row._raw?.id || row._raw?._id || row.id;
       const res = await fetchDataGet<any>(endpoints.salesOrder.getById(id));
 
@@ -160,7 +166,7 @@ export function useSalesOrders() {
     } catch (e: any) {
       toast.error(e.message ?? "Failed to load sales order");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -200,7 +206,7 @@ export function useSalesOrders() {
 
       setMode("list");
       setEditing(null);
-      await loadOrders();
+      await loadOrders(false);
     } catch (e: any) {
       setError(e.message ?? "Failed to save sales order");
       toast.error(e.message ?? "Failed to save sales order");
@@ -221,7 +227,7 @@ export function useSalesOrders() {
         }),
       });
       toast.success("Sales order deleted");
-      await loadOrders();
+      await loadOrders(false);
     } catch (e: any) {
       toast.error(e.message ?? "Failed to delete sales order");
     } finally {
@@ -230,7 +236,7 @@ export function useSalesOrders() {
   };
 
   useEffect(() => {
-    loadOrders();
+    loadOrders(true);
     loadOptions();
   }, []);
 
@@ -251,6 +257,6 @@ export function useSalesOrders() {
     saveOrder,
     deleteOrder,
     loadCustomerByProject,
-    loadOrders
+    loadOrders,
   };
 }

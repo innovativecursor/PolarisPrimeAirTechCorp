@@ -4,6 +4,8 @@ import PolarisTable, {
 } from "@/app/components/table/PolarisTable";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { DeliveryReceipt } from "./type";
+import CardHeaderSkeleton from "@/app/components/skeletons/CardHeaderSkeleton";
+import TableSkeleton from "@/app/components/skeletons/TableSkeleton";
 
 type AccountListProps = {
   onCreate: () => void;
@@ -44,14 +46,18 @@ export default function AccountList({
   return (
     <>
       <div className="flex items-start justify-between mb-6">
-        <div>
-          <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
-            Accounts Receivable
-          </p>
-          <h2 className="text-lg md:text-xl font-semibold text-slate-900">
-            Delivery Receipt Registry
-          </h2>
-        </div>
+        {loading ? (
+          <CardHeaderSkeleton />
+        ) : (
+          <div>
+            <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
+              Accounts Receivable
+            </p>
+            <h2 className="text-lg md:text-xl font-semibold text-slate-900">
+              Delivery Receipt Registry
+            </h2>
+          </div>
+        )}
 
         <button
           type="button"
@@ -63,55 +69,60 @@ export default function AccountList({
         </button>
       </div>
 
-      <PolarisTable
-        columns={columns}
-        data={allAccountDr}
-        columnWidths={columnWidths}
-        getCell={(row, key) => {
-          const o = row as DeliveryReceipt;
+      {loading ? (
+        <TableSkeleton rows={5} columns={6} />
+      ) : (
+        <PolarisTable
+          columns={columns}
+          data={allAccountDr}
+          columnWidths={columnWidths}
+          getCell={(row, key) => {
+            const o = row as DeliveryReceipt;
 
-          if (key === "drnumber") {
-            return (
-              <span className="font-mono text-xs text-slate-700">
-                {o?.dr_number}
-              </span>
-            );
-          }
-          if (key === "project") {
-            return (
-              <span className="text-slate-900">{o.project?.name || "-"}</span>
-            );
-          }
+            if (key === "drnumber") {
+              return (
+                <span className="font-mono text-xs text-slate-700">
+                  {o?.dr_number}
+                </span>
+              );
+            }
+            if (key === "project") {
+              return (
+                <span className="text-slate-900">{o.project?.name || "-"}</span>
+              );
+            }
 
-          if (key === "customername") {
-            return (
-              <span className="text-slate-900">{o.customer?.name || "-"}</span>
-            );
-          }
+            if (key === "customername") {
+              return (
+                <span className="text-slate-900">
+                  {o.customer?.name || "-"}
+                </span>
+              );
+            }
 
-          if (key === "salesorderid") {
-            return (
-              <span className="text-slate-700">
-                {o.sales_order?.name || "-"}
-              </span>
-            );
-          }
+            if (key === "salesorderid") {
+              return (
+                <span className="text-slate-700">
+                  {o.sales_order?.name || "-"}
+                </span>
+              );
+            }
 
-          if (key === "salesinvoiceid") {
-            return (
-              <span className="text-slate-700">
-                {o.sales_invoice?.name || "-"}
-              </span>
-            );
-          }
+            if (key === "salesinvoiceid") {
+              return (
+                <span className="text-slate-700">
+                  {o.sales_invoice?.name || "-"}
+                </span>
+              );
+            }
 
-          if (key === "status") {
-            const isReady = o.status === "Ready";
-            const isIssued = o.status === "Issued";
+            if (key === "status") {
+              const isReady = o.status === "Ready";
+              const isIssued = o.status === "Issued";
 
-            return (
-              <span
-                className={`inline-flex  items-center rounded-full px-3 py-1 text-xs font-medium
+              return (
+                <span
+                  className={`inline-flex  items-center rounded-full px-3 py-1 text-xs font-medium
         ${
           isIssued
             ? "bg-emerald-50 text-emerald-600"
@@ -119,24 +130,24 @@ export default function AccountList({
             ? "bg-blue-50 text-blue-600"
             : "bg-slate-100 text-slate-600"
         }`}
-              >
-                {o.status}
-              </span>
-            );
-          }
+                >
+                  {o.status}
+                </span>
+              );
+            }
 
-          return (
-            <div className="flex justify-end items-center gap-2">
-              <div className="inline-flex  rounded-full border border-slate-200 bg-slate-50 p-1">
-                {(["Ready", "Issued"] as const).map((status) => {
-                  const active = o.status === status;
+            return (
+              <div className="flex justify-end items-center gap-2">
+                <div className="inline-flex  rounded-full border border-slate-200 bg-slate-50 p-1">
+                  {(["Ready", "Issued"] as const).map((status) => {
+                    const active = o.status === status;
 
-                  return (
-                    <button
-                      key={status}
-                      type="button"
-                      onClick={() => onUpdateStatus(o.id, status)}
-                      className={`px-3 py-1  cursor-pointer text-xs font-medium rounded-full transition
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => onUpdateStatus(o.id, status)}
+                        className={`px-3 py-1  cursor-pointer text-xs font-medium rounded-full transition
           ${
             active
               ? status === "Issued"
@@ -144,25 +155,26 @@ export default function AccountList({
                 : "bg-blue-500 text-white shadow"
               : "text-slate-600 hover:bg-slate-200"
           }`}
-                    >
-                      {status}
-                    </button>
-                  );
-                })}
-              </div>
+                      >
+                        {status}
+                      </button>
+                    );
+                  })}
+                </div>
 
-              <button
-                type="button"
-                onClick={() => onDelete(o)}
-                className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full
+                <button
+                  type="button"
+                  onClick={() => onDelete(o)}
+                  className="inline-flex  cursor-pointer h-9 w-9 items-center justify-center rounded-full
                  bg-rose-50 text-rose-500 hover:bg-rose-100"
-              >
-                <FiTrash2 className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          );
-        }}
-      />
+                >
+                  <FiTrash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            );
+          }}
+        />
+      )}
 
       <div className="flex justify-end items-center gap-3 mt-4">
         <button

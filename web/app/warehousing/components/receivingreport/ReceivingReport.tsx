@@ -53,7 +53,7 @@ export default function ReceivingReport() {
 
   useEffect(() => {
     void loadOrders();
-    void loadReceivingReports(1);
+    void loadReceivingReports(1, true);
     void loadSupplierInvoice();
     void loadSupplierDeliveryR();
     void loadSupplierPO();
@@ -74,7 +74,7 @@ export default function ReceivingReport() {
           });
 
           toast.success("Receiving report deleted successfully");
-          await loadReceivingReports();
+          await loadReceivingReports(page, false);
         } catch (e: any) {
           toast.error(e.message ?? "Failed to delete receiving report");
         } finally {
@@ -88,17 +88,18 @@ export default function ReceivingReport() {
     <div className="space-y-6">
       {mode === "list" ? (
         <ReceivingListCard
-          loading={loading || saving}
+          loading={loading}
           onEdit={handleEdit}
           onCreate={handleCreateClick}
           receivingReports={receivingReports}
           onDelete={handleDelete}
           page={page}
           totalPages={totalPages}
-          onPageChange={(p) => loadReceivingReports(p)}
+          onPageChange={(p) => loadReceivingReports(p, false)}
         />
       ) : (
         <CreateReceivingCard
+          page={page}
           onCancel={handleCancelForm}
           salesOrder={orders}
           createReceivingReport={createReceivingReport}
