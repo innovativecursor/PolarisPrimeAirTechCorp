@@ -23,12 +23,24 @@ const endpoints = {
   // ---------- PROJECT ----------
   project: {
     create: full("/project/create-project"), // POST
-    getAll: full("/project/get-all-project"), // GET
+    getAll: (page = 1) => full(`/project/get-all-project?page=${page}`),
     getById: (id: string) => full(`/project/get-project-by/${id}`), // GET
     getCustomerDetails: (id: string) =>
       full(`/project/get-customer-details/${id}`), // GET
     update: (id: string) => full(`/project/edit-project/${id}`), // PUT
     delete: (id: string) => full(`/project/delete-project/${id}`), // DELETE
+  },
+  projectInfo: {
+    getAll: full("/project/get-all-project-info"), // GET
+  },
+  supplierinvoice: {
+    getAll: full("/supplier/invoice/get-all-info"), // GET
+  },
+  supplierdeliveryR: {
+    getAll: full("/supplier/dr/get-all-info"), // GET
+  },
+  supplierpo: {
+    getAll: full("/supplierpo/get-all-info"), // GET
   },
 
   // ---------- CUSTOMER ----------
@@ -54,9 +66,9 @@ const endpoints = {
   supplierPO: {
     add: full("/supplierpo/add"), // POST
     update: full("/supplierpo/update"), // PUT
-    bySupplier: (supplierId: string) =>
-      full(`/supplierpo/supplier/${supplierId}`), // GET
+    getAll: (page = 1) => full(`/supplierpo/get-all-supplierpo?page=${page}`), // GET
     getById: (supplierPOId: string) => full(`/supplierpo/${supplierPOId}`), // GET
+    delete: (id: string) => full(`/supplierpo/delete-po/${id}`),
     toggleStatus: full("/supplierpo/status"), // PUT
   },
 
@@ -110,7 +122,7 @@ const endpoints = {
   // ---------- RECEIVING REPORT (RR) ----------
   receivingReport: {
     create: full("/receiving-r/rr-create"), // POST
-    getAll: full("/receiving-r/rr-get-all"), // GET
+    getAll: (page = 1) => full(`/receiving-r/rr-get-all?page=${page}`),
     getById: (id: string) => full(`/receiving-r/rr-get-by-id/${id}`), // GET
     // delete: full("/receiving-r/rr-delete"), // DELETE
     delete: (id: string) => full(`/receiving-r/rr-delete/${id}`),
@@ -137,10 +149,18 @@ const endpoints = {
       full(`/sales-invoice/customer-by-project/${projectId}`), // GET
   },
 
+  projectinfo: {
+    infobyproject: (projectId: string) =>
+      full(`/project/all-data-by-project/${projectId}`),
+  },
+
   // ---------- DELIVERY RECEIPT ----------
   deliveryReceipt: {
     create: full("/delivery-receipt/create-delivery-receipt"), // POST
-    getAll: full("/delivery-receipt/get-all-delivery-receipts"), // GET
+    // getAll: full("/delivery-receipt/get-all-delivery-receipts"), // GET
+    getAll: (page = 1) =>
+      full(`/delivery-receipt/get-all-delivery-receipts?page=${page}`),
+
     getById: (id: string) =>
       full(`/delivery-receipt/get-delivery-receipt-by-id/${id}`), // GET
     update: (id: string) =>

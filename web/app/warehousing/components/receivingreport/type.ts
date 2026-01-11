@@ -80,17 +80,26 @@ export type ReceivingReportItem = {
   id: string;
   sku: string;
   barcode?: string;
+
   aircon_model_number: string;
   aircon_name: string;
-  price: number;
-  hp: string;
   type_of_aircon: string;
+  hp: string;
   indoor_outdoor_unit: "Indoor" | "Outdoor";
+
   quantity: number;
-  supplier_dr_id: string;
-  supplier_invoice_id: string;
-  purchase_order_id: string;
+  price: number;
+
+  dr_number: string;
+  invoice_id: string;
+  po_id: string;
   sales_order_id: string;
+
+  dr_object_id: string;
+  invoice_object_id: string;
+  po_object_id: string;
+  sales_order_object_id: string;
+
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -100,3 +109,7 @@ export type GetReceivingReportRes = {
   data: ReceivingReportItem[];
   message: string;
 };
+
+export type supplierInvoice = { id: string; name: string };
+export type supplierdeliveryR = { id: string; name: string };
+export type supplierpo = { id: string; name: string };

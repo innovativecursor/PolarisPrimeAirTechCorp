@@ -2,14 +2,10 @@ import { useCallback, useState } from "react";
 import {
   CreateRRPayload,
   CreateRRRes,
-  DeliveryReceiptRow,
-  GetReceivingReportRes,
   ReceivingReportItem,
-  RRInvoicesResponse,
-  RRInvoicesRow,
-  SalesOrderResponse,
-  SalesOrderRow,
-  SupplierDRResponse,
+  supplierdeliveryR,
+  supplierInvoice,
+  supplierpo,
 } from "../type";
 import { fetchDataGet, fetchDataPost } from "@/app/lib/fetchData";
 import endpoints from "@/app/lib/endpoints";
@@ -20,59 +16,56 @@ export default function useReceivingReport() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deliveryReceipts, setDeliveryReceipts] = useState<
-    DeliveryReceiptRow[]
-  >([]);
-  const [invoices, setInvoices] = useState<RRInvoicesRow[]>([]);
-  const [salesOrder, setSalesOrder] = useState<SalesOrderRow[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
   const [createResponse, setCreateResponse] = useState<CreateRRRes | null>(
     null
   );
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [supplierInvoice, setSupplierInvoice] = useState<supplierInvoice[]>([]);
+  const [supplierPo, setSupplierPo] = useState<supplierpo[]>([]);
+  const [supplierDeliveryR, setSupplierDeliveryR] = useState<
+    supplierdeliveryR[]
+  >([]);
 
   const [receivingReports, setReceivingReports] = useState<
     ReceivingReportItem[]
   >([]);
 
-  const loadDeliveryReceipts = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetchDataGet<SupplierDRResponse>(
-        endpoints.supplierDR.getAll
-      );
+  const loadSupplierInvoice = async () => {
+    const res = await fetchDataGet<any>(endpoints.supplierinvoice.getAll);
+    const list = res?.data || res || [];
+    setSupplierInvoice(
+      list.map((p: any) => ({
+        id: p._id || p.id,
+        name: p.invoice_no || p.name,
+      }))
+    );
+  };
 
-      setDeliveryReceipts(res?.data || res?.supplierDR || []);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadSupplierPO = async () => {
+    const res = await fetchDataGet<any>(endpoints.supplierpo.getAll);
+    const list = res?.data || res || [];
+    setSupplierPo(
+      list.map((p: any) => ({
+        id: p.id || p._id,
+        name: p.po_id || p.name,
+      }))
+    );
+  };
 
-  const loadSalesOrders = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetchDataGet<SalesOrderResponse>(
-        endpoints.salesOrder.getAll
-      );
-      setSalesOrder(res?.salesOrders || []);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadInvoices = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const res = await fetchDataGet<RRInvoicesResponse>(
-        endpoints.supplierInvoice.getAll
-      );
-      setInvoices(res?.invoices || []);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const loadSupplierDeliveryR = async () => {
+    const res = await fetchDataGet<any>(endpoints.supplierdeliveryR.getAll);
+    const list = res?.data || res || [];
+    setSupplierDeliveryR(
+      list.map((p: any) => ({
+        id: p._id || p.id,
+        name: p.supplier_dr_no || p.name,
+      }))
+    );
+  };
 
   const createReceivingReport = useCallback(
     async (payload: CreateRRPayload): Promise<CreateRRRes> => {
@@ -92,19 +85,35 @@ export default function useReceivingReport() {
     },
     []
   );
+  const loadReceivingReports = useCallback(
+    async (pageNo = page, showSkeleton = true) => {
+      try {
+        if (showSkeleton) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
 
-  const loadReceivingReports = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetchDataGet<GetReceivingReportRes>(
-        endpoints.receivingReport.getAll
-      );
-      setReceivingReports(res?.data || []);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        setError(null);
+
+        const res = await fetchDataGet<any>(
+          endpoints.receivingReport.getAll(pageNo)
+        );
+
+        setReceivingReports(res?.data || []);
+
+        const total = res?.total || 0;
+        const limit = res?.limit || 10;
+
+        setTotalPages(Math.ceil(total / limit));
+        setPage(pageNo);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [page]
+  );
 
   return {
     mode,
@@ -115,14 +124,17 @@ export default function useReceivingReport() {
     saving,
     setSaving,
     error,
-    deliveryReceipts,
-    loadDeliveryReceipts,
-    loadSalesOrders,
-    salesOrder,
-    loadInvoices,
-    invoices,
+
     createReceivingReport,
     receivingReports,
+    loadSupplierInvoice,
+    loadSupplierDeliveryR,
+    supplierInvoice,
+    supplierDeliveryR,
+    page,
+    totalPages,
     loadReceivingReports,
+    loadSupplierPO,
+    supplierPo,
   };
 }

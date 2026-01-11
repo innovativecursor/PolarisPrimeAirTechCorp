@@ -2,6 +2,7 @@ package supplierinvoice
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -93,17 +94,178 @@ func GetAllSupplierInvoices(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
+	page := int64(1)
+	limit := int64(10)
+
+	if p := c.Query("page"); p != "" {
+		if v, err := strconv.ParseInt(p, 10, 64); err == nil && v > 0 {
+			page = v
+		}
+	}
+	if l := c.Query("limit"); l != "" {
+		if v, err := strconv.ParseInt(l, 10, 64); err == nil && v > 0 {
+			limit = v
+		}
+	}
+
+	skip := (page - 1) * limit
 
 	collection := db.Collection("supplierinvoice")
-	cursor, err := collection.Find(c, bson.M{})
+
+	pipeline := mongo.Pipeline{
+
+		// 🔹 Join Project
+		bson.D{{Key: "$lookup", Value: bson.M{
+			"from":         "project",
+			"localField":   "project_id",
+			"foreignField": "_id",
+			"as":           "project",
+		}}},
+
+		bson.D{{Key: "$unwind", Value: bson.M{
+			"path":                       "$project",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		bson.D{{Key: "$facet", Value: bson.M{
+			"data": bson.A{
+				bson.M{"$sort": bson.M{"created_at": -1}},
+				bson.M{"$skip": skip},
+				bson.M{"$limit": limit},
+
+				bson.M{"$project": bson.M{
+					"_id":               1,
+					"supplier_id":       1,
+					"project_id":        1,
+					"invoice_no":        1,
+					"invoice_date":      1,
+					"delivery_no":       1,
+					"purchase_order_no": 1,
+					"due_date":          1,
+					"delivery_address":  1,
+					"items":             1,
+					"total_sales":       1,
+					"vat":               1,
+					"grand_total":       1,
+					"created_at":        1,
+					"created_by":        1,
+
+					"project_name": "$project.project_name",
+				}},
+			},
+			"total": bson.A{
+				bson.M{"$count": "count"},
+			},
+		}}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch invoices"})
 		return
 	}
-	var list []models.SupplierInvoice
-	cursor.All(c, &list)
+	defer cursor.Close(c)
 
-	c.JSON(http.StatusOK, gin.H{"invoices": list})
+	var result []struct {
+		Data  []bson.M `bson:"data"`
+		Total []struct {
+			Count int64 `bson:"count"`
+		} `bson:"total"`
+	}
+
+	if err := cursor.All(c, &result); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode invoices"})
+		return
+	}
+
+	var total int64
+	if len(result) > 0 && len(result[0].Total) > 0 {
+		total = result[0].Total[0].Count
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  result[0].Data,
+		"page":  page,
+		"limit": limit,
+		"total": total,
+	})
+}
+
+func GetAllSupplierInvoicesWithoutPagination(c *gin.Context, db *mongo.Database) {
+
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	collection := db.Collection("supplierinvoice")
+
+	pipeline := mongo.Pipeline{
+
+		// 🔹 Join Project
+		bson.D{{Key: "$lookup", Value: bson.M{
+			"from":         "project",
+			"localField":   "project_id",
+			"foreignField": "_id",
+			"as":           "project",
+		}}},
+
+		// 🔹 Unwind project
+		bson.D{{Key: "$unwind", Value: bson.M{
+			"path":                       "$project",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		// 🔹 Sort (latest first)
+		bson.D{{Key: "$sort", Value: bson.M{
+			"created_at": -1,
+		}}},
+
+		// 🔹 Final Projection
+		bson.D{{Key: "$project", Value: bson.M{
+			"_id":               1,
+			"supplier_id":       1,
+			"project_id":        1,
+			"invoice_no":        1,
+			"invoice_date":      1,
+			"delivery_no":       1,
+			"purchase_order_no": 1,
+			"due_date":          1,
+			"delivery_address":  1,
+			"items":             1,
+			"total_sales":       1,
+			"vat":               1,
+			"grand_total":       1,
+			"created_at":        1,
+			"created_by":        1,
+
+			"project_name": "$project.project_name",
+		}}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch invoices"})
+		return
+	}
+	defer cursor.Close(c)
+
+	var invoices []bson.M
+	if err := cursor.All(c, &invoices); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode invoices"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  invoices,
+		"total": len(invoices),
+	})
 }
 
 func GetSupplierInvoiceByID(c *gin.Context, db *mongo.Database) {
@@ -158,6 +320,12 @@ func EditSupplierInvoice(c *gin.Context, db *mongo.Database) {
 	objID, _ := primitive.ObjectIDFromHex(payload.ID)
 	supplierID, _ := primitive.ObjectIDFromHex(payload.SupplierID)
 
+	projectID, err := primitive.ObjectIDFromHex(payload.ProjectID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
 	invDate, _ := time.Parse("2006-01-02", payload.InvoiceDate)
 	dueDate, _ := time.Parse("2006-01-02", payload.DueDate)
 
@@ -175,7 +343,7 @@ func EditSupplierInvoice(c *gin.Context, db *mongo.Database) {
 	update := bson.M{
 		"$set": bson.M{
 			"supplier_id":       supplierID,
-			"project_id":        payload.ProjectID,
+			"project_id":        projectID,
 			"invoice_no":        payload.InvoiceNo,
 			"invoice_date":      invDate,
 			"delivery_no":       payload.DeliveryNo,
@@ -190,7 +358,7 @@ func EditSupplierInvoice(c *gin.Context, db *mongo.Database) {
 	}
 	collection := db.Collection("supplierinvoice")
 
-	_, err := collection.UpdateOne(c, bson.M{"_id": objID}, update)
+	_, err = collection.UpdateOne(c, bson.M{"_id": objID}, update)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update invoice"})
 		return

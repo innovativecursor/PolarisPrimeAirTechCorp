@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect } from "react";
@@ -11,19 +10,20 @@ import SupplierPOListCard from "./components/SupplierPOListCard";
 import CreateSupplierPOCard from "./components/CreateSupplierPOCard";
 import { useSupplierPO } from "./hooks/useSupplierPO";
 import { SupplierPOFormValues } from "./components/types";
+import { useSalesOrders } from "../sales-orders/hooks/useSalesOrders";
+import { useSupplier } from "../warehousing/components/addsupplier/hooks/useSupplier";
 
 export default function SupplierPOPage() {
   const { user } = useAuth();
   const toast = useToast();
   const displayName = user?.name || user?.email || "Admin";
+  const { loadProjectName, projectName, loadOrders, orders } = useSalesOrders();
+  const { GetSupplier, allSupplier } = useSupplier();
 
   const {
     mode,
     setMode,
-    orders,
-    projectsOptions,
-    suppliersOptions,
-    salesOrdersOptions,
+    supplierPO,
     loading,
     saving,
     setSaving,
@@ -31,16 +31,23 @@ export default function SupplierPOPage() {
     setError,
     editing,
     setEditing,
-    loadOrders,
-    loadOptions,
+    loadSupplierPO,
     handleEdit,
+    page,
+    totalPages,
+    setPage,
+    handleDelete,
   } = useSupplierPO();
 
   // Load data on mount
   useEffect(() => {
+    void loadSupplierPO(page, true);
+  }, [page]);
+
+  useEffect(() => {
+    void loadProjectName();
+    void GetSupplier();
     void loadOrders();
-    void loadOptions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handlers
@@ -59,62 +66,61 @@ export default function SupplierPOPage() {
       setSaving(true);
       setError(null);
 
-      // Build payload according to API spec
-      const payload: any = {
-        projectId: values.projectId,
-        supplierId: values.supplierId,
-        items: values.items.map((i) => ({
-          description: i.description,
-          quantity: Number(i.quantity || 0),
-          uom: i.uom,
-          rate: Number(i.rate || 0),
-        })),
-      };
-
-      // Add optional fields
-      if (values.soId) {
-        payload.soId = values.soId;
-      }
-      if (values.customerPoIds && values.customerPoIds.length > 0) {
-        payload.customerPoIds = values.customerPoIds;
-      }
-
-      const isEdit = editing && (editing._raw?.id || editing._raw?._id);
+      const isEdit = Boolean(editing?._raw?.id || editing?._raw?._id);
+      const items = values.items.map((i) => ({
+        description: i.description,
+        quantity: Number(i.quantity || 0),
+        uom: i.uom,
+      }));
 
       if (isEdit) {
-        // Update existing
+        if (!editing || !editing._raw) {
+          throw new Error("Editing data missing");
+        }
+
         await fetchWithError(endpoints.supplierPO.update, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            supplierPOId: editing._raw?.id || editing._raw?._id,
-            items: payload.items,
+            supplierPOId: editing._raw.id || editing._raw._id,
+            status: values.status,
+            items,
           }),
         });
+
+        toast.success("Supplier PO updated successfully");
       } else {
-        // Create new
+        const payload: any = {
+          projectId: values.projectId,
+          supplierId: values.supplierId,
+          items,
+        };
+
+        if (values.soId) {
+          payload.soId = values.soId;
+        }
+
+        if (values.customerPoIds?.length) {
+          payload.customerPoIds = values.customerPoIds;
+        }
+
         await fetchDataPost(endpoints.supplierPO.add, payload);
+
+        toast.success("Supplier PO created successfully");
       }
 
-      await loadOrders();
+      await loadSupplierPO(page, false);
+
       setMode("list");
       setEditing(null);
-      toast.success(
-        isEdit
-          ? "Supplier PO updated successfully"
-          : "Supplier PO created successfully"
-      );
     } catch (e: any) {
-      const errorMsg = e.message ?? "Failed to save supplier PO";
+      const errorMsg = e?.message || "Failed to save supplier PO";
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {
       setSaving(false);
     }
   };
-
-
-
 
   return (
     <AppShell>
@@ -145,19 +151,23 @@ export default function SupplierPOPage() {
 
         {mode === "list" ? (
           <SupplierPOListCard
-            loading={loading || saving}
-            orders={orders}
+            loading={loading}
+            orders={supplierPO}
             onCreate={handleCreateClick}
             onEdit={handleEdit}
+            page={page}
+            totalPages={totalPages}
+            setPage={setPage}
+            onDelete={handleDelete}
           />
         ) : (
           <CreateSupplierPOCard
             key={editing?._raw?.id || editing?._raw?._id || "new"}
             saving={saving}
             initialValues={editing ?? undefined}
-            projects={projectsOptions}
-            suppliers={suppliersOptions}
-            salesOrders={salesOrdersOptions}
+            projectsName={projectName}
+            suppliers={allSupplier}
+            salesOrders={orders}
             onCancel={handleCancelForm}
             onSubmit={handleSubmitForm}
           />

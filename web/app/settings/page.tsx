@@ -1,0 +1,124 @@
+"use client";
+
+import { useState } from "react";
+import { useAuth } from "../components/auth/AuthContext";
+import { Users, UserCheck, Shield } from "lucide-react";
+import AppShell from "../components/layout/AppShell";
+
+import UserDirectory from "./components/userdirectory/UserDirectory";
+import AccessControl from "./components/accesscontrol/AccessControl";
+import RoleDirectory from "./components/roledirectory/RoleDirectory";
+
+type Section = null | "user-directory" | "access-control" | "role-directory";
+
+export default function SettingsPage() {
+  const { user } = useAuth();
+  const displayName = user?.name || user?.email || "Admin";
+
+  const [activeSection, setActiveSection] = useState<Section>(null);
+
+  const settingsCards = [
+    {
+      key: "user-directory",
+      title: "User Directory",
+      desc: "View all registered users in the system",
+      icon: Users,
+      component: <UserDirectory />,
+    },
+    {
+      key: "access-control",
+      title: "Access Control",
+      desc: "Approve, reject, or deactivate user accounts",
+      icon: UserCheck,
+      component: <AccessControl />,
+    },
+    {
+      key: "role-directory",
+      title: "Role Directory",
+      desc: "View and manage roles & permissions",
+      icon: Shield,
+      component: <RoleDirectory />,
+    },
+  ];
+
+  return (
+    <AppShell>
+      <div className="space-y-6">
+        {/* Header */}
+        <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-slate-400">
+              Administration
+            </p>
+            <h1 className="mt-1 text-2xl md:text-3xl font-semibold text-slate-900">
+              Settings
+            </h1>
+          </div>
+
+          <div className="text-xs text-slate-500 text-right">
+            <p className="uppercase tracking-[0.16em] text-slate-400 mb-1">
+              Welcome back
+            </p>
+            <p className="font-medium text-slate-700">{displayName}</p>
+          </div>
+        </header>
+
+        <section className="rounded-[24px] bg-white border border-slate-200 px-8 py-8 space-y-10">
+          {activeSection === null ? (
+            <>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400">
+                  Administration
+                </p>
+                <h2 className="text-xl font-semibold text-slate-900">
+                  User & Role Management
+                </h2>
+              </div>
+
+              {/* Cards */}
+              <div className="space-y-6">
+                {settingsCards.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <div
+                      key={item.key}
+                      onClick={() => setActiveSection(item.key as Section)}
+                      className="flex items-center justify-between rounded-[18px] border cursor-pointer border-slate-300 bg-white px-6 py-6 hover:shadow-lg transition"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-700">
+                          <Icon size={18} />
+                        </div>
+
+                        <div>
+                          <h3 className="text-xl font-semibold text-slate-900">
+                            {item.title}
+                          </h3>
+                          <p className="text-sm mt-1 text-slate-600">
+                            {item.desc}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setActiveSection(null)}
+                className="mb-6 text-sm font-medium cursor-pointer text-slate-600 hover:text-slate-900"
+              >
+                ← Back to Settings
+              </button>
+
+              {settingsCards.find((c) => c.key === activeSection)?.component}
+            </>
+          )}
+        </section>
+      </div>
+    </AppShell>
+  );
+}

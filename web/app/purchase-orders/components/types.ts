@@ -2,6 +2,8 @@
 
 export type SupplierPORow = {
   id: string;
+  poId: string;
+  soId: string;
   projectName: string;
   supplierName: string;
   status: string;
@@ -12,6 +14,7 @@ export type SupplierPORow = {
 export type ProjectOption = {
   id: string;
   name: string;
+  customer_id: string;
 };
 
 export type SupplierOption = {
@@ -29,11 +32,11 @@ export type SupplierPOFormValues = {
   supplierId: string;
   soId?: string;
   customerPoIds?: string[];
+  status: "draft" | "approved";
   items: {
     id: string;
     description: string;
     quantity: string;
     uom: string;
-    rate: string;
   }[];
 };

@@ -20,6 +20,7 @@ export default function Inventory() {
     updateForm,
     handleSubmit,
     handleDelete,
+    resetForm,
   } = useInventory();
 
   const handleCancelForm = () => {
@@ -28,6 +29,7 @@ export default function Inventory() {
   };
 
   const handleCreateClick = () => {
+    resetForm();
     setEditing(null);
     setMode("create");
   };
@@ -38,7 +40,7 @@ export default function Inventory() {
   };
 
   useEffect(() => {
-    void GetInventories();
+    void GetInventories(true);
   }, []);
 
   return (
@@ -51,7 +53,7 @@ export default function Inventory() {
       {mode === "list" ? (
         <InventoryList
           onCreate={handleCreateClick}
-          loading={loading || saving}
+          loading={loading}
           allInventories={allInventories}
           onEdit={handleEdit}
           onDelete={handleDelete}

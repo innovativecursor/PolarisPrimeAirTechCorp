@@ -2,6 +2,7 @@ package supplierpo
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -53,43 +54,26 @@ func AddSupplierPO(c *gin.Context, db *mongo.Database) {
 		soID = &tmp
 	}
 
-	// Convert CustomerPOIDs to ObjectIDs
-	var customerPOIDs []primitive.ObjectID
-	for _, id := range payload.CustomerPOIDs {
-		if oid, err := primitive.ObjectIDFromHex(id); err == nil {
-			customerPOIDs = append(customerPOIDs, oid)
-		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Customer PO ID", "id": id})
-			return
-		}
-	}
-
 	// Build Items and Calculate Total
 	var items []models.SupplierPOItem
-	var total float64
 
 	for _, item := range payload.Items {
-		amount := float64(item.Quantity) * item.Rate
 		items = append(items, models.SupplierPOItem{
 			Description: item.Description,
 			Quantity:    item.Quantity,
 			UOM:         item.UOM,
-			Rate:        item.Rate,
-			Amount:      amount,
 		})
-		total += amount
 	}
 
 	po := models.SupplierPO{
-		ID:            primitive.NewObjectID(),
-		ProjectID:     projectID,
-		SupplierID:    supplierID,
-		SOID:          soID,
-		CustomerPOIDs: customerPOIDs,
-		Items:         items,
-		TotalAmount:   total,
-		Status:        "draft",
-		CreatedAt:     time.Now(),
+		ID:         primitive.NewObjectID(),
+		POID:       "PO-" + time.Now().Format("20060102150405"), // simple & readable
+		ProjectID:  projectID,
+		SupplierID: supplierID,
+		SOID:       soID,
+		Items:      items,
+		Status:     "draft",
+		CreatedAt:  time.Now(),
 	}
 
 	collection := db.Collection("supplier_purchase_orders")
@@ -104,7 +88,246 @@ func AddSupplierPO(c *gin.Context, db *mongo.Database) {
 	})
 }
 
-// Update Supplier Purchase Order
+type SupplierPOResponse struct {
+	ID           primitive.ObjectID      `bson:"_id" json:"id"`
+	POID         string                  `bson:"po_id" json:"po_id"`
+	SalesOrderID string                  `bson:"sales_order_id,omitempty" json:"sales_order_id,omitempty"`
+	Status       string                  `bson:"status" json:"status"`
+	CreatedAt    time.Time               `bson:"created_at" json:"created_at"`
+	Items        []models.SupplierPOItem `bson:"items" json:"items"`
+
+	Project struct {
+		ID   primitive.ObjectID `bson:"id" json:"id"`
+		Name string             `bson:"name" json:"name"`
+	} `bson:"project" json:"project"`
+
+	Supplier struct {
+		ID   primitive.ObjectID `bson:"id" json:"id"`
+		Name string             `bson:"name" json:"name"`
+	} `bson:"supplier" json:"supplier"`
+}
+
+func GetAllSupplierPO(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	if _, ok := user.(*models.User); !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	// Pagination
+	page := int64(1)
+	limit := int64(10)
+
+	if p := c.Query("page"); p != "" {
+		if v, err := strconv.ParseInt(p, 10, 64); err == nil && v > 0 {
+			page = v
+		}
+	}
+
+	skip := (page - 1) * limit
+	collection := db.Collection("supplier_purchase_orders")
+
+	pipeline := mongo.Pipeline{
+		// Sort
+		{{Key: "$sort", Value: bson.M{"createdAt": -1}}},
+
+		// Pagination
+		{{Key: "$skip", Value: skip}},
+		{{Key: "$limit", Value: limit}},
+
+		// Lookup Project
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "project",
+				"localField":   "projectId",
+				"foreignField": "_id",
+				"as":           "project",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path":                       "$project",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		// Lookup Supplier
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "supplier",
+				"localField":   "supplierId",
+				"foreignField": "_id",
+				"as":           "supplier",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path":                       "$supplier",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		// 🔹 Lookup Sales Order (ONLY for SalesOrderID)
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "salesorder",
+				"localField":   "soId",
+				"foreignField": "_id",
+				"as":           "salesOrder",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path":                       "$salesOrder",
+			"preserveNullAndEmptyArrays": true,
+		}}},
+
+		// Final Shape
+		{{
+			Key: "$project",
+			Value: bson.M{
+				"_id":            1,
+				"po_id":          "$poId",
+				"sales_order_id": "$salesOrder.salesOrderId",
+				"status":         1,
+				"created_at":     "$createdAt",
+				"items":          1,
+
+				"project": bson.M{
+					"id":   "$project._id",
+					"name": "$project.project_name",
+				},
+
+				"supplier": bson.M{
+					"id":   "$supplier._id",
+					"name": "$supplier.supplier_name",
+				},
+			},
+		}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Supplier POs"})
+		return
+	}
+	defer cursor.Close(c)
+
+	var result []SupplierPOResponse
+	if err := cursor.All(c, &result); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode Supplier POs"})
+		return
+	}
+
+	total, _ := collection.CountDocuments(c, bson.M{})
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  result,
+		"page":  page,
+		"limit": limit,
+		"total": total,
+	})
+}
+
+func GetAllSupplierPOinfo(c *gin.Context, db *mongo.Database) {
+	// Auth
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	if _, ok := user.(*models.User); !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	collection := db.Collection("supplier_purchase_orders")
+
+	// 🔹 Mongo Pipeline (ONLY PO DATA)
+	pipeline := mongo.Pipeline{
+		// Sort latest first
+		{{
+			Key:   "$sort",
+			Value: bson.M{"createdAt": -1},
+		}},
+
+		// Final shape (only PO fields)
+		{{
+			Key: "$project",
+			Value: bson.M{
+				"_id":         1,
+				"po_id":       "$poId",
+				"project_id":  "$projectId",
+				"supplier_id": "$supplierId",
+				"so_id":       "$soId",
+				"status":      1,
+				"items":       1,
+				"created_at":  "$createdAt",
+			},
+		}},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to fetch Supplier POs",
+		})
+		return
+	}
+	defer cursor.Close(c)
+
+	var result []SupplierPOResponse
+	if err := cursor.All(c, &result); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to decode Supplier POs",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  result,
+		"total": len(result),
+	})
+}
+
+func GetSupplierPOByID(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	_, ok := user.(*models.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+		return
+	}
+
+	id := c.Param("id")
+
+	poID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Supplier PO ID"})
+		return
+	}
+
+	collection := db.Collection("supplier_purchase_orders")
+
+	var po models.SupplierPO
+	err = collection.FindOne(c, bson.M{"_id": poID}).Decode(&po)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Supplier PO not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Supplier PO"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"supplierPO": po})
+}
+
 func UpdateSupplierPO(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
@@ -119,59 +342,55 @@ func UpdateSupplierPO(c *gin.Context, db *mongo.Database) {
 
 	var payload config.UpdateSupplierPO
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
 
-	supplierPOID, err := primitive.ObjectIDFromHex(payload.SupplierPOID)
+	poID, err := primitive.ObjectIDFromHex(payload.SupplierPOID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Supplier PO ID"})
 		return
 	}
 
-	collection := db.Collection("supplier_purchase_orders")
-
-	var existing models.SupplierPO
-	if err := collection.FindOne(c, bson.M{"_id": supplierPOID, "status": "draft"}).Decode(&existing); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Supplier PO not found or not editable"})
-		return
-	}
-
-	// Rebuild Items and Calculate Total
 	var items []models.SupplierPOItem
-	var total float64
-
 	for _, item := range payload.Items {
-		amount := float64(item.Quantity) * item.Rate
 		items = append(items, models.SupplierPOItem{
 			Description: item.Description,
 			Quantity:    item.Quantity,
 			UOM:         item.UOM,
-			Rate:        item.Rate,
-			Amount:      amount,
 		})
-		total += amount
 	}
 
-	now := time.Now()
 	update := bson.M{
 		"$set": bson.M{
-			"items":       items,
-			"totalAmount": total,
-			"updatedAt":   &now,
+			"items":  items,
+			"status": payload.Status,
 		},
 	}
 
-	if _, err := collection.UpdateOne(c, bson.M{"_id": supplierPOID}, update); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update Supplier PO", "details": err.Error()})
+	// Approval handling
+	if payload.Status == "approved" {
+		now := time.Now()
+		update["$set"].(bson.M)["approvedAt"] = &now
+	}
+
+	collection := db.Collection("supplier_purchase_orders")
+
+	res, err := collection.UpdateOne(c, bson.M{"_id": poID}, update)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update Supplier PO"})
+		return
+	}
+
+	if res.MatchedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Supplier PO not found"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Supplier PO updated successfully"})
 }
 
-// Get All Supplier POs by Supplier ID
-func GetSupplierPOsBySupplier(c *gin.Context, db *mongo.Database) {
+func DeleteSupplierPO(c *gin.Context, db *mongo.Database) {
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
@@ -182,81 +401,9 @@ func GetSupplierPOsBySupplier(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
+	id := c.Param("id")
 
-	supplierIDParam := c.Param("supplierId")
-	supplierID, err := primitive.ObjectIDFromHex(supplierIDParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Supplier ID"})
-		return
-	}
-
-	collection := db.Collection("supplier_purchase_orders")
-
-	// Enrich data with related Project, Supplier, and SO details
-	pipeline := mongo.Pipeline{
-		{{Key: "$match", Value: bson.D{{Key: "supplierId", Value: supplierID}}}},
-		{{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "suppliers"},
-				{Key: "localField", Value: "supplierId"},
-				{Key: "foreignField", Value: "_id"},
-				{Key: "as", Value: "supplierDetails"},
-			},
-		}},
-		{{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "project"},
-				{Key: "localField", Value: "projectId"},
-				{Key: "foreignField", Value: "_id"},
-				{Key: "as", Value: "projectDetails"},
-			},
-		}},
-		{{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "sales_orders"},
-				{Key: "localField", Value: "soId"},
-				{Key: "foreignField", Value: "_id"},
-				{Key: "as", Value: "salesOrderDetails"},
-			},
-		}},
-		{{Key: "$sort", Value: bson.D{{Key: "createdAt", Value: -1}}}},
-	}
-
-	cursor, err := collection.Aggregate(c, pipeline)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Supplier POs", "details": err.Error()})
-		return
-	}
-	defer cursor.Close(c)
-
-	var results []bson.M
-	if err := cursor.All(c, &results); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse Supplier POs"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"supplierPOs": results})
-}
-
-// Get Single Supplier PO by ID
-
-func GetSupplierPOByID(c *gin.Context, db *mongo.Database) {
-	user, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-		return
-	}
-	_, ok := user.(*models.User)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
-		return
-	}
-
-	poIDParam := c.Param("supplierPOId")
-	poID, err := primitive.ObjectIDFromHex(poIDParam)
+	poID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Supplier PO ID"})
 		return
@@ -264,121 +411,16 @@ func GetSupplierPOByID(c *gin.Context, db *mongo.Database) {
 
 	collection := db.Collection("supplier_purchase_orders")
 
-	// Aggregate to bring all related info (Supplier, Project, SO, Linked Customer POs)
-	pipeline := mongo.Pipeline{
-		{{Key: "$match", Value: bson.D{{Key: "_id", Value: poID}}}},
-		{{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "suppliers"},
-				{Key: "localField", Value: "supplierId"},
-				{Key: "foreignField", Value: "_id"},
-				{Key: "as", Value: "supplierDetails"},
-			},
-		}},
-		{{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "project"},
-				{Key: "localField", Value: "projectId"},
-				{Key: "foreignField", Value: "_id"},
-				{Key: "as", Value: "projectDetails"},
-			},
-		}},
-		{{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "sales_orders"},
-				{Key: "localField", Value: "soId"},
-				{Key: "foreignField", Value: "_id"},
-				{Key: "as", Value: "salesOrderDetails"},
-			},
-		}},
-		{{
-			Key: "$lookup",
-			Value: bson.D{
-				{Key: "from", Value: "customer_purchase_orders"},
-				{Key: "localField", Value: "customerPoIds"},
-				{Key: "foreignField", Value: "_id"},
-				{Key: "as", Value: "linkedCustomerPOs"},
-			},
-		}},
-	}
-
-	cursor, err := collection.Aggregate(c, pipeline)
+	res, err := collection.DeleteOne(c, bson.M{"_id": poID})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch Supplier PO", "details": err.Error()})
-		return
-	}
-	defer cursor.Close(c)
-
-	var results []bson.M
-	if err := cursor.All(c, &results); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse Supplier PO data"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete Supplier PO"})
 		return
 	}
 
-	if len(results) == 0 {
+	if res.DeletedCount == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Supplier PO not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"supplierPO": results[0]})
-}
-
-// Not in use yet
-// Toggle Supplier PO Status
-func ToggleSupplierPOStatus(c *gin.Context, db *mongo.Database) {
-	user, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-		return
-	}
-	authUser, ok := user.(*models.User)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
-		return
-	}
-
-	var payload config.ToggleSupplierPOStatus
-	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
-		return
-	}
-
-	supplierPOID, err := primitive.ObjectIDFromHex(payload.SupplierPOID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Supplier PO ID"})
-		return
-	}
-
-	collection := db.Collection("supplier_purchase_orders")
-
-	validStatuses := map[string]bool{
-		"draft":    true,
-		"approved": true,
-		"sent":     true,
-		"closed":   true,
-	}
-
-	if !validStatuses[payload.Status] {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status value"})
-		return
-	}
-
-	update := bson.M{
-		"$set": bson.M{
-			"status":     payload.Status,
-			"approvedBy": authUser.ID,
-			"approvedAt": time.Now(),
-		},
-	}
-
-	_, err = collection.UpdateOne(c, bson.M{"_id": supplierPOID}, update)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update status"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Supplier PO status updated successfully", "newStatus": payload.Status})
+	c.JSON(http.StatusOK, gin.H{"message": "Supplier PO deleted successfully"})
 }

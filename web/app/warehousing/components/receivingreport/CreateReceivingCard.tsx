@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import JsBarcode from "jsbarcode";
-import { SupplierPORow } from "@/app/purchase-orders/components/types";
+import { useEffect, useState } from "react";
+
 import {
   CreateRRPayload,
   CreateRRRes,
-  DeliveryReceiptRow,
   ReceivingReportItem,
+  supplierdeliveryR,
+  supplierInvoice,
+  supplierpo,
 } from "./type";
 import {
   Select,
@@ -16,33 +17,42 @@ import {
 } from "@/components/ui/select";
 import { toast } from "react-toastify";
 import { generateSku } from "@/app/utils/skuGenerator";
+import {
+  ProjectOption,
+  SalesOrderRow,
+} from "@/app/sales-orders/hooks/useSalesOrders";
+import Required from "@/components/ui/Required";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 type CreateReceivingCardProps = {
   onCancel: () => void;
-  deliveryReceipts: DeliveryReceiptRow[];
-  prorders: SupplierPORow[];
-  salesOrder: { id: string }[];
-  invoices: { id: string; invoice_no: string }[];
+  supplierPo: supplierpo[];
+  supplierDeliveryR: supplierdeliveryR[];
+  supplierInvoice: supplierInvoice[];
+  salesOrder: SalesOrderRow[];
   createReceivingReport: (payload: CreateRRPayload) => Promise<CreateRRRes>;
   saving: boolean;
-  loadReceivingReports: () => Promise<void>;
+  loadReceivingReports: (
+    pageNo?: number,
+    showSkeleton?: boolean
+  ) => Promise<void>;
+  page: number;
   editing?: ReceivingReportItem | null;
 };
 
 export default function CreateReceivingCard({
   onCancel,
-  deliveryReceipts,
-  prorders,
   salesOrder,
-  invoices,
   createReceivingReport,
   saving,
   loadReceivingReports,
   editing,
+  supplierDeliveryR,
+  supplierInvoice,
+  supplierPo,
+  page,
 }: CreateReceivingCardProps) {
   const [openScanner, setOpenScanner] = useState(false);
-  const [generatedBarcode, setGeneratedBarcode] = useState("");
-  const barcodeRef = useRef<SVGSVGElement | null>(null);
   const [form, setForm] = useState<CreateRRPayload>({
     supplier_dr_id: "",
     supplier_invoice_id: "",
@@ -71,107 +81,56 @@ export default function CreateReceivingCard({
   }, [editing]);
 
   useEffect(() => {
-    if (editing) return;
-
-    const code = "RR-" + Math.floor(100000 + Math.random() * 900000);
-    setGeneratedBarcode(code);
-
-    setForm((p) => ({ ...p, barcode: "" }));
-  }, [editing]);
-
-  useEffect(() => {
-    if (!barcodeRef.current || !generatedBarcode) return;
-
-    JsBarcode(barcodeRef.current, generatedBarcode, {
-      format: "CODE128",
-      width: 2,
-      height: 60,
-      displayValue: false,
-    });
-  }, [generatedBarcode]);
-
-  useEffect(() => {
     if (!openScanner) return;
 
     let scanner: any;
 
-    (async () => {
-      const { Html5QrcodeScanner } = await import("html5-qrcode");
+    scanner = new Html5QrcodeScanner(
+      "rr-barcode-reader",
+      {
+        fps: 8,
+        qrbox: { width: 360, height: 220 },
+        aspectRatio: 1,
+        disableFlip: true,
+      },
+      false
+    );
 
-      scanner = new Html5QrcodeScanner(
-        "rr-barcode-reader",
-        {
-          fps: 10,
-          qrbox: 250,
-        },
-        false
-      );
-
-      scanner.render(
-        (decodedText: string) => {
-          const scanned = decodedText.trim().toUpperCase();
-          const generated = generatedBarcode.trim().toUpperCase();
-
-          if (scanned !== generated) {
-            toast.error("Scanned barcode does not match generated barcode");
-            return;
-          }
-
-          setForm((p) => ({ ...p, barcode: decodedText }));
-          toast.success("Barcode verified successfully");
-
-          setOpenScanner(false);
-          scanner.clear();
-        },
-        () => {}
-      );
-    })();
+    scanner.render(
+      (decodedText: string) => {
+        setForm((p) => ({ ...p, barcode: decodedText }));
+        toast.success("Barcode scanned");
+        setOpenScanner(false);
+        scanner.clear();
+      },
+      () => {}
+    );
 
     return () => {
-      if (scanner) {
-        scanner.clear().catch(() => {});
-      }
+      scanner?.clear().catch(() => {});
     };
-  }, [openScanner, generatedBarcode]);
+  }, [openScanner]);
 
   useEffect(() => {
     if (!editing) return;
 
     setForm({
-      supplier_dr_id: editing.supplier_dr_id,
-      supplier_invoice_id: editing.supplier_invoice_id,
-      purchase_order_id: editing.purchase_order_id,
-      sales_order_id: editing.sales_order_id,
+      supplier_dr_id: editing.dr_object_id ?? "",
+      supplier_invoice_id: editing.invoice_object_id ?? "",
+      purchase_order_id: editing.po_object_id ?? "",
+      sales_order_id: editing.sales_order_object_id ?? "",
+
       sku: editing.sku,
       barcode: editing.barcode ?? "",
-      aircon_model_number: editing.aircon_model_number,
-      aircon_name: editing.aircon_name,
-      type_of_aircon: editing.type_of_aircon,
-      hp: editing.hp,
-      indoor_outdoor_unit: editing.indoor_outdoor_unit,
-      quantity: editing.quantity,
-      price: editing.price,
+      aircon_model_number: editing.aircon_model_number ?? "",
+      aircon_name: editing.aircon_name ?? "",
+      type_of_aircon: editing.type_of_aircon ?? "",
+      hp: editing.hp ?? "",
+      indoor_outdoor_unit: editing.indoor_outdoor_unit ?? "",
+      quantity: editing.quantity ?? 0,
+      price: editing.price ?? 0,
     });
-
-    setGeneratedBarcode(editing.barcode ?? "");
   }, [editing]);
-
-  const validateReceivingBarcode = () => {
-    if (!form.barcode) {
-      toast.error("Please scan the barcode");
-      return false;
-    }
-
-    const scanned = form.barcode.trim().toUpperCase();
-    const generated = generatedBarcode.trim().toUpperCase();
-
-    if (scanned !== generated) {
-      toast.error("Scanned barcode does not match generated barcode");
-      return false;
-    }
-
-    return true;
-  };
 
   const handleSave = async () => {
     if (
@@ -183,7 +142,11 @@ export default function CreateReceivingCard({
       toast.error("Please select DR, PO, SO and Invoice");
       return;
     }
-    if (!validateReceivingBarcode()) return;
+    if (!form.barcode) {
+      toast.error("Please scan the barcode");
+      return;
+    }
+
     if (!form.price || Number(form.price) <= 0) {
       toast.error("Please enter a valid price");
       return;
@@ -195,7 +158,8 @@ export default function CreateReceivingCard({
       quantity: Number(form.quantity),
       price: Number(form.price),
     });
-    await loadReceivingReports();
+    await loadReceivingReports(page, false);
+
     toast.success(res.message);
     onCancel();
   };
@@ -218,7 +182,7 @@ export default function CreateReceivingCard({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -228,7 +192,7 @@ export default function CreateReceivingCard({
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              Supplier delivery receipt
+              Supplier delivery receipt <Required />
             </label>
 
             <Select
@@ -241,9 +205,9 @@ export default function CreateReceivingCard({
                 <SelectValue placeholder="Choose a delivery receipt" />
               </SelectTrigger>
               <SelectContent>
-                {deliveryReceipts.map((dr) => (
-                  <SelectItem key={dr?.id} value={dr?.id}>
-                    {dr?.supplier_dr_no}
+                {supplierDeliveryR.map((sdr) => (
+                  <SelectItem key={sdr?.id} value={sdr?.id}>
+                    {sdr?.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -252,7 +216,7 @@ export default function CreateReceivingCard({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              Supplier purchase order
+              Supplier purchase order <Required />
             </label>
 
             <Select
@@ -265,9 +229,9 @@ export default function CreateReceivingCard({
                 <SelectValue placeholder="Choose a purchase order" />
               </SelectTrigger>
               <SelectContent>
-                {prorders.map((po) => (
+                {supplierPo.map((po) => (
                   <SelectItem key={po?.id} value={po?.id}>
-                    {po?.id}
+                    {po?.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -276,7 +240,7 @@ export default function CreateReceivingCard({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              Select sales order
+              Select sales order <Required />
             </label>
 
             <Select
@@ -291,7 +255,7 @@ export default function CreateReceivingCard({
               <SelectContent>
                 {salesOrder.map((so) => (
                   <SelectItem key={so?.id} value={so?.id}>
-                    {so?.id}
+                    {so?.salesOrderId}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -300,7 +264,7 @@ export default function CreateReceivingCard({
 
           <div className="space-y-2 md:col-span-1">
             <label className="text-sm font-medium text-slate-600">
-              Supplier invoice number
+              Supplier invoice number <Required />
             </label>
 
             <Select
@@ -313,9 +277,9 @@ export default function CreateReceivingCard({
                 <SelectValue placeholder="Choose supplier invoice" />
               </SelectTrigger>
               <SelectContent>
-                {invoices.map((inv) => (
-                  <SelectItem key={inv?.id} value={inv?.id}>
-                    {inv?.invoice_no}
+                {supplierInvoice.map((si) => (
+                  <SelectItem key={si?.id} value={si?.id}>
+                    {si?.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -334,22 +298,23 @@ export default function CreateReceivingCard({
           </p>
 
           {/* GENERATED BARCODE */}
-
-          <div className="mt-6 inline-flex rounded-2xl border border-slate-300 bg-white p-6">
-            <svg ref={barcodeRef} />
-          </div>
         </div>
 
         <div className="space-y-3">
           <label className="text-sm font-medium text-slate-600">
-            Barcode number
+            Barcode number <Required />
           </label>
           <input
             value={form.barcode}
-            onChange={(e) => updateForm("barcode", e.target.value)}
+            // onChange={(e) => updateForm("barcode", e.target.value)}
+            readOnly
             placeholder="Scan barcode"
             className="w-full rounded-2xl border bg-slate-100 px-4 py-3 text-sm"
           />
+          <p className="text-xs text-slate-500 ">
+            Tip: Reduce phone brightness to ~50%, don’t zoom, tilt phone
+            slightly
+          </p>
 
           <button
             type="button"
@@ -416,7 +381,9 @@ export default function CreateReceivingCard({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-600">Price</label>
+            <label className="text-sm font-medium text-slate-600">
+              Price <Required />
+            </label>
             <input
               type="number"
               min="1"
@@ -429,10 +396,12 @@ export default function CreateReceivingCard({
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
-              quantity
+              quantity <Required />
             </label>
             <input
+              type="number"
               value={form.quantity}
+              required
               onChange={(e) => updateForm("quantity", e.target.value)}
               placeholder="quantity"
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
@@ -468,7 +437,9 @@ export default function CreateReceivingCard({
               }
               className="w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm"
             >
-              <option>Select unit type</option>
+              <option hidden value="">
+                Select unit type
+              </option>
               <option>Indoor</option>
               <option>Outdoor</option>
             </select>
@@ -480,7 +451,7 @@ export default function CreateReceivingCard({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-full px-6 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700"
+          className="rounded-full  cursor-pointer px-6 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-700"
         >
           Cancel
         </button>
@@ -489,7 +460,7 @@ export default function CreateReceivingCard({
           type="button"
           disabled={saving}
           onClick={handleSave}
-          className={`rounded-full px-6 py-2.5 text-sm font-semibold text-white shadow 
+          className={`rounded-full  cursor-pointer px-6 py-2.5 text-sm font-semibold text-white shadow 
     ${
       saving
         ? "bg-slate-400 cursor-not-allowed"

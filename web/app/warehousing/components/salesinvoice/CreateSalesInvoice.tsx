@@ -1,4 +1,3 @@
-import { ProjectOption } from "@/app/purchase-orders/components/types";
 import {
   Select,
   SelectContent,
@@ -9,10 +8,12 @@ import {
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import { Supplier } from "../addsupplier/type";
 import { InvoiceItem, SalesInvoiceForm } from "./type";
+import { ProjectOption } from "@/app/sales-orders/hooks/useSalesOrders";
+import Required from "@/components/ui/Required";
 
 type CreateSalesInvioceProps = {
   onCancel: () => void;
-  projects: ProjectOption[];
+  projectsName: ProjectOption[];
   allSupplier: Supplier[];
 
   form: SalesInvoiceForm;
@@ -33,7 +34,7 @@ type CreateSalesInvioceProps = {
 
 export default function CreateSalesInvioce({
   onCancel,
-  projects,
+  projectsName,
   allSupplier,
 
   form,
@@ -66,7 +67,7 @@ export default function CreateSalesInvioce({
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs font-medium text-slate-400 hover:text-slate-600"
+          className="text-xs  cursor-pointer font-medium text-slate-400 hover:text-slate-600"
         >
           Cancel
         </button>
@@ -82,7 +83,7 @@ export default function CreateSalesInvioce({
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Supplier Name
+              Supplier Name <Required />
             </label>
             <Select
               value={form.supplier_id}
@@ -103,7 +104,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Project name
+              Project name <Required />
             </label>
             <Select
               value={form.project_id}
@@ -113,7 +114,7 @@ export default function CreateSalesInvioce({
                 <SelectValue placeholder="Choose project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((p) => (
+                {projectsName.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
@@ -124,7 +125,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Invoice Number
+              Invoice Number <Required />
             </label>
             <input
               value={form.invoice_number}
@@ -137,7 +138,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Invoice Date
+              Invoice Date <Required />
             </label>
             <input
               type="date"
@@ -150,10 +151,11 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Delivery Number
+              Delivery Number <Required />
             </label>
             <input
-              type="number"
+              type="text"
+              required
               value={form.delivery_number}
               onChange={(e) => updateForm("delivery_number", e.target.value)}
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
@@ -163,12 +165,13 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Purchase order no
+              Purchase order no <Required />
             </label>
             <input
               value={form.po_number}
               onChange={(e) => updateForm("po_number", e.target.value)}
-              type="number"
+              type="text"
+              required
               className="block w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
               placeholder=" Purchase order no"
             />
@@ -176,7 +179,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              Due Date
+              Due Date <Required />
             </label>
             <input
               type="date"
@@ -214,7 +217,7 @@ export default function CreateSalesInvioce({
 
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-slate-600">
-              VAT
+              VAT <Required />
             </label>
             <Select
               value={form.vat_type}
@@ -269,7 +272,7 @@ export default function CreateSalesInvioce({
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-700"
+                  className="inline-flex  cursor-pointer items-center gap-1 text-xs text-red-600 hover:text-red-700"
                 >
                   <FiTrash2 className="h-4 w-4" />
                   Remove
@@ -293,7 +296,7 @@ export default function CreateSalesInvioce({
               {/* Qty */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Quantity
+                  Quantity <Required />
                 </label>
                 <input
                   type="number"
@@ -329,7 +332,7 @@ export default function CreateSalesInvioce({
               {/* Unit Price */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-medium text-slate-600">
-                  Unit Price
+                  Unit Price <Required />
                 </label>
                 <input
                   type="number"
@@ -361,7 +364,7 @@ export default function CreateSalesInvioce({
           <button
             type="button"
             onClick={addItem}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+            className="inline-flex  cursor-pointer items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
           >
             <FiPlus className="h-4 w-4" />
             Add line
@@ -370,7 +373,7 @@ export default function CreateSalesInvioce({
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+            className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
           >
             {saving ? "Saving..." : editing ? "Update invoice" : "Save invoice"}
           </button>

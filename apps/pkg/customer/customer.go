@@ -1,6 +1,7 @@
 package customer
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -10,69 +11,89 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func GenerateCustomerID(count int64) string {
+	year := time.Now().Year()
+	return fmt.Sprintf("CUST-%d-%05d", year, count+1)
+}
+
 func AddCustomer(c *gin.Context, db *mongo.Database) {
-	user, exists := c.Get("user")
+	_, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
-		return
-	}
-	_, ok := user.(*models.User)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
 
 	var payload config.CustomerData
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload", "details": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 		return
 	}
 
 	collection := db.Collection("customer")
 
-	var filter bson.M
-	var customer models.Customer
-
+	// ===================== UPDATE =====================
 	if payload.ID != "" {
 		objID, err := primitive.ObjectIDFromHex(payload.ID)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid customer ID"})
 			return
 		}
-		filter = bson.M{"_id": objID}
-		customer.ID = objID
-	} else {
-		filter = bson.M{
-			"customername": payload.CustomerName,
-			"tinnumber":    payload.TINNumber,
-			"customerorg":  payload.CustomerOrg,
+
+		update := bson.M{
+			"$set": bson.M{
+				"customername": payload.CustomerName,
+				"customerorg":  payload.CustomerOrg,
+				"address":      payload.Address,
+				"tinnumber":    payload.TINNumber,
+			},
 		}
-	}
 
-	customer.CustomerName = payload.CustomerName
-	customer.Address = payload.Address
-	customer.TINNumber = payload.TINNumber
-	customer.CustomerOrg = payload.CustomerOrg
-	customer.CreatedAt = time.Now()
+		res, err := collection.UpdateOne(
+			c,
+			bson.M{"_id": objID},
+			update,
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update customer"})
+			return
+		}
 
-	update := bson.M{"$set": customer}
-	opts := options.Update().SetUpsert(true)
+		if res.MatchedCount == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Customer not found"})
+			return
+		}
 
-	res, err := collection.UpdateOne(c, filter, update, opts)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save customer", "details": err.Error()})
+		c.JSON(http.StatusOK, gin.H{"message": "Customer updated successfully"})
 		return
 	}
 
-	if res.UpsertedID != nil {
-		customer.ID = res.UpsertedID.(primitive.ObjectID)
+	// ===================== CREATE =====================
+	count, err := collection.CountDocuments(c, bson.M{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate customer ID"})
+		return
+	}
+
+	customer := models.Customer{
+		ID:           primitive.NewObjectID(),
+		CustomerID:   GenerateCustomerID(count),
+		CustomerName: payload.CustomerName,
+		CustomerOrg:  payload.CustomerOrg,
+		Address:      payload.Address,
+		TINNumber:    payload.TINNumber,
+		CreatedAt:    time.Now(),
+	}
+
+	_, err = collection.InsertOne(c, customer)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create customer"})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":  "Customer saved successfully",
+		"message":  "Customer created successfully",
 		"customer": customer,
 	})
 }

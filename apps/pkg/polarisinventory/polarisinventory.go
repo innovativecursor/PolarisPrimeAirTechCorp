@@ -3,6 +3,7 @@ package polarisinventory
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func AddInventory(c *gin.Context, db *mongo.Database) {
@@ -219,7 +219,7 @@ func AddOrUpdateReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	collection := db.Collection("polaris_inventory")
+	collection := db.Collection("polaris_receiving_reports")
 
 	// Parse optional RR IDs
 	var supplierDRID, supplierInvoiceID, poID, soID *primitive.ObjectID
@@ -279,7 +279,7 @@ func AddOrUpdateReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	item := models.PolarisInventory{
+	item := models.PolarisReceivingReport{
 		SKU:               payload.SKU,
 		Barcode:           payload.Barcode,
 		AirconModelNumber: payload.AirconModelNumber,
@@ -309,35 +309,182 @@ func AddOrUpdateReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 	c.JSON(http.StatusOK, gin.H{"message": "RR inventory created successfully", "data": item})
 }
 
+type ReceivingReportInventoryResponse struct {
+	ID primitive.ObjectID `bson:"_id" json:"id"`
+
+	SKU               string  `bson:"sku" json:"sku"`
+	Barcode           string  `bson:"barcode" json:"barcode"`
+	AirconModelNumber string  `bson:"aircon_model_number" json:"aircon_model_number"`
+	AirconName        string  `bson:"aircon_name" json:"aircon_name"`
+	HP                string  `bson:"hp" json:"hp"`
+	TypeOfAircon      string  `bson:"type_of_aircon" json:"type_of_aircon"`
+	IndoorOutdoorUnit string  `bson:"indoor_outdoor_unit" json:"indoor_outdoor_unit"`
+	Quantity          int     `bson:"quantity" json:"quantity"`
+	Price             float64 `bson:"price" json:"price"`
+
+	// 🔹 Mongo ObjectIDs
+	SalesOrderObjectID *primitive.ObjectID `bson:"sales_order_object_id,omitempty" json:"sales_order_object_id,omitempty"`
+	POObjectID         *primitive.ObjectID `bson:"po_object_id,omitempty" json:"po_object_id,omitempty"`
+	InvoiceObjectID    *primitive.ObjectID `bson:"invoice_object_id,omitempty" json:"invoice_object_id,omitempty"`
+	DRObjectID         *primitive.ObjectID `bson:"dr_object_id,omitempty" json:"dr_object_id,omitempty"`
+
+	// 🔹 Human-readable IDs
+	SalesOrderID string `bson:"sales_order_id,omitempty" json:"sales_order_id,omitempty"`
+	POID         string `bson:"po_id,omitempty" json:"po_id,omitempty"`
+	InvoiceID    string `bson:"invoice_id,omitempty" json:"invoice_id,omitempty"`
+	DRNumber     string `bson:"dr_number,omitempty" json:"dr_number,omitempty"`
+
+	CreatedAt time.Time `bson:"created_at" json:"created_at"`
+	UpdatedAt time.Time `bson:"updated_at" json:"updated_at"`
+}
+
 func GetAllReceivingReportInventory(c *gin.Context, db *mongo.Database) {
+
+	// Auth
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
-	_, ok := user.(*models.User)
-	if !ok {
+	if _, ok := user.(*models.User); !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
 		return
 	}
-	collection := db.Collection("polaris_inventory")
 
-	cursor, err := collection.Find(context.Background(), bson.M{}, options.Find().SetSort(bson.M{
-		"created_at": -1,
-	}))
+	// Pagination
+	page := int64(1)
+	limit := int64(10)
+
+	if p := c.Query("page"); p != "" {
+		if v, err := strconv.ParseInt(p, 10, 64); err == nil && v > 0 {
+			page = v
+		}
+	}
+	if l := c.Query("limit"); l != "" {
+		if v, err := strconv.ParseInt(l, 10, 64); err == nil && v > 0 {
+			limit = v
+		}
+	}
+
+	skip := (page - 1) * limit
+	collection := db.Collection("polaris_receiving_reports")
+
+	pipeline := mongo.Pipeline{
+
+		{{Key: "$sort", Value: bson.M{"created_at": -1}}},
+		{{Key: "$skip", Value: skip}},
+		{{Key: "$limit", Value: limit}},
+
+		// 🔹 Sales Order
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "salesorder",
+				"localField":   "sales_order_id",
+				"foreignField": "_id",
+				"as":           "salesOrder",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path": "$salesOrder", "preserveNullAndEmptyArrays": true,
+		}}},
+
+		// 🔹 Supplier PO
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "supplier_purchase_orders",
+				"localField":   "purchase_order_id",
+				"foreignField": "_id",
+				"as":           "po",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path": "$po", "preserveNullAndEmptyArrays": true,
+		}}},
+
+		// 🔹 Supplier Invoice (✅ FIXED)
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "supplierinvoice",
+				"localField":   "supplier_invoice_id",
+				"foreignField": "_id",
+				"as":           "invoice",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path": "$invoice", "preserveNullAndEmptyArrays": true,
+		}}},
+
+		// 🔹 Supplier DR (✅ FIXED)
+		{{
+			Key: "$lookup",
+			Value: bson.M{
+				"from":         "supplierdeliveryreceipt",
+				"localField":   "supplier_dr_id",
+				"foreignField": "_id",
+				"as":           "dr",
+			},
+		}},
+		{{Key: "$unwind", Value: bson.M{
+			"path": "$dr", "preserveNullAndEmptyArrays": true,
+		}}},
+
+		// ✅ Final Response Shape
+		{{
+			Key: "$project",
+			Value: bson.M{
+				"_id":                 1,
+				"sku":                 1,
+				"barcode":             1,
+				"aircon_model_number": 1,
+				"aircon_name":         1,
+				"hp":                  1,
+				"type_of_aircon":      1,
+				"indoor_outdoor_unit": 1,
+				"quantity":            1,
+				"price":               1,
+				"created_at":          1,
+				"updated_at":          1,
+
+				// 🔹 Mongo ObjectIDs
+				"sales_order_object_id": "$salesOrder._id",
+				"po_object_id":          "$po._id",
+				"invoice_object_id":     "$invoice._id",
+				"dr_object_id":          "$dr._id",
+
+				// 🔹 Display IDs
+				"sales_order_id": "$salesOrder.salesOrderId",
+				"po_id":          "$po.poId",
+				"invoice_id":     "$invoice.invoice_no",
+				"dr_number":      "$dr.supplier_dr_no",
+			},
+		},
+		},
+	}
+
+	cursor, err := collection.Aggregate(c, pipeline)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch inventory"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch RR inventory"})
 		return
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(c)
 
-	var items []models.PolarisInventory
-	if err := cursor.All(context.Background(), &items); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse inventory"})
+	var result []ReceivingReportInventoryResponse
+	if err := cursor.All(c, &result); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode RR inventory"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Inventory fetched", "data": items})
+	total, _ := collection.CountDocuments(c, bson.M{})
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":  result,
+		"page":  page,
+		"limit": limit,
+		"total": total,
+	})
 }
 
 func GetReceivingReportInventoryByID(c *gin.Context, db *mongo.Database) {
@@ -359,9 +506,9 @@ func GetReceivingReportInventoryByID(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	collection := db.Collection("polaris_inventory")
+	collection := db.Collection("polaris_receiving_reports")
 
-	var item models.PolarisInventory
+	var item models.PolarisReceivingReport
 	err = collection.FindOne(context.Background(), bson.M{"_id": objID}).Decode(&item)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -394,7 +541,7 @@ func DeleteReceivingReportInventory(c *gin.Context, db *mongo.Database) {
 		return
 	}
 
-	collection := db.Collection("polaris_inventory")
+	collection := db.Collection("polaris_receiving_reports")
 
 	res, err := collection.DeleteOne(context.Background(), bson.M{"_id": objID})
 	if err != nil {

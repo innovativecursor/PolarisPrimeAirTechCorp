@@ -9,6 +9,25 @@ type ErrorResponse = {
   error?: string;
 };
 
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+
+      localStorage.removeItem("authToken");
+
+
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+
 const AUTH_HEADER_MODE: "bearer" | "raw" | "x-token" = "bearer";
 
 function getAuthToken(): string | null {

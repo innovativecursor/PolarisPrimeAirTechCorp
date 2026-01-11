@@ -75,6 +75,9 @@ func Auth(db *mongo.Database) {
 	apiV1.GET("/project/get-all-project", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.GetAllProjects(c, db)
 	})
+	apiV1.GET("/project/get-all-project-info", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		project.GetAllProjectsInfo(c, db)
+	})
 	apiV1.GET("/project/get-project-by/:projectID", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		project.GetProjectFullDetails(c, db)
 	})
@@ -124,16 +127,20 @@ func Auth(db *mongo.Database) {
 		supplierpo.UpdateSupplierPO(c, db)
 	})
 
-	apiV1.GET("/supplierpo/supplier/:supplierId", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		supplierpo.GetSupplierPOsBySupplier(c, db)
+	apiV1.GET("/supplierpo/get-all-supplierpo", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.GetAllSupplierPO(c, db)
 	})
 
-	apiV1.GET("/supplierpo/:supplierPOId", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.GET("/supplierpo/get-all-info", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.GetAllSupplierPOinfo(c, db)
+	})
+
+	apiV1.GET("/supplierpo/get-po-by/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierpo.GetSupplierPOByID(c, db)
 	})
 
-	apiV1.PUT("/supplierpo/status", middleware.JWTMiddleware(db), func(c *gin.Context) {
-		supplierpo.ToggleSupplierPOStatus(c, db)
+	apiV1.DELETE("/supplierpo/delete-po/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierpo.DeleteSupplierPO(c, db)
 	})
 
 	// Inventory
@@ -211,6 +218,9 @@ func Auth(db *mongo.Database) {
 	apiV1.GET("/supplier/dr/get-all", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierdr.GetAllSupplierDR(c, db)
 	})
+	apiV1.GET("/supplier/dr/get-all-info", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierdr.GetAllSupplierDRWithoutPagination(c, db)
+	})
 	apiV1.GET("/supplier/dr-get-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierdr.GetSupplierDRByID(c, db)
 	})
@@ -228,6 +238,10 @@ func Auth(db *mongo.Database) {
 
 	apiV1.GET("/supplier/invoice/get-all", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		supplierinvoice.GetAllSupplierInvoices(c, db)
+	})
+
+	apiV1.GET("/supplier/invoice/get-all-info", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		supplierinvoice.GetAllSupplierInvoicesWithoutPagination(c, db)
 	})
 
 	apiV1.GET("/supplier/invoice-get-by-id/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
@@ -255,7 +269,7 @@ func Auth(db *mongo.Database) {
 		polarisinventory.GetReceivingReportInventoryByID(c, db)
 	})
 
-	apiV1.DELETE("/receiving-r/rr-delete", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.DELETE("/receiving-r/rr-delete/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		polarisinventory.DeleteReceivingReportInventory(c, db)
 	})
 
@@ -304,6 +318,10 @@ func Auth(db *mongo.Database) {
 	// extra: get customer by project
 	apiV1.GET("/sales-invoice/customer-by-project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		salesinvoice.GetCustomerByProjectID(c, db)
+	})
+
+	apiV1.GET("/project/all-data-by-project/:id", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		salesinvoice.GetInvoiceDetailsByProjectID(c, db)
 	})
 
 	// delivery receipt

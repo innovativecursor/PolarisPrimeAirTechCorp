@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@radix-ui/react-select": "^2.2.6",
+    "antd": "^6.1.4",
     "axios": "^1.13.2",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",

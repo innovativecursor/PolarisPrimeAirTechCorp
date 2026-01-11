@@ -15,10 +15,11 @@ export function useInventory() {
   const [editing, setEditing] = useState<InventoryItem | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [allInventories, setAllInventories] = useState<InventoryItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const confirmToast = useConfirmToast();
-  const [form, setForm] = useState({
+  const initialFormState = {
     sku: "",
     barcode: "",
     aircon_model_number: "",
@@ -28,15 +29,25 @@ export function useInventory() {
     indoor_outdoor_unit: "",
     quantity: 0,
     price: 0,
-  });
+  };
+
+  const [form, setForm] = useState(initialFormState);
 
   const updateForm = (key: string, value: any) => {
     setForm((p) => ({ ...p, [key]: value }));
   };
+  const resetForm = () => {
+    setForm(initialFormState);
+  };
 
-  const GetInventories = useCallback(async () => {
+  const GetInventories = useCallback(async (showSkeleton = true) => {
     try {
-      setLoading(true);
+      if (showSkeleton) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+
       setError(null);
 
       const res = await fetchDataGet<InventoryListResponse>(
@@ -49,6 +60,7 @@ export function useInventory() {
       setAllInventories([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
@@ -79,8 +91,9 @@ export function useInventory() {
       } else {
         await fetchDataPost(endpoints.inventory.add, form);
         toast.success("Inventory added successfully");
+        resetForm();
       }
-      await GetInventories();
+      await GetInventories(false);
       return true;
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
@@ -119,7 +132,7 @@ export function useInventory() {
             await fetchDataDelete(endpoints.inventory.delete(item.id));
 
             toast.success("Inventory deleted successfully");
-            await GetInventories();
+            await GetInventories(false);
           } catch (err: any) {
             const msg = err.message || "Failed to delete inventory";
             setError(msg);
@@ -150,5 +163,6 @@ export function useInventory() {
     updateForm,
     handleSubmit,
     handleDelete,
+    resetForm,
   };
 }

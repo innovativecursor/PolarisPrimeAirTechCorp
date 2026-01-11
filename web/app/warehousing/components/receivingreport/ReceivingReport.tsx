@@ -2,12 +2,12 @@ import ReceivingListCard from "./ReceivingListCard";
 import CreateReceivingCard from "./CreateReceivingCard";
 import useReceivingReport from "./hooks/useReceivingReport";
 import { useEffect } from "react";
-import { useSupplierPO } from "@/app/purchase-orders/hooks/useSupplierPO";
 import { useConfirmToast } from "@/app/hooks/useConfirmToast";
 import { toast } from "react-toastify";
 import { fetchWithError } from "@/app/lib/fetchData";
 import { ReceivingReportItem } from "./type";
 import endpoints from "@/app/lib/endpoints";
+import { useSalesOrders } from "@/app/sales-orders/hooks/useSalesOrders";
 
 export default function ReceivingReport() {
   const {
@@ -17,19 +17,23 @@ export default function ReceivingReport() {
     editing,
     loading,
     saving,
-    deliveryReceipts,
-    loadDeliveryReceipts,
-    loadSalesOrders,
-    salesOrder,
-    loadInvoices,
-    invoices,
+
     createReceivingReport,
     receivingReports,
     loadReceivingReports,
     setSaving,
+    loadSupplierInvoice,
+    loadSupplierDeliveryR,
+    supplierInvoice,
+    supplierDeliveryR,
+    page,
+    totalPages,
+    loadSupplierPO,
+    supplierPo,
   } = useReceivingReport();
 
-  const { orders, loadOrders } = useSupplierPO();
+  const { loadOrders, orders } = useSalesOrders();
+
   const confirmToast = useConfirmToast();
 
   const handleCreateClick = () => {
@@ -48,17 +52,17 @@ export default function ReceivingReport() {
   };
 
   useEffect(() => {
-    void loadDeliveryReceipts();
     void loadOrders();
-    void loadSalesOrders();
-    void loadInvoices();
-    void loadReceivingReports();
+    void loadReceivingReports(1, true);
+    void loadSupplierInvoice();
+    void loadSupplierDeliveryR();
+    void loadSupplierPO();
   }, []);
 
   const handleDelete = (row: ReceivingReportItem) => {
     confirmToast.confirm({
       title: "Delete Receiving Report",
-      message: `Are you sure you want to delete receiving report "${row.id}"?`,
+      message: `Are you sure you want to delete receiving report "${row.dr_number}"?`,
       confirmText: "Delete",
       cancelText: "Cancel",
       onConfirm: async () => {
@@ -70,7 +74,7 @@ export default function ReceivingReport() {
           });
 
           toast.success("Receiving report deleted successfully");
-          await loadReceivingReports();
+          await loadReceivingReports(page, false);
         } catch (e: any) {
           toast.error(e.message ?? "Failed to delete receiving report");
         } finally {
@@ -84,23 +88,27 @@ export default function ReceivingReport() {
     <div className="space-y-6">
       {mode === "list" ? (
         <ReceivingListCard
-          loading={loading || saving}
+          loading={loading}
           onEdit={handleEdit}
           onCreate={handleCreateClick}
           receivingReports={receivingReports}
           onDelete={handleDelete}
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(p) => loadReceivingReports(p, false)}
         />
       ) : (
         <CreateReceivingCard
+          page={page}
           onCancel={handleCancelForm}
-          deliveryReceipts={deliveryReceipts}
-          prorders={orders}
-          salesOrder={salesOrder}
-          invoices={invoices}
+          salesOrder={orders}
           createReceivingReport={createReceivingReport}
           saving={saving}
           loadReceivingReports={loadReceivingReports}
           editing={editing}
+          supplierInvoice={supplierInvoice}
+          supplierDeliveryR={supplierDeliveryR}
+          supplierPo={supplierPo}
         />
       )}
     </div>

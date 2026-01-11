@@ -268,6 +268,7 @@ func GetAllSalesOrders(c *gin.Context, db *mongo.Database) {
 		enrichedOrders = append(enrichedOrders, bson.M{
 			"id":           order.ID.Hex(),
 			"projectName":  projectName,
+			"salesOrderId": order.SalesOrderID,
 			"customerName": customerName,
 			"items":        items,
 			"totalAmount":  order.TotalAmount,
