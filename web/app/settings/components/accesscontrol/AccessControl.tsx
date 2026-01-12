@@ -3,14 +3,8 @@ import { Select, message } from "antd";
 import { useSettings } from "../hooks/useSettings";
 
 export default function AccessControl() {
-  const {
-    users,
-    roles,
-    fetchUsers,
-    fetchRoles,
-    updateUserRole,
-    error,
-  } = useSettings();
+  const { users, roles, fetchUsers, fetchRoles, updateUserRole, error } =
+    useSettings();
 
   const [selectedRole, setSelectedRole] = useState<Record<string, string>>({});
 
@@ -31,8 +25,8 @@ export default function AccessControl() {
 
   return (
     <div className="space-y-7">
-      <div className="flex items-end justify-between">
-        <div>
+      <div className="flex md:flex-row flex-col md:items-center items-start md:justify-between justify-center md:gap-0 gap-6">
+        <div className="flex items-center md:items-start flex-col md:w-fit w-full">
           <h3 className="text-lg font-semibold text-slate-900">
             Access Control
           </h3>
@@ -41,7 +35,7 @@ export default function AccessControl() {
           </p>
         </div>
 
-        <div className="text-sm text-slate-500">
+        <div className="text-base md:w-fit w-full text-center text-slate-500 border border-stone-300 shadow px-8 py-1 rounded-full">
           <span className="font-semibold text-slate-900">
             {pendingUsers.length}
           </span>{" "}
@@ -55,7 +49,7 @@ export default function AccessControl() {
             key={user._id}
             className="rounded-2xl border border-slate-200 bg-white p-6 transition hover:shadow-sm"
           >
-            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-5 md:flex-row items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-yellow-100 text-sm font-semibold text-yellow-700">
                   {user.email.charAt(0).toUpperCase()}

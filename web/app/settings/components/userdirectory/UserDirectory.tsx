@@ -19,8 +19,8 @@ export default function UserDirectory() {
   return (
     <div className="space-y-7 mb-32">
       {/* Header */}
-      <div className="flex items-end justify-between">
-        <div>
+      <div className="flex md:flex-row flex-col md:items-center items-start md:justify-between justify-center md:gap-0 gap-6">
+        <div className="flex items-center md:items-start flex-col md:w-fit w-full">
           <h3 className="text-lg font-semibold text-slate-900">
             User Directory
           </h3>
@@ -29,14 +29,14 @@ export default function UserDirectory() {
           </p>
         </div>
 
-        <div className="text-base text-slate-500 border border-stone-300 shadow px-8 py-1 rounded-full">
+        <div className="text-base md:w-fit w-full text-center text-slate-500 border border-stone-300 shadow px-8 py-1 rounded-full">
           <span className="font-semibold text-slate-900">{users.length}</span>{" "}
           users
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden cursor-pointer rounded-2xl border border-slate-200 bg-white">
+      <div className="md:overflow-hidden overflow-auto cursor-pointer rounded-2xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-slate-50">
             <tr className="border-b border-slate-200">

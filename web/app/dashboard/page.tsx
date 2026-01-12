@@ -60,7 +60,6 @@ export default function DashboardPage() {
 
         {/* Middle row: line chart + donut */}
         <section className="grid gap-4 cursor-pointer lg:grid-cols-2 w-full">
-          {/* Line chart */}
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-slate-900">
@@ -74,7 +73,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Donut */}
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6 flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold text-slate-900">
@@ -82,7 +80,7 @@ export default function DashboardPage() {
               </h2>
             </div>
 
-            <div className="flex flex-1 items-center gap-6">
+            <div className="flex md:flex-1 flex-col items-center gap-6">
               <div className="flex-1 h-40">
                 <DonutChart />
               </div>
@@ -120,7 +118,6 @@ export default function DashboardPage() {
 
         {/* Bottom 3 cards */}
         <section className="grid gap-4 cursor-pointer lg:grid-cols-3">
-          {/* Inventory */}
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6 flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-sm font-semibold text-slate-900">
@@ -153,7 +150,6 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Warehousing */}
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6 flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-sm font-semibold text-slate-900">
@@ -186,7 +182,6 @@ export default function DashboardPage() {
             </ul>
           </div>
 
-          {/* Fulfilment pipeline */}
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6 flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-sm font-semibold text-slate-900">

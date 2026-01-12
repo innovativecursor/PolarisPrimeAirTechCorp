@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -36,17 +37,29 @@ export default function Sidebar() {
   return (
     <aside className="relative flex-shrink-0">
       {/* Mobile toggle */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="fixed top-4 left-4 z-40 inline-flex items-center justify-center rounded-lg bg-slate-900 text-white px-3 py-2 text-sm shadow-lg md:hidden"
-      >
-        Menu
-      </button>
+      <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between bg-white px-4 py-3 border-b border-slate-300 md:hidden">
+        <Link href="/dashboard">
+        <Image
+          src="/polaris-logo.png"
+          alt="Polaris Logo"
+          width={120}
+          height={40}
+          priority
+        />
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center justify-center rounded-lg bg-slate-900 text-white px-3 py-2 text-sm shadow"
+        >
+          ☰
+        </button>
+      </div>
 
       <div
         className={`
-    fixed top-0 left-0 z-30 w-64 h-screen bg-white
+    fixed top-0 left-0 z-[999] w-64 h-screen bg-white 
     border-r border-slate-200
     transform transition-transform duration-200
     md:translate-x-0
@@ -56,14 +69,14 @@ export default function Sidebar() {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex items-center gap-2 px-6 pt-6 pb-4 border-b border-slate-200">
-            <div className="flex flex-col">
+            <Link href="/dashboard" className="flex flex-col">
               <Image
                 src="/polaris-logo.png"
                 alt="Polaris Logo"
                 width={200}
                 height={200}
               />
-            </div>
+            </Link>
           </div>
 
           {/* Nav */}

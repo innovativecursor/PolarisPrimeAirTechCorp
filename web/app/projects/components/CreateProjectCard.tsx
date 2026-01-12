@@ -78,7 +78,7 @@ export default function CreateProjectCard({
   const isEdit = Boolean(initialValues);
 
   return (
-    <section className="rounded-3xl bg-white border border-slate-100 shadow-md shadow-slate-200/60 px-6 py-6 md:px-10 md:py-8">
+    <section className=" bg-white border border-slate-100 shadow-md shadow-slate-200/60  md:rounded-[32px] rounded-md md:px-8 px-6 py-6 md:py-8">
       {/* Card header */}
       <div className="flex items-start justify-between mb-6">
         <div>

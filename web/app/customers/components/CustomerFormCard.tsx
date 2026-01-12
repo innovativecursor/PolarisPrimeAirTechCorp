@@ -37,7 +37,7 @@ export default function CustomerFormCard({
   };
 
   return (
-    <section className="rounded-[32px] bg-white border border-slate-100 shadow-[0_24px_60px_rgba(15,23,42,0.08)] px-8 py-8">
+    <section className=" bg-white border border-slate-100 shadow-[0_24px_60px_rgba(15,23,42,0.08)]  md:rounded-[32px] rounded-md md:px-8 px-4 py-8">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
@@ -64,7 +64,7 @@ export default function CustomerFormCard({
           {/* Customer ID (readonly / informational) */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold tracking-[0.16em] uppercase text-slate-500">
-              Customer ID 
+              Customer ID
             </label>
             <input
               type="text"

@@ -29,7 +29,7 @@ export default function GenerateReportsPage() {
           </div>
         </header>
 
-        <section className="rounded-[24px] bg-white border border-slate-200 px-8 py-8 space-y-8 overflow-hidden">
+        <section className=" bg-white border border-slate-200  md:rounded-[32px] rounded-md md:px-8 px-4 py-8 space-y-8 overflow-hidden">
           <div className="space-y-3">
             <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400">
               Analytics

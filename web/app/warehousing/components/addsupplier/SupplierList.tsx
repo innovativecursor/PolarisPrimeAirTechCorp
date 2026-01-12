@@ -37,11 +37,11 @@ export default function SupplierList({
   const columnWidths = "1.2fr 2fr 2fr 1.5fr 1.2fr 1.2fr";
   return (
     <>
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex md:items-start md:flex-row flex-col md:gap-0 gap-4 md:justify-between justify-center mb-6">
         {loading ? (
           <CardHeaderSkeleton />
         ) : (
-          <div>
+          <div className="text-center md:text-start">
             <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
               Warehousing
             </p>
@@ -55,11 +55,12 @@ export default function SupplierList({
           type="button"
           onClick={onCreate}
           disabled={loading}
-          className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+          className=" text-center  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
         >
           Add Supplier
         </button>
       </div>
+
       {loading ? (
         <TableSkeleton rows={5} columns={6} />
       ) : (

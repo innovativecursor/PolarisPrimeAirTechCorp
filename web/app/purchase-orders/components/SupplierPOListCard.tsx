@@ -45,13 +45,14 @@ export default function SupplierPOListCard({
   console.log(orders, "kkkkk");
 
   return (
-    <section className="w-full mx-auto rounded-[32px] bg-white border border-slate-100 shadow-[0_24px_60px_rgba(15,23,42,0.08)] px-8 py-8">
+    <section className="w-full mx-auto bg-white border border-slate-100 shadow-[0_24px_60px_rgba(15,23,42,0.08)]  md:rounded-[32px] rounded-md md:px-8 px-4 py-8">
       {/* Card header */}
-      <div className="flex items-start justify-between mb-6">
+
+      <div className="flex md:items-start md:flex-row flex-col md:gap-0 gap-4 md:justify-between justify-center mb-6">
         {loading ? (
           <CardHeaderSkeleton />
         ) : (
-          <div>
+          <div className="text-center md:text-start">
             <p className="text-xs font-semibold tracking-[0.24em] uppercase text-slate-400 mb-2">
               Supplier purchase orders
             </p>
@@ -65,7 +66,7 @@ export default function SupplierPOListCard({
           type="button"
           onClick={onCreate}
           disabled={loading}
-          className="inline-flex  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
+          className=" text-center  cursor-pointer items-center rounded-[999px] bg-[#1f285c] text-white px-6 py-2.5 text-xs md:text-sm font-semibold shadow-[0_18px_40px_rgba(15,23,42,0.35)] hover:bg-[#171e48] disabled:opacity-60"
         >
           Create supplier PO
         </button>

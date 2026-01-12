@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from "axios";
 
 type Json = Record<string, any>;
 
@@ -9,14 +9,11 @@ type ErrorResponse = {
   error?: string;
 };
 
-
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-
       localStorage.removeItem("authToken");
-
 
       if (typeof window !== "undefined") {
         window.location.href = "/";
@@ -26,7 +23,6 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 
 const AUTH_HEADER_MODE: "bearer" | "raw" | "x-token" = "bearer";
 
@@ -90,13 +86,22 @@ async function fetchDataGet<T = any>(url: string): Promise<T> {
 
 async function fetchDataPost<T = any, B extends Json = Json>(
   url: string,
-  data?: B
-): Promise<T> {
+  data?: B,
+  config?: AxiosRequestConfig
+) {
   try {
     const response = await axios.post<T>(url, data, {
       withCredentials: true,
-      headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+      headers: buildAuthHeaders(
+        config?.responseType === "blob"
+          ? {}
+          : { "Content-Type": "application/json" }
+      ),
+      ...(config || {}),
     });
+    if (config?.responseType === "blob") {
+      return response;
+    }
     return response.data;
   } catch (e) {
     handleAxiosError(e);
@@ -130,8 +135,6 @@ async function fetchDataDelete<T = any>(url: string): Promise<T> {
   }
 }
 
-
-
 async function fetchDataPut<T = any, B extends Json = Json>(
   url: string,
   data?: B
@@ -146,12 +149,6 @@ async function fetchDataPut<T = any, B extends Json = Json>(
     handleAxiosError(e);
   }
 }
-
-
-
-
-
-
 
 // ---------- Native fetch with error normalization ----------
 

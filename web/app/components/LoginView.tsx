@@ -14,10 +14,10 @@ export default function LoginView() {
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="rounded-3xl bg-white shadow-xl shadow-slate-200/80 border border-slate-100 overflow-hidden">
+      <div className="md:rounded-3xl rounded-md bg-white shadow-xl shadow-slate-200/80 border border-slate-100 overflow-hidden">
         <div className="grid gap-y-8 md:grid-cols-2">
           {/* Left panel */}
-          <section className="bg-slate-50 px-7 py-8 sm:px-10 sm:py-10 md:px-12 md:py-12 flex flex-col justify-center">
+          <section className="bg-slate-50 px-4 py-8 sm:px-10 sm:py-10 md:px-12 md:py-12 flex flex-col justify-center">
             <div className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-1 text-[11px] font-semibold tracking-[0.14em] text-slate-500 uppercase mb-6">
               Polaris Prime Air Tech Corp
             </div>

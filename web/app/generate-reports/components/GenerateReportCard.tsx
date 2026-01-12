@@ -43,7 +43,7 @@ export default function GenerateReportCard({
 }: Props) {
   return (
     <>
-      <div className="space-y-4 bg-[#f8fafc] p-6 rounded-lg border border-slate-200">
+      <div className="space-y-4 bg-[#f8fafc] md:p-6 p-2 rounded-lg border border-slate-200">
         <h3 className="text-lg font-semibold text-slate-900">Report Type</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -80,7 +80,7 @@ export default function GenerateReportCard({
         </div>
       </div>
 
-      <div className="space-y-4 bg-[#f8fafc] p-6 rounded-lg border border-slate-200">
+      <div className="space-y-4 bg-[#f8fafc] md:p-6 p-2 rounded-lg border border-slate-200">
         <h3 className="text-lg font-semibold text-slate-900">Date Range</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -111,7 +111,7 @@ export default function GenerateReportCard({
         </div>
       </div>
 
-      <div className="space-y-4 bg-[#f8fafc] p-6 rounded-lg border border-slate-200">
+      <div className="space-y-4 bg-[#f8fafc] md:p-6 p-2 rounded-lg border border-slate-200">
         <h3 className="text-lg font-semibold text-slate-900">Export Format</h3>
 
         <div className="flex lg:flex-row flex-wrap gap-4">

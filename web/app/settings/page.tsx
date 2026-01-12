@@ -63,7 +63,7 @@ export default function SettingsPage() {
           </div>
         </header>
 
-        <section className="rounded-[24px] bg-white border border-slate-200 px-8 py-8 space-y-10">
+        <section className=" bg-white border border-slate-200  md:rounded-[32px] rounded-md md:px-8 px-4 py-8 space-y-10">
           {activeSection === null ? (
             <>
               <div className="space-y-3">
@@ -84,18 +84,19 @@ export default function SettingsPage() {
                     <div
                       key={item.key}
                       onClick={() => setActiveSection(item.key as Section)}
-                      className="flex items-center justify-between rounded-[18px] border cursor-pointer border-slate-300 bg-white px-6 py-6 hover:shadow-lg transition"
+                      className="flex items-center justify-between rounded-[18px]
+                       border cursor-pointer border-slate-300 bg-white px-6 md:py-6 py-4 hover:shadow-lg transition"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-700">
+                        <div className="md:h-10 md:w-10 w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-700">
                           <Icon size={18} />
                         </div>
 
                         <div>
-                          <h3 className="text-xl font-semibold text-slate-900">
+                          <h3 className="md:text-xl font-semibold text-slate-900">
                             {item.title}
                           </h3>
-                          <p className="text-sm mt-1 text-slate-600">
+                          <p className="md:text-sm text-xs mt-1 text-slate-600">
                             {item.desc}
                           </p>
                         </div>
@@ -109,7 +110,7 @@ export default function SettingsPage() {
             <>
               <button
                 onClick={() => setActiveSection(null)}
-                className="mb-6 text-sm font-medium cursor-pointer text-slate-600 hover:text-slate-900"
+                className="mb-6 w-full md:text-start text-center text-sm font-medium cursor-pointer text-slate-600 hover:text-slate-900"
               >
                 ← Back to Settings
               </button>

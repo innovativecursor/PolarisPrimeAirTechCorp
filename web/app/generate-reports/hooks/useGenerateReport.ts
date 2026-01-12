@@ -36,28 +36,47 @@ export default function useGenerateReport() {
     try {
       setLoading(true);
       setError(null);
-      if (!form.reportType) {
-        throw new Error("Please select report type");
-      }
-      if (!form.startDate || !form.endDate) {
+
+      if (!form.reportType) throw new Error("Please select report type");
+      if (!form.startDate || !form.endDate)
         throw new Error("Please select date range");
-      }
-      if (form.startDate > form.endDate) {
+      if (form.startDate > form.endDate)
         throw new Error("Start date cannot be after end date");
+
+      const res = await fetchDataPost(endpoints.GenerateReport.create, form, {
+        responseType: "blob",
+      });
+
+      const contentType =
+        res.headers["content-type"] || "application/octet-stream";
+
+      const blob = new Blob([res.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+
+      const disposition = res.headers["content-disposition"];
+      let fileName = `report.${form.exportType}`;
+
+      if (disposition) {
+        const match = disposition.match(/filename="?(.+)"?/);
+        if (match?.[1]) fileName = match[1];
       }
 
-      await fetchDataPost(endpoints.GenerateReport.create, {
-        reportType: form.reportType,
-        startDate: form.startDate,
-        endDate: form.endDate,
-        exportType: form.exportType,
-      });
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      window.URL.revokeObjectURL(url);
     } catch (e: any) {
       setError(e.message || "Failed to generate report");
     } finally {
       setLoading(false);
     }
   };
+
   return {
     form,
     loading,

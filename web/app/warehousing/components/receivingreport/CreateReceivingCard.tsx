@@ -188,7 +188,7 @@ export default function CreateReceivingCard({
         </button>
       </div>
 
-      <section className="rounded-[24px] bg-white border border-slate-200 px-8 py-8">
+      <section className=" bg-white border border-slate-200  md:rounded-[32px] rounded-md md:px-8 px-4 py-8">
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
@@ -288,7 +288,7 @@ export default function CreateReceivingCard({
         </div>
       </section>
 
-      <section className="rounded-[24px] bg-white border border-slate-300 px-8 py-8 space-y-6">
+      <section className=" bg-white border border-slate-300  md:rounded-[32px] rounded-md md:px-8 px-4 py-8 space-y-6">
         <div>
           <h3 className="text-lg font-semibold text-slate-900 mb-1">
             Add item

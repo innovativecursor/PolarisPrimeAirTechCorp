@@ -26,7 +26,7 @@ export default function RoleDirectory() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+        <div className="flex items-center md:items-start flex-col md:w-fit w-full">
           <h3 className="text-xl font-semibold text-slate-900">
             Roles & Access
           </h3>
@@ -35,7 +35,7 @@ export default function RoleDirectory() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 md:w-fit w-full justify-center">
           <div className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm">
             <span className="font-semibold text-slate-900">{roles.length}</span>{" "}
             roles
@@ -56,21 +56,21 @@ export default function RoleDirectory() {
           <div
             key={role._id}
             className={`
-        flex items-center justify-between px-6 py-4
+        flex items-center justify-between md:px-6 px-4 py-4
         ${index !== 0 ? "border-t border-slate-200" : ""}
         hover:bg-slate-50 transition
       `}
           >
             <div className="flex items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-200 text-slate-800 text-sm font-semibold uppercase">
+              <div className="flex md:h-10 md:w-10 h-8 w-8 items-center justify-center rounded-xl bg-slate-200 text-slate-800 text-sm font-semibold uppercase">
                 {role.name.charAt(0)}
               </div>
 
               <div>
-                <p className="text-sm font-semibold text-slate-900 capitalize">
+                <p className="md:text-sm text-xs font-semibold text-slate-900 capitalize">
                   {role.name}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="md:text-xs text-[9px] text-slate-500">
                   System role used to control access permissions
                 </p>
               </div>
