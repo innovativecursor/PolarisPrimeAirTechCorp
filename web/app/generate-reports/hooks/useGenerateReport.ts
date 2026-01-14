@@ -43,9 +43,13 @@ export default function useGenerateReport() {
       if (form.startDate > form.endDate)
         throw new Error("Start date cannot be after end date");
 
-      const res = await fetchDataPost(endpoints.GenerateReport.create, form, {
-        responseType: "blob",
-      });
+      const res = await fetchDataPost<Blob>(
+        endpoints.GenerateReport.create,
+        form,
+        {
+          responseType: "blob",
+        }
+      );
 
       const contentType =
         res.headers["content-type"] || "application/octet-stream";
