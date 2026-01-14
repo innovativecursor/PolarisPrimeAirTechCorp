@@ -9,17 +9,25 @@ export type AuthUser = {
   role?: string;
 };
 
+export type MenuItem = {
+  id: string;
+  label: string;
+  href: string;
+};
+
 type AuthContextValue = {
   user: AuthUser | null;
+  menus: MenuItem[];
   setUser: (u: AuthUser | null) => void;
+  setMenus: (m: MenuItem[]) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const STORAGE_KEY = "polaris-auth-user";
+const MENUS_STORAGE_KEY = "polaris-auth-menus";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // hydrate from localStorage on client using lazy initializer
   const [user, setUserState] = useState<AuthUser | null>(() => {
     if (typeof window === "undefined") return null;
     try {
@@ -31,6 +39,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignore bad JSON
     }
     return null;
+  });
+  const [menus, setMenusState] = useState<MenuItem[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = window.localStorage.getItem(MENUS_STORAGE_KEY);
+      if (raw) {
+        return JSON.parse(raw) as MenuItem[];
+      }
+    } catch {
+      // ignore bad JSON
+    }
+    return [];
   });
 
   const setUser = (u: AuthUser | null) => {
@@ -44,8 +64,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setMenus = (m: MenuItem[]) => {
+    setMenusState(m);
+    if (typeof window === "undefined") return;
+
+    if (m && m.length > 0) {
+      window.localStorage.setItem(MENUS_STORAGE_KEY, JSON.stringify(m));
+    } else {
+      window.localStorage.removeItem(MENUS_STORAGE_KEY);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, menus, setUser, setMenus }}>
       {children}
     </AuthContext.Provider>
   );

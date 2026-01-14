@@ -58,18 +58,17 @@ export function useSettings() {
     }
   }, []);
 
-const fetchMenusByRole = useCallback(
-  async (roleId: string) => {
+  const fetchMenusByRole = useCallback(async (roleId: string) => {
     try {
       setLoading(true);
       setError(null);
 
-      const res = await fetchDataGet<{
+      const res = await fetchDataPost<{
         role_id: string;
         name: string;
         menus: { id: string; label: string; href: string }[];
       }>(endpoints.allmenus.getById, {
-        role_id: roleId, // 👈 BODY IN GET
+        role_id: roleId,
       });
 
       // object → ids
@@ -81,10 +80,7 @@ const fetchMenusByRole = useCallback(
     } finally {
       setLoading(false);
     }
-  },
-  []
-);
-
+  }, []);
 
   const fetchRoles = useCallback(async () => {
     try {
@@ -139,6 +135,37 @@ const fetchMenusByRole = useCallback(
     }
   }, [editingRoleId, selectedMenus, fetchRoles]);
 
+  const updateUserRole = useCallback(
+    async ({
+      userId,
+      roleId,
+      action,
+    }: {
+      userId: string;
+      roleId?: string;
+      action: "approve" | "reject" | "deactivate";
+    }) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        await fetchDataPost(endpoints.auth.updateUserRoles, {
+          user_id: userId,
+          role_id: roleId,
+          action,
+        });
+
+        await fetchUsers();
+      } catch (err: any) {
+        setError(err.message || "Failed to update user");
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchUsers]
+  );
+
   return {
     users,
     roles,
@@ -146,7 +173,7 @@ const fetchMenusByRole = useCallback(
     selectedMenus,
     setSelectedMenus,
     toggleMenu,
-
+    updateUserRole,
     editOpen,
     setEditOpen,
     editingRoleId,

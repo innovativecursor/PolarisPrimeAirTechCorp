@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "../components/auth/AuthContext";
 import { Users, UserCheck, Shield } from "lucide-react";
 import AppShell from "../components/layout/AppShell";
-
 import UserDirectory from "./components/userdirectory/UserDirectory";
 import AccessControl from "./components/accesscontrol/AccessControl";
 import RoleDirectory from "./components/roledirectory/RoleDirectory";
@@ -12,9 +10,6 @@ import RoleDirectory from "./components/roledirectory/RoleDirectory";
 type Section = null | "user-directory" | "access-control" | "role-directory";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
-  const displayName = user?.name || user?.email || "Admin";
-
   const [activeSection, setActiveSection] = useState<Section>(null);
 
   const settingsCards = [
@@ -44,25 +39,6 @@ export default function SettingsPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        {/* Header */}
-        <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-slate-400">
-              Administration
-            </p>
-            <h1 className="mt-1 text-2xl md:text-3xl font-semibold text-slate-900">
-              Settings
-            </h1>
-          </div>
-
-          <div className="text-xs text-slate-500 text-right">
-            <p className="uppercase tracking-[0.16em] text-slate-400 mb-1">
-              Welcome back
-            </p>
-            <p className="font-medium text-slate-700">{displayName}</p>
-          </div>
-        </header>
-
         <section className=" bg-white border border-slate-200  md:rounded-[32px] rounded-md md:px-8 px-4 py-8 space-y-10">
           {activeSection === null ? (
             <>

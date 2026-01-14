@@ -1,5 +1,6 @@
 "use client";
 
+import AppHeader from "./AppHeader";
 import Sidebar from "./Sidebar";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -8,6 +9,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <Sidebar />
 
       <main className="flex-1 md:ml-64 mt-16 md:mt-0 overflow-y-auto">
+        <AppHeader />
         {children}
       </main>
     </div>

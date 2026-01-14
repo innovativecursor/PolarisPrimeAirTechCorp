@@ -44,7 +44,7 @@ const endpoints = {
   },
   allmenus: {
     getAll: full("/auth/get-all-menus"), // GET
-    getById:  full("/auth/get-menus-by-roles"), // GET
+    getById:  full("/auth/get-menus-by-roles"), // POST
     update: full("/auth/update-menus-of-roles"), // PUT
   },
 
