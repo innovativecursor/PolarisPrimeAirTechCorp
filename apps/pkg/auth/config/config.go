@@ -12,5 +12,10 @@ type ApprovePayload struct {
 }
 
 type RoleData struct {
-	Name string `json:"name" binding:"required"`
+	Name  string   `json:"name" binding:"required"`
+	Menus []string `json:"menus"`
+}
+
+type GetRolePayload struct {
+	RoleID string `json:"role_id" binding:"required"`
 }

@@ -83,6 +83,36 @@ func InitDB() (*mongo.Database, error) {
 func GetDB() *mongo.Database {
 	return db
 }
+func SeedMenus(db *mongo.Database) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	menuCol := db.Collection("menu")
+
+	menus := []models.Menu{
+		{Label: "Dashboard", Href: "/dashboard"},
+		{Label: "Customers", Href: "/customers"},
+		{Label: "Projects", Href: "/projects"},
+		{Label: "Sales Order", Href: "/sales-orders"},
+		{Label: "Purchase Order", Href: "/purchase-orders"},
+		{Label: "Warehousing", Href: "/warehousing"},
+		{Label: "Accounts Receivable", Href: "/accounts-receivable"},
+		{Label: "Generate Reports", Href: "/generate-reports"},
+		{Label: "Settings", Href: "/settings"},
+	}
+
+	for _, menu := range menus {
+		count, _ := menuCol.CountDocuments(ctx, bson.M{"href": menu.Href})
+		if count == 0 {
+			_, err := menuCol.InsertOne(ctx, menu)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
 
 func SeedSuperAdmin(db *mongo.Database) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

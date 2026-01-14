@@ -18,7 +18,7 @@ func main() {
 	}
 
 	_ = dbConn
-
+	database.SeedMenus(dbConn)
 	if err := database.SeedSuperAdmin(dbConn); err != nil {
 		log.Printf("Super admin seeding failed or already exists: %v", err)
 	} else {
