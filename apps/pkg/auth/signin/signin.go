@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/config"
+	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/auth/signup"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/helper/jwthelper"
 	"github.com/innovativecursor/PolarisPrimeAirTechCorp/apps/pkg/models"
 	"github.com/sirupsen/logrus"
@@ -47,9 +48,10 @@ func SignIn(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
 	}
-
+	menus, _ := signup.GetUserMenus(user, db)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login successful",
 		"token":   token,
+		"menus":   menus,
 	})
 }

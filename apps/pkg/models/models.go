@@ -12,9 +12,16 @@ type Migrator interface {
 	Migrate(db *mongo.Database) error
 }
 
+type Menu struct {
+	ID    primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Label string             `bson:"label" json:"label"`
+	Href  string             `bson:"href" json:"href"`
+}
+
 type Role struct {
-	ID   primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Name string             `bson:"name" json:"name"`
+	ID    primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
+	Name  string               `bson:"name" json:"name"`
+	Menus []primitive.ObjectID `bson:"menus,omitempty" json:"menus,omitempty"` // IDs of menus accessible
 }
 
 type PendingUser struct {

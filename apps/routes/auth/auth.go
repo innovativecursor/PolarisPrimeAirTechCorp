@@ -60,6 +60,16 @@ func Auth(db *mongo.Database) {
 	apiV1.POST("/auth/create-roles", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		signup.CreateRole(c, db)
 	})
+	apiV1.PUT("/auth/update-menus-of-roles", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		signup.UpdateRoleMenus(c, db)
+	})
+
+	apiV1.GET("/auth/get-menus-by-roles", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		signup.GetRoleWithMenus(c, db)
+	})
+	apiV1.GET("/auth/get-all-menus", middleware.JWTMiddleware(db), func(c *gin.Context) {
+		signup.GetAllMenus(c, db)
+	})
 
 	apiV1.POST("/auth/update-user-roles", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		signup.ApproveOrUpdateUser(c, db)

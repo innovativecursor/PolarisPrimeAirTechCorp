@@ -1,6 +1,7 @@
 package signup
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -264,32 +265,92 @@ func CreateRole(c *gin.Context, db *mongo.Database) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 		return
 	}
-	_, ok := user.(*models.User)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user object"})
+	currentUser, ok := user.(*models.User)
+	if !ok || !currentUser.IsSuperAdmin {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 		return
 	}
-	var role config.RoleData
-	if err := c.ShouldBindJSON(&role); err != nil {
+
+	var payload config.RoleData
+	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	var menuIDs []primitive.ObjectID
+	for _, id := range payload.Menus {
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err == nil {
+			menuIDs = append(menuIDs, oid)
+		}
+	}
+
 	col := db.Collection("role")
-	// Check duplicate
-	err := col.FindOne(c, bson.M{"name": role.Name}).Err()
+	err := col.FindOne(c, bson.M{"name": payload.Name}).Err()
 	if err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "Role already exists"})
 		return
 	}
-
-	_, err = col.InsertOne(c, role)
+	_, err = col.InsertOne(c, models.Role{
+		Name:  payload.Name,
+		Menus: menuIDs,
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create role"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Role created successfully"})
+}
+
+type RoleUpdatePayload struct {
+	RoleID string   `json:"role_id" binding:"required"`
+	Menus  []string `json:"menus"`
+}
+
+func UpdateRoleMenus(c *gin.Context, db *mongo.Database) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	currentUser, ok := user.(*models.User)
+	if !ok || !currentUser.IsSuperAdmin {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
+	var payload RoleUpdatePayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	roleID, err := primitive.ObjectIDFromHex(payload.RoleID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
+		return
+	}
+
+	var menuIDs []primitive.ObjectID
+	for _, id := range payload.Menus {
+		oid, err := primitive.ObjectIDFromHex(id)
+		if err == nil {
+			menuIDs = append(menuIDs, oid)
+		}
+	}
+
+	roleCol := db.Collection("role")
+	_, err = roleCol.UpdateOne(c,
+		bson.M{"_id": roleID},
+		bson.M{"$set": bson.M{"menus": menuIDs}},
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update role menus"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Role menus updated successfully"})
 }
 
 func GetAllRoles(c *gin.Context, db *mongo.Database) {
@@ -321,4 +382,122 @@ func GetAllRoles(c *gin.Context, db *mongo.Database) {
 	c.JSON(http.StatusOK, gin.H{
 		"roles": roles,
 	})
+}
+
+func GetRoleWithMenus(c *gin.Context, db *mongo.Database) {
+	// Auth
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+	currentUser, ok := user.(*models.User)
+	if !ok || !currentUser.IsSuperAdmin {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
+	// Payload
+	var payload config.GetRolePayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	roleID, err := primitive.ObjectIDFromHex(payload.RoleID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role ID"})
+		return
+	}
+
+	// Fetch role
+	roleCol := db.Collection("role")
+	var role models.Role
+	err = roleCol.FindOne(c, bson.M{"_id": roleID}).Decode(&role)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Role not found"})
+		return
+	}
+
+	// Fetch menus for role
+	menuCol := db.Collection("menu")
+	cursor, err := menuCol.Find(c, bson.M{
+		"_id": bson.M{"$in": role.Menus},
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch menus"})
+		return
+	}
+	defer cursor.Close(c)
+
+	var menus []models.Menu
+	if err := cursor.All(c, &menus); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse menus"})
+		return
+	}
+
+	// Response
+	c.JSON(http.StatusOK, gin.H{
+		"role_id": role.ID,
+		"name":    role.Name,
+		"menus":   menus,
+	})
+}
+
+func GetAllMenus(c *gin.Context, db *mongo.Database) {
+	menuCol := db.Collection("menu")
+
+	cursor, err := menuCol.Find(c, bson.M{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch menus"})
+		return
+	}
+	defer cursor.Close(c)
+
+	var menus []models.Menu
+	if err := cursor.All(c, &menus); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse menus"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"menus": menus})
+}
+
+func GetUserMenus(user models.User, db *mongo.Database) ([]models.Menu, error) {
+	menuCol := db.Collection("menu")
+	roleCol := db.Collection("role")
+
+	if user.IsSuperAdmin {
+		// Super admin sees ALL menus automatically
+		cursor, err := menuCol.Find(context.TODO(), bson.M{})
+		if err != nil {
+			return nil, err
+		}
+		defer cursor.Close(context.TODO())
+
+		var menus []models.Menu
+		if err := cursor.All(context.TODO(), &menus); err != nil {
+			return nil, err
+		}
+		return menus, nil
+	}
+
+	// Normal user: get menus from role
+	var role models.Role
+	err := roleCol.FindOne(context.TODO(), bson.M{"_id": user.Roles}).Decode(&role)
+	if err != nil {
+		return nil, err
+	}
+
+	cursor, err := menuCol.Find(context.TODO(), bson.M{"_id": bson.M{"$in": role.Menus}})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	var menus []models.Menu
+	if err := cursor.All(context.TODO(), &menus); err != nil {
+		return nil, err
+	}
+	return menus, nil
 }
