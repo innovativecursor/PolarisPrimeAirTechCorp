@@ -64,7 +64,7 @@ func Auth(db *mongo.Database) {
 		signup.UpdateRoleMenus(c, db)
 	})
 
-	apiV1.GET("/auth/get-menus-by-roles", middleware.JWTMiddleware(db), func(c *gin.Context) {
+	apiV1.POST("/auth/get-menus-by-roles", middleware.JWTMiddleware(db), func(c *gin.Context) {
 		signup.GetRoleWithMenus(c, db)
 	})
 	apiV1.GET("/auth/get-all-menus", middleware.JWTMiddleware(db), func(c *gin.Context) {
