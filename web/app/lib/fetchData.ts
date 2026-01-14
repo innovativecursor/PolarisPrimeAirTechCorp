@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import axios, { AxiosError, AxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 type Json = Record<string, any>;
 
@@ -83,6 +83,18 @@ async function fetchDataGet<T = any>(url: string): Promise<T> {
     handleAxiosError(e);
   }
 }
+
+async function fetchDataPost<T, B extends Json = Json>(
+  url: string,
+  data: B | undefined,
+  config: AxiosRequestConfig & { responseType: "blob" }
+): Promise<AxiosResponse<T>>;
+
+async function fetchDataPost<T, B extends Json = Json>(
+  url: string,
+  data?: B,
+  config?: AxiosRequestConfig
+): Promise<T>;
 
 async function fetchDataPost<T = any, B extends Json = Json>(
   url: string,
