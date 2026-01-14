@@ -6,14 +6,16 @@ import { Plus, Shield } from "lucide-react";
 import { useSettings } from "../hooks/useSettings";
 
 export default function RoleDirectory() {
-  const { roles, fetchRoles, createRole, loading, error } = useSettings();
+  const { roles, fetchRoles, createRole, loading, error, menus, fetchMenus } =
+    useSettings();
 
   const [open, setOpen] = useState(false);
   const [roleName, setRoleName] = useState("");
 
   useEffect(() => {
     void fetchRoles();
-  }, [fetchRoles]);
+    void fetchMenus();
+  }, [fetchRoles, menus]);
 
   if (error) {
     return (
@@ -22,6 +24,9 @@ export default function RoleDirectory() {
       </div>
     );
   }
+
+  console.log(menus, "llll");
+  
 
   return (
     <div className="space-y-8">

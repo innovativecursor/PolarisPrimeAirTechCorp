@@ -1,5 +1,12 @@
 import { useCallback, useState } from "react";
-import { GetAllRolesResponse, GetAllUsersResponse, Role, User } from "../type";
+import {
+  GetAllRolesResponse,
+  GetAllUsersResponse,
+  MenuItem,
+  MenuRes,
+  Role,
+  User,
+} from "../type";
 import { fetchDataGet, fetchDataPost } from "@/app/lib/fetchData";
 import endpoints from "@/app/lib/endpoints";
 
@@ -8,6 +15,7 @@ export function useSettings() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [menus, setMenus] = useState<MenuItem[]>([]);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -19,6 +27,19 @@ export function useSettings() {
       );
 
       setUsers(res.users || []);
+    } catch (err: any) {
+      setError(err.message || "Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchMenus = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetchDataGet<MenuRes>(endpoints.allmenus.getAll);
+      setMenus(res?.menus || []);
     } catch (err: any) {
       setError(err.message || "Failed to load users");
     } finally {
@@ -96,6 +117,8 @@ export function useSettings() {
   return {
     users,
     roles,
+    menus,
+    fetchMenus,
     fetchUsers,
     fetchRoles,
     createRole,
