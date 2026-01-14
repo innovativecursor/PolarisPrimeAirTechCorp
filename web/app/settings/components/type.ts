@@ -20,3 +20,13 @@ export type Role = {
 export type GetAllRolesResponse = {
   roles: Role[];
 };
+
+export type MenuItem = {
+  id: string;
+  label: string;
+  href: string;
+};
+
+export type  MenuRes = {
+  menus: MenuItem[]
+}

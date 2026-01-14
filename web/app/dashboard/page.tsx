@@ -1,35 +1,13 @@
 "use client";
 
-import { useAuth } from "../components/auth/AuthContext";
 import DonutChart from "../components/charts/DonutChart";
 import LineChart from "../components/charts/LineChart";
 import AppShell from "../components/layout/AppShell";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
-  const displayName = user?.name || user?.email || "Admin";
-
   return (
     <AppShell>
       <div className="space-y-6">
-        {/* Top header */}
-        <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-slate-400">
-              Operations overview
-            </p>
-            <h1 className="mt-1 text-2xl md:text-3xl font-semibold text-slate-900">
-              Polaris Prime Air Tech Corp
-            </h1>
-          </div>
-          <div className="text-xs text-slate-500 text-right">
-            <p className="uppercase tracking-[0.16em] text-slate-400 mb-1">
-              Welcome back
-            </p>
-            <p className="font-medium text-slate-700">{displayName}</p>
-          </div>
-        </header>
-
         {/* Top stat cards */}
         <section className="grid gap-4 cursor-pointer md:grid-cols-4">
           <StatCard

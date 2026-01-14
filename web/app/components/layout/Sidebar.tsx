@@ -1,36 +1,40 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "../auth/AuthContext";
 
-type NavItem = {
-  label: string;
-  href: string;
-};
+// type NavItem = {
+//   label: string;
+//   href: string;
+// };
 
-const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Customers", href: "/customers" },
-  { label: "Projects", href: "/projects" },
-  { label: "Sales Order", href: "/sales-orders" },
-  { label: "Purchase Order", href: "/purchase-orders" },
-  { label: "Warehousing", href: "/warehousing" },
-  { label: "Accounts Receivable", href: "/accounts-receivable" },
-  { label: "Generate Reports", href: "/generate-reports" },
-];
+// const NAV_ITEMS: NavItem[] = [
+//   { label: "Dashboard", href: "/dashboard" },
+//   { label: "Customers", href: "/customers" },
+//   { label: "Projects", href: "/projects" },
+//   { label: "Sales Order", href: "/sales-orders" },
+//   { label: "Purchase Order", href: "/purchase-orders" },
+//   { label: "Warehousing", href: "/warehousing" },
+//   { label: "Accounts Receivable", href: "/accounts-receivable" },
+//   { label: "Generate Reports", href: "/generate-reports" },
+// ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const { menus, setMenus, setUser } = useAuth();
 
   const isActive = (href: string) =>
     pathname === href || (href === "/dashboard" && pathname === "/");
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
+
+    setUser(null);
+    setMenus([]);
+
     router.replace("/");
   };
 
@@ -39,13 +43,13 @@ export default function Sidebar() {
       {/* Mobile toggle */}
       <div className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between bg-white px-4 py-3 border-b border-slate-300 md:hidden">
         <Link href="/dashboard">
-        <Image
-          src="/polaris-logo.png"
-          alt="Polaris Logo"
-          width={120}
-          height={40}
-          priority
-        />
+          <Image
+            src="/polaris-logo.png"
+            alt="Polaris Logo"
+            width={120}
+            height={40}
+            priority
+          />
         </Link>
 
         <button
@@ -81,7 +85,7 @@ export default function Sidebar() {
 
           {/* Nav */}
           <nav className="mt-4 flex-1 px-3 space-y-1">
-            {NAV_ITEMS.map((item) => (
+            {menus.map((item) => (
               <button
                 key={item.href}
                 type="button"
@@ -107,13 +111,6 @@ export default function Sidebar() {
 
           {/* Bottom actions */}
           <div className="mt-auto border-t border-slate-200 px-4 py-4 space-y-2">
-            <button
-              type="button"
-              onClick={() => router.push("/settings")}
-              className="w-full cursor-pointer inline-flex items-center justify-center rounded-xl bg-slate-900 text-white px-3 py-2 text-xs font-semibold shadow-sm hover:bg-slate-800"
-            >
-              Settings
-            </button>
             <button
               type="button"
               onClick={handleLogout}

@@ -1,26 +1,82 @@
 import { useCallback, useState } from "react";
-import { GetAllRolesResponse, GetAllUsersResponse, Role, User } from "../type";
-import { fetchDataGet, fetchDataPost } from "@/app/lib/fetchData";
+import {
+  GetAllRolesResponse,
+  GetAllUsersResponse,
+  MenuItem,
+  MenuRes,
+  Role,
+  User,
+} from "../type";
+import { fetchDataGet, fetchDataPost, fetchDataPut } from "@/app/lib/fetchData";
 import endpoints from "@/app/lib/endpoints";
 
 export function useSettings() {
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [menus, setMenus] = useState<MenuItem[]>([]);
+  const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // edit state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
+
+  const toggleMenu = (menuId: string) => {
+    setSelectedMenus((prev) =>
+      prev.includes(menuId)
+        ? prev.filter((id) => id !== menuId)
+        : [...prev, menuId]
+    );
+  };
 
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-
       const res = await fetchDataGet<GetAllUsersResponse>(
         endpoints.auth.getAllUsers
       );
-
       setUsers(res.users || []);
     } catch (err: any) {
       setError(err.message || "Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchMenus = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetchDataGet<MenuRes>(endpoints.allmenus.getAll);
+      setMenus(res.menus || []);
+    } catch (err: any) {
+      setError(err.message || "Failed to load menus");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchMenusByRole = useCallback(async (roleId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetchDataPost<{
+        role_id: string;
+        name: string;
+        menus: { id: string; label: string; href: string }[];
+      }>(endpoints.allmenus.getById, {
+        role_id: roleId,
+      });
+
+      // object → ids
+      setSelectedMenus(res.menus.map((m) => m.id));
+      setEditingRoleId(res.role_id);
+      setEditOpen(true);
+    } catch (err: any) {
+      setError(err.message || "Failed to load role menus");
     } finally {
       setLoading(false);
     }
@@ -30,11 +86,9 @@ export function useSettings() {
     try {
       setLoading(true);
       setError(null);
-
       const res = await fetchDataGet<GetAllRolesResponse>(
         endpoints.auth.getAllRoles
       );
-
       setRoles(res.roles || []);
     } catch (err: any) {
       setError(err.message || "Failed to load roles");
@@ -44,14 +98,11 @@ export function useSettings() {
   }, []);
 
   const createRole = useCallback(
-    async (name: string) => {
+    async (payload: { name: string; menus: string[] }) => {
       try {
         setLoading(true);
         setError(null);
-
-        await fetchDataPost(endpoints.auth.createRole, {
-          name,
-        });
+        await fetchDataPost(endpoints.auth.createRole, payload);
         await fetchRoles();
       } catch (err: any) {
         setError(err.message || "Failed to create role");
@@ -62,6 +113,27 @@ export function useSettings() {
     },
     [fetchRoles]
   );
+
+  const updateRoleMenus = useCallback(async () => {
+    if (!editingRoleId) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      await fetchDataPut(endpoints.allmenus.update, {
+        role_id: editingRoleId,
+        menus: selectedMenus,
+      });
+
+      await fetchRoles();
+    } catch (err: any) {
+      setError(err.message || "Failed to update role menus");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [editingRoleId, selectedMenus, fetchRoles]);
 
   const updateUserRole = useCallback(
     async ({
@@ -82,6 +154,7 @@ export function useSettings() {
           role_id: roleId,
           action,
         });
+
         await fetchUsers();
       } catch (err: any) {
         setError(err.message || "Failed to update user");
@@ -96,10 +169,22 @@ export function useSettings() {
   return {
     users,
     roles,
+    menus,
+    selectedMenus,
+    setSelectedMenus,
+    toggleMenu,
+    updateUserRole,
+    editOpen,
+    setEditOpen,
+    editingRoleId,
+    setEditingRoleId,
+    fetchMenusByRole,
     fetchUsers,
+    fetchMenus,
     fetchRoles,
     createRole,
-    updateUserRole,
+    updateRoleMenus,
+
     loading,
     error,
   };

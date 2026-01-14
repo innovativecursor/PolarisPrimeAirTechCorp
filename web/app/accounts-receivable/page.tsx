@@ -1,14 +1,11 @@
 "use client";
 import { useState } from "react";
-import { useAuth } from "../components/auth/AuthContext";
 import { FileText, Truck } from "lucide-react";
 import AppShell from "../components/layout/AppShell";
 import AccountsDr from "./components/accountdr/AccountsDr";
 import AccountsSales from "./components/accountsales/AccountsSales";
 
 export default function AccountReceivablePage() {
-  const { user } = useAuth();
-  const displayName = user?.name || user?.email || "Admin";
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
   const billingCards = [
@@ -35,24 +32,6 @@ export default function AccountReceivablePage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        {/* Top header */}
-        <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-slate-400">
-              Operations overview
-            </p>
-            <h1 className="mt-1 text-2xl md:text-3xl font-semibold text-slate-900">
-              Polaris Prime Air Tech Corp
-            </h1>
-          </div>
-          <div className="text-xs text-slate-500 text-right">
-            <p className="uppercase tracking-[0.16em] text-slate-400 mb-1">
-              Welcome back
-            </p>
-            <p className="font-medium text-slate-700">{displayName}</p>
-          </div>
-        </header>
-
         <section className=" bg-white border border-slate-200  md:rounded-[32px] rounded-md md:px-8 px-4 py-8 space-y-10 overflow-hidden">
           {activeSection === null ? (
             <>

@@ -42,6 +42,11 @@ const endpoints = {
   supplierpo: {
     getAll: full("/supplierpo/get-all-info"), // GET
   },
+  allmenus: {
+    getAll: full("/auth/get-all-menus"), // GET
+    getById:  full("/auth/get-menus-by-roles"), // POST
+    update: full("/auth/update-menus-of-roles"), // PUT
+  },
 
   // ---------- CUSTOMER ----------
   customer: {

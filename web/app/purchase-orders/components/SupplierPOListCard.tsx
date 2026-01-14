@@ -42,8 +42,6 @@ export default function SupplierPOListCard({
 
   const columnWidths = "1.2fr 2fr 2fr 1.5fr 1.2fr 1.2fr";
 
-  console.log(orders, "kkkkk");
-
   return (
     <section className="w-full mx-auto bg-white border border-slate-100 shadow-[0_24px_60px_rgba(15,23,42,0.08)]  md:rounded-[32px] rounded-md md:px-8 px-4 py-8">
       {/* Card header */}

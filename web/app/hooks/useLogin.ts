@@ -5,12 +5,13 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { fetchWithError } from "../lib/fetchData";
 import endpoints from "../lib/endpoints";
-import { useAuth } from "../components/auth/AuthContext";
+import { MenuItem, useAuth } from "../components/auth/AuthContext";
 import { useToast } from "./useToast";
 
 type LoginResponse = {
   message: string;
   token: string;
+  menus: MenuItem[];
   user?: {
     email?: string;
     name?: string;
@@ -21,7 +22,7 @@ type LoginResponse = {
 export default function useLogin() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { setUser } = useAuth();
+  const { setUser, setMenus } = useAuth();
   const toast = useToast();
 
   async function handleLogin(e: FormEvent<HTMLFormElement>) {
@@ -54,7 +55,7 @@ export default function useLogin() {
         email,
         name: data.user?.name ?? "Admin",
       });
-
+      setMenus(data.menus || []);
       toast.success("Login successful! Redirecting...");
       router.push("/dashboard");
     } catch (err: any) {

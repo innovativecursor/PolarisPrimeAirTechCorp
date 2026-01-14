@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import AppShell from "../components/layout/AppShell";
-import { useAuth } from "../components/auth/AuthContext";
 import { useToast } from "../hooks/useToast";
 import { fetchDataPost, fetchWithError } from "../lib/fetchData";
 import endpoints from "../lib/endpoints";
@@ -14,9 +13,8 @@ import { useSalesOrders } from "../sales-orders/hooks/useSalesOrders";
 import { useSupplier } from "../warehousing/components/addsupplier/hooks/useSupplier";
 
 export default function SupplierPOPage() {
-  const { user } = useAuth();
   const toast = useToast();
-  const displayName = user?.name || user?.email || "Admin";
+
   const { loadProjectName, projectName, loadOrders, orders } = useSalesOrders();
   const { GetSupplier, allSupplier } = useSupplier();
 
@@ -125,24 +123,6 @@ export default function SupplierPOPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        {/* Top header */}
-        <header className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase text-slate-400">
-              Supplier Purchase Orders
-            </p>
-            <h1 className="mt-1 text-2xl md:text-3xl font-semibold text-slate-900">
-              Polaris Prime Air Tech Corp
-            </h1>
-          </div>
-          <div className="text-xs text-slate-500 text-right">
-            <p className="uppercase tracking-[0.16em] text-slate-400 mb-1">
-              Welcome back
-            </p>
-            <p className="font-medium text-slate-700">{displayName}</p>
-          </div>
-        </header>
-
         {error && (
           <p className="text-xs font-medium text-rose-500 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2 inline-flex">
             {error}
