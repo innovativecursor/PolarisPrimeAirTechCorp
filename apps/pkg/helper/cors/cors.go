@@ -31,16 +31,20 @@ import (
 )
 
 func CORSMiddleware() gin.HandlerFunc {
-	// Pretty much for capturing the ENV endpoint
 	cfg, err := config.Env()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
-	return func(c *gin.Context) {
 
+	allowedOrigins := make(map[string]bool)
+	for _, o := range cfg.Endpoints {
+		allowedOrigins[o] = true
+	}
+
+	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		// Gotta store the env value to our orignin and then set it in CORS's header
-		if origin == cfg.Endpoint {
+
+		if allowedOrigins[origin] {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		}

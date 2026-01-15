@@ -24,7 +24,8 @@ type Config struct {
 			Password string `yaml:"password"`
 		} `yaml:"superAdmins"`
 	} `yaml:"seed"`
-	Endpoint string `yaml:"endpoint"`
+	// Endpoint string `yaml:"endpoint"`
+	Endpoints []string `mapstructure:"endpoints"`
 }
 
 func Env() (Config, error) {
