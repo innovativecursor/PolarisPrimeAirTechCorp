@@ -67,6 +67,7 @@ type Customer struct {
 	CustomerOrg  string             `bson:"customerorg" json:"customerorg"`
 	Address      string             `bson:"address" json:"address"`
 	TINNumber    string             `bson:"tinnumber" json:"tinnumber"`
+	City         string             `bson:"city" json:"city"`
 	CreatedAt    time.Time          `bson:"createdat" json:"createdat"`
 }
 
