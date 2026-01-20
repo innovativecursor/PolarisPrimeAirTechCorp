@@ -10,17 +10,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type CustomersByCity struct {
+	City  string `json:"city"`
+	Count int64  `json:"count"`
+}
+
 type MonthlySales struct {
 	Month string `json:"month"`
 	Value int64  `json:"value"`
 }
 
 type DashboardResponse struct {
-	AvailableUnits    int64          `json:"available_units"`
-	OpenSalesOrders   int64          `json:"open_sales_orders"`
-	ReceivingThisWeek int64          `json:"receiving_this_week"`
-	TotalDeliveries   int64          `json:"total_deliveries"`
-	MonthlySales      []MonthlySales `json:"monthly_sales"`
+	AvailableUnits    int64             `json:"available_units"`
+	OpenSalesOrders   int64             `json:"open_sales_orders"`
+	ReceivingThisWeek int64             `json:"receiving_this_week"`
+	TotalDeliveries   int64             `json:"total_deliveries"`
+	MonthlySales      []MonthlySales    `json:"monthly_sales"`
+	CustomersByCity   []CustomersByCity `json:"customers_by_city"`
 }
 
 func GetDashboard(c *gin.Context, db *mongo.Database) {
@@ -148,11 +154,50 @@ func GetDashboard(c *gin.Context, db *mongo.Database) {
 		})
 	}
 
+	customerCollection := db.Collection("customer")
+
+	cityPipeline := mongo.Pipeline{
+		{{Key: "$group", Value: bson.M{
+			"_id":   "$city",
+			"count": bson.M{"$sum": 1},
+		}}},
+		{{Key: "$sort", Value: bson.M{"count": -1}}},
+	}
+
+	cityCursor, err := customerCollection.Aggregate(ctx, cityPipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch customers by city"})
+		return
+	}
+
+	type cityAgg struct {
+		ID    string `bson:"_id"`
+		Count int64  `bson:"count"`
+	}
+
+	var cityResults []cityAgg
+	if err := cityCursor.All(ctx, &cityResults); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "City aggregation error"})
+		return
+	}
+
+	customersByCity := make([]CustomersByCity, 0)
+	for _, c := range cityResults {
+		if c.ID == "" {
+			continue // skip empty city
+		}
+		customersByCity = append(customersByCity, CustomersByCity{
+			City:  c.ID,
+			Count: c.Count,
+		})
+	}
+
 	c.JSON(http.StatusOK, DashboardResponse{
 		AvailableUnits:    availableUnits,
 		OpenSalesOrders:   openSalesOrders,
 		ReceivingThisWeek: receivingThisWeek,
 		TotalDeliveries:   totalDeliveries,
 		MonthlySales:      monthlySales,
+		CustomersByCity:   customersByCity,
 	})
 }

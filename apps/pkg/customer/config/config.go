@@ -5,6 +5,7 @@ type CustomerData struct {
 	CustomerName string `json:"customername"`
 	CustomerOrg  string `json:"customerorg"`
 	Address      string `json:"address"`
+	City         string `json:"city"`
 	TINNumber    string `json:"tinnumber"`
 }
 

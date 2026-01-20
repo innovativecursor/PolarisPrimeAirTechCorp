@@ -46,6 +46,7 @@ func AddCustomer(c *gin.Context, db *mongo.Database) {
 				"customername": payload.CustomerName,
 				"customerorg":  payload.CustomerOrg,
 				"address":      payload.Address,
+				"city":         payload.City,
 				"tinnumber":    payload.TINNumber,
 			},
 		}
@@ -83,6 +84,7 @@ func AddCustomer(c *gin.Context, db *mongo.Database) {
 		CustomerOrg:  payload.CustomerOrg,
 		Address:      payload.Address,
 		TINNumber:    payload.TINNumber,
+		City:         payload.City,
 		CreatedAt:    time.Now(),
 	}
 
