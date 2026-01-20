@@ -20,6 +20,7 @@ export default function CustomerFormCard({
     name: initialValues?.name || "",
     org: initialValues?.org || "",
     location: initialValues?.location || "",
+    city: initialValues?.city || "",
     tin: initialValues?.tin || "",
   }));
 
@@ -120,9 +121,9 @@ export default function CustomerFormCard({
           </div>
 
           {/* Customer location */}
-          <div className="space-y-2 md:col-span-2">
+          <div className="space-y-2">
             <label className="block text-xs font-semibold tracking-[0.16em] uppercase text-slate-500">
-              Customer location <Required />
+              Customer Address  <Required />
             </label>
             <input
               type="text"
@@ -130,6 +131,20 @@ export default function CustomerFormCard({
               onChange={handleChange("location")}
               required
               placeholder="Choose a location or type an address"
+              className="block w-full rounded-2xl border border-slate-200 bg-[#f7f8fb] px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
+            />
+          </div>
+          {/* Customer city */}
+          <div className="space-y-2">
+            <label className="block text-xs font-semibold tracking-[0.16em] uppercase text-slate-500">
+              City <Required />
+            </label>
+            <input
+              type="text"
+              value={form.city}
+              onChange={handleChange("city")}
+              required
+              placeholder="Eg. Mumbai"
               className="block w-full rounded-2xl border border-slate-200 bg-[#f7f8fb] px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white"
             />
           </div>

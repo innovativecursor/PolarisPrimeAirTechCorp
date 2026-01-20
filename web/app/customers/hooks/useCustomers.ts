@@ -15,6 +15,7 @@ export type CustomerRow = {
   org: string;
   location: string;
   tin: string;
+  city: string;
   _raw?: any;
 };
 
@@ -23,6 +24,7 @@ export type CustomerFormValues = {
   name: string;
   org: string;
   location: string;
+  city: string;
   tin: string;
 };
 
@@ -64,6 +66,7 @@ export function useCustomers() {
         name: c.customername || c.name || "",
         org: c.customerorg || "",
         location: c.address || "",
+        city: c.city || "",
         tin: c.tinnumber || "",
         _raw: c,
       }));
@@ -89,6 +92,7 @@ export function useCustomers() {
         customername: values.name,
         customerorg: values.org,
         address: values.location,
+        city: values.city,
         tinnumber: values.tin,
       };
 
