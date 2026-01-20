@@ -20,7 +20,6 @@ export default function DashboardPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        {/* Top stat cards */}
         <section className="grid gap-4 cursor-pointer md:grid-cols-4">
           {loading ? (
             <>
@@ -59,7 +58,6 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {/* Middle row: line chart + donut */}
         <section className="grid gap-4 cursor-pointer lg:grid-cols-2 w-full">
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6">
             <div className="flex items-center justify-between mb-4">
