@@ -28,10 +28,11 @@ export default function CustomersListCard({
       { key: "name", header: "Customer name" },
       { key: "org", header: "Customer organization" },
       { key: "location", header: "Location" },
+      { key: "city", header: "City" },
       { key: "tin", header: "TIN number" },
       { key: "actions", header: "Actions", align: "right" },
     ],
-    []
+    [],
   );
 
   const columnWidths = "1.4fr 2.2fr 2.2fr 2fr 1.4fr 1.2fr";
@@ -92,6 +93,9 @@ export default function CustomersListCard({
             }
             if (key === "location") {
               return <span className="text-slate-600">{c.location}</span>;
+            }
+            if (key === "city") {
+              return <span className="text-slate-600">{c.city}</span>;
             }
             if (key === "tin") {
               return <span className="text-slate-600">{c.tin}</span>;

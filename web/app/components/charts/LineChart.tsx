@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Chart as ChartJS,
   LineElement,
@@ -19,29 +17,25 @@ ChartJS.register(
   PointElement,
   Tooltip,
   Filler,
-  Legend
+  Legend,
 );
 
-export default function LineChart() {
-  const data = {
-    labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ],
+type MonthlySale = {
+  month: string;
+  value: number;
+};
+
+type LineChartProps = {
+  data: MonthlySale[];
+};
+
+export default function LineChart({ data }: LineChartProps) {
+  const chartData = {
+    labels: data.map((item) => item.month),
     datasets: [
       {
         label: "Sales",
-        data: [120, 150, 180, 220, 210, 260, 300, 320, 310, 340, 380, 420],
+        data: data.map((item) => item.value),
         borderColor: "#2563eb",
         backgroundColor: "rgba(37, 99, 235, 0.2)",
         borderWidth: 2,
@@ -58,7 +52,11 @@ export default function LineChart() {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      tooltip: { backgroundColor: "#1f2937", titleColor: "#fff" },
+      tooltip: {
+        backgroundColor: "#1f2937",
+        titleColor: "#ffffff",
+        bodyColor: "#ffffff",
+      },
     },
     scales: {
       x: {
@@ -72,5 +70,13 @@ export default function LineChart() {
     },
   };
 
-  return <Line data={data} options={options} />;
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center text-sm text-slate-400">
+        No sales data available
+      </div>
+    );
+  }
+
+  return <Line data={chartData} options={options} />;
 }

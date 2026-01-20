@@ -1,42 +1,63 @@
 "use client";
 
+import { useEffect } from "react";
 import DonutChart from "../components/charts/DonutChart";
 import LineChart from "../components/charts/LineChart";
 import AppShell from "../components/layout/AppShell";
+import { useDashboard } from "./hooks/useDashboard";
+import StatCardSkeleton from "../components/skeletons/StatCardSkeleton";
+import ChartSkeleton from "../components/skeletons/ChartSkeleton";
 
 export default function DashboardPage() {
+  const { dashboard, loading, getDashboard } = useDashboard();
+
+  useEffect(() => {
+    void getDashboard();
+  }, []);
+
+  console.log(dashboard, "llll");
+
   return (
     <AppShell>
       <div className="space-y-6">
-        {/* Top stat cards */}
         <section className="grid gap-4 cursor-pointer md:grid-cols-4">
-          <StatCard
-            label="Available units"
-            value="4,382"
-            subtitle="Ready for deployment"
-            delta="+3.2% vs last week"
-          />
-          <StatCard
-            label="Open sales orders"
-            value="128"
-            subtitle="Awaiting fulfilment"
-            delta="12 urgent"
-          />
-          <StatCard
-            label="Receiving this week"
-            value="26"
-            subtitle="Inbound shipments"
-            delta="8 customs hold"
-          />
-          <StatCard
-            label="Total deliveries"
-            value="2,416"
-            subtitle="Completed YTD"
-            delta="+184 vs plan"
-          />
+          {loading ? (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          ) : (
+            <>
+              <StatCard
+                label="Available units"
+                value={dashboard?.available_units?.toString() ?? "0"}
+                subtitle="Ready for deployment"
+                delta=""
+              />
+              <StatCard
+                label="Open sales orders"
+                value={dashboard?.open_sales_orders?.toString() ?? "0"}
+                subtitle="Awaiting fulfilment"
+                delta=""
+              />
+              <StatCard
+                label="Receiving this week"
+                value={dashboard?.receiving_this_week?.toString() ?? "0"}
+                subtitle="Inbound shipments"
+                delta=""
+              />
+              <StatCard
+                label="Total deliveries"
+                value={dashboard?.total_deliveries?.toString() ?? "0"}
+                subtitle="Completed YTD"
+                delta=""
+              />
+            </>
+          )}
         </section>
 
-        {/* Middle row: line chart + donut */}
         <section className="grid gap-4 cursor-pointer lg:grid-cols-2 w-full">
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6">
             <div className="flex items-center justify-between mb-4">
@@ -47,7 +68,11 @@ export default function DashboardPage() {
             </div>
 
             <div className="h-56 rounded-xl">
-              <LineChart />
+              {loading ? (
+                <ChartSkeleton height="h-56" />
+              ) : (
+                <LineChart data={dashboard?.monthly_sales ?? []} />
+              )}
             </div>
           </div>
 
@@ -59,43 +84,59 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex md:flex-1 flex-col items-center gap-6">
-              <div className="flex-1 h-40">
-                <DonutChart />
+              <div className="flex-1 h-40 w-full">
+                {loading ? (
+                  <ChartSkeleton height="h-40" />
+                ) : (
+                  <DonutChart data={dashboard?.customers_by_city ?? []} />
+                )}
               </div>
 
-              <div className="flex-1 space-y-2 text-xs">
-                {[
-                  "Metro Manila",
-                  "Cebu",
-                  "Central Luzon",
-                  "Western Visayas",
-                  "Northern Mindanao",
-                  "Others",
-                ].map((name, idx) => (
-                  <div key={name} className="flex items-center gap-2">
-                    <span
-                      className="h-2.5 w-2.5 rounded-full"
-                      style={{
-                        backgroundColor: [
-                          "#2563eb",
-                          "#f97316",
-                          "#22c55e",
-                          "#eab308",
-                          "#8b5cf6",
-                          "#64748b",
-                        ][idx],
-                      }}
-                    />
-                    <span className="text-slate-600">{name}</span>
+              <div className="flex-1 space-y-2 text-xs w-full">
+                {loading ? (
+                  <div className="flex flex-col justify-center  items-center">
+                    <div className="h-3 w-24 bg-slate-200 rounded animate-pulse" />
+                    <div className="h-3 w-28 bg-slate-200 rounded animate-pulse" />
+                    <div className="h-3 w-20 bg-slate-200 rounded animate-pulse" />
                   </div>
-                ))}
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-x-6 gap-y-2">
+                    {dashboard?.customers_by_city.map((item, idx) => (
+                      <div
+                        key={item.city}
+                        className="flex items-center gap-2 whitespace-nowrap"
+                      >
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{
+                            backgroundColor: [
+                              "#2563eb",
+                              "#f97316",
+                              "#22c55e",
+                              "#eab308",
+                              "#8b5cf6",
+                              "#64748b",
+                            ][idx % 6],
+                          }}
+                        />
+                        <span className="text-slate-600 text-xs">
+                          {item.city} ({item.count})
+                        </span>
+                      </div>
+                    ))}
+
+                    {dashboard?.customers_by_city.length === 0 && (
+                      <p className="text-slate-400 text-xs">No customer data</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </section>
 
         {/* Bottom 3 cards */}
-        <section className="grid gap-4 cursor-pointer lg:grid-cols-3">
+        {/* <section className="grid gap-4 cursor-pointer lg:grid-cols-3">
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6 flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-sm font-semibold text-slate-900">
@@ -201,7 +242,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
       </div>
     </AppShell>
   );
