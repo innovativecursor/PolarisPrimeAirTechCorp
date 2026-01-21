@@ -10,6 +10,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type InventoryPosition struct {
+	Type  string `json:"type"`
+	Units int64  `json:"units"`
+}
+type FulfillmentStage struct {
+	Stage string `json:"stage"`
+	Count int64  `json:"count"`
+}
+
+type FulfillmentPipeline struct {
+	Past7Days []FulfillmentStage `json:"past_7_days"`
+}
+
 type CustomersByCity struct {
 	City  string `json:"city"`
 	Count int64  `json:"count"`
@@ -21,12 +34,14 @@ type MonthlySales struct {
 }
 
 type DashboardResponse struct {
-	AvailableUnits    int64             `json:"available_units"`
-	OpenSalesOrders   int64             `json:"open_sales_orders"`
-	ReceivingThisWeek int64             `json:"receiving_this_week"`
-	TotalDeliveries   int64             `json:"total_deliveries"`
-	MonthlySales      []MonthlySales    `json:"monthly_sales"`
-	CustomersByCity   []CustomersByCity `json:"customers_by_city"`
+	AvailableUnits      int64               `json:"available_units"`
+	OpenSalesOrders     int64               `json:"open_sales_orders"`
+	ReceivingThisWeek   int64               `json:"receiving_this_week"`
+	TotalDeliveries     int64               `json:"total_deliveries"`
+	MonthlySales        []MonthlySales      `json:"monthly_sales"`
+	CustomersByCity     []CustomersByCity   `json:"customers_by_city"`
+	FulfillmentPipeline FulfillmentPipeline `json:"fulfillment_pipeline"`
+	InventoryPosition   []InventoryPosition `json:"inventory_position"`
 }
 
 func GetDashboard(c *gin.Context, db *mongo.Database) {
@@ -192,12 +207,86 @@ func GetDashboard(c *gin.Context, db *mongo.Database) {
 		})
 	}
 
+	// -------- Fulfillment Pipeline --------
+
+	sevenDaysAgo := time.Now().AddDate(0, 0, -7)
+
+	salesOrdersCount, err := soCollection.CountDocuments(ctx, bson.M{
+		"createdAt": bson.M{"$gte": sevenDaysAgo},
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count sales orders"})
+		return
+	}
+
+	drCollection = db.Collection("delivery_receipts")
+
+	awaitingShipmentCount, err := drCollection.CountDocuments(ctx, bson.M{
+		"status":     "Ready",
+		"created_at": bson.M{"$gte": sevenDaysAgo},
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count awaiting shipment"})
+		return
+	}
+
+	fulfillmentPipeline := FulfillmentPipeline{
+		Past7Days: []FulfillmentStage{
+			{
+				Stage: "Sales orders",
+				Count: salesOrdersCount,
+			},
+			{
+				Stage: "Awaiting shipment",
+				Count: awaitingShipmentCount,
+			},
+		},
+	}
+
+	invPositionPipeline := mongo.Pipeline{
+		{{Key: "$group", Value: bson.M{
+			"_id":   "$type_of_aircon",
+			"units": bson.M{"$sum": "$quantity"},
+		}}},
+		{{Key: "$sort", Value: bson.M{"units": -1}}},
+	}
+
+	invPosCursor, err := invCollection.Aggregate(ctx, invPositionPipeline)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch inventory position"})
+		return
+	}
+
+	type invAgg struct {
+		ID    string `bson:"_id"`
+		Units int64  `bson:"units"`
+	}
+
+	var invAggResults []invAgg
+	if err := invPosCursor.All(ctx, &invAggResults); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Inventory position aggregation error"})
+		return
+	}
+
+	inventoryPosition := make([]InventoryPosition, 0)
+	for _, i := range invAggResults {
+		if i.ID == "" {
+			continue
+		}
+		inventoryPosition = append(inventoryPosition, InventoryPosition{
+			Type:  i.ID,
+			Units: i.Units,
+		})
+	}
+
 	c.JSON(http.StatusOK, DashboardResponse{
-		AvailableUnits:    availableUnits,
-		OpenSalesOrders:   openSalesOrders,
-		ReceivingThisWeek: receivingThisWeek,
-		TotalDeliveries:   totalDeliveries,
-		MonthlySales:      monthlySales,
-		CustomersByCity:   customersByCity,
+		AvailableUnits:      availableUnits,
+		OpenSalesOrders:     openSalesOrders,
+		ReceivingThisWeek:   receivingThisWeek,
+		TotalDeliveries:     totalDeliveries,
+		MonthlySales:        monthlySales,
+		CustomersByCity:     customersByCity,
+		FulfillmentPipeline: fulfillmentPipeline,
+		InventoryPosition:   inventoryPosition,
 	})
 }
