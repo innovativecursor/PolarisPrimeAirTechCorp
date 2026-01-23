@@ -15,6 +15,9 @@ type CustomersListProps = {
   onDelete: (row: CustomerRow) => void;
 };
 
+
+
+
 export default function CustomersListCard({
   customers,
   loading,

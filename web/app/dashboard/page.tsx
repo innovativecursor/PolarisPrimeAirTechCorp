@@ -15,7 +15,6 @@ export default function DashboardPage() {
     void getDashboard();
   }, []);
 
-  console.log(dashboard, "llll");
 
   return (
     <AppShell>
@@ -136,7 +135,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Bottom 3 cards */}
-        {/* <section className="grid gap-4 cursor-pointer lg:grid-cols-3">
+        <section className="grid gap-4 cursor-pointer lg:grid-cols-3">
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6 flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-sm font-semibold text-slate-900">
@@ -145,28 +144,22 @@ export default function DashboardPage() {
               <p className="text-xs text-slate-400">Week 24</p>
             </div>
 
-            <dl className="space-y-1.5 text-sm text-slate-600">
-              <div className="flex justify-between">
-                <dt>Window aircon</dt>
-                <dd>1,102 units</dd>
+            {loading ? (
+              <div className="space-y-2">
+                <div className="h-4 w-full bg-slate-200 rounded animate-pulse" />
+                <div className="h-4 w-full bg-slate-200 rounded animate-pulse" />
+                <div className="h-4 w-full bg-slate-200 rounded animate-pulse" />
               </div>
-              <div className="flex justify-between">
-                <dt>Ducted splits</dt>
-                <dd>728 units</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Condenser units</dt>
-                <dd>2,008 units</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt>Centralized units</dt>
-                <dd>442 units</dd>
-              </div>
-            </dl>
-
-            <button className="mt-6 inline-flex w-max items-center justify-center rounded-full bg-slate-900 text-white px-3.5 py-1.5 text-xs font-semibold shadow-sm hover:bg-slate-800">
-              View full inventory
-            </button>
+            ) : (
+              <dl className="space-y-1.5 text-sm text-slate-600">
+                {dashboard?.inventory_position.map((item) => (
+                  <div key={item.type} className="flex justify-between">
+                    <dt className="capitalize">{item.type}</dt>
+                    <dd>{item.units.toLocaleString()} units</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
           </div>
 
           <div className="rounded-2xl bg-white border border-slate-100 shadow-sm p-5 md:p-6 flex flex-col">
@@ -210,39 +203,37 @@ export default function DashboardPage() {
             </div>
 
             <div className="rounded-xl border border-slate-100 overflow-hidden">
-              <div className="grid grid-cols-[2fr,1fr,1fr] bg-slate-50 text-[11px] font-semibold text-slate-500 px-3 py-2">
-                <span>Stage</span>
-                <span className="text-right">Volume</span>
-                <span className="text-right">Status</span>
+              <div className="flex justify-between items-center bg-gray-100 text-xs font-semibold text-slate-500 px-3 py-4">
+                <span className="">Stage</span>
+                <span className="">Volume</span>
               </div>
 
-              {[
-                { stage: "Sales orders", volume: 38, status: "Approved" },
-                { stage: "Awaiting shipment", volume: 19, status: "Pending" },
-                { stage: "Pending invoicing", volume: 11, status: "Pending" },
-              ].map((row, idx) => (
-                <div
-                  key={row.stage}
-                  className={`grid grid-cols-[2fr,1fr,1fr] px-3 py-2.5 text-xs text-slate-600 ${
-                    idx % 2 === 1 ? "bg-slate-50/60" : "bg-white"
-                  }`}
-                >
-                  <span>{row.stage}</span>
-                  <span className="text-right">{row.volume}</span>
-                  <span
-                    className={`text-right font-medium ${
-                      row.status === "Approved"
-                        ? "text-emerald-500"
-                        : "text-amber-500"
-                    }`}
-                  >
-                    {row.status}
-                  </span>
+              {loading ? (
+                <div className="space-y-2">
+                  <div className="h-4 w-full bg-slate-200 rounded animate-pulse" />
+                  <div className="h-4 w-full bg-slate-200 rounded animate-pulse" />
+                  <div className="h-4 w-full bg-slate-200 rounded animate-pulse" />
                 </div>
-              ))}
+              ) : (
+                <>
+                  {dashboard?.fulfillment_pipeline?.past_7_days.map(
+                    (row, idx) => (
+                      <div
+                        key={row.stage}
+                        className={`grid grid-cols-[2fr,1fr,1fr] px-3 py-2.5 text-xs text-slate-600 ${
+                          idx % 2 === 1 ? "bg-slate-50/60" : "bg-white"
+                        }`}
+                      >
+                        <span>{row.stage}</span>
+                        <span className="text-right">{row.count}</span>
+                      </div>
+                    ),
+                  )}
+                </>
+              )}
             </div>
           </div>
-        </section> */}
+        </section>
       </div>
     </AppShell>
   );
