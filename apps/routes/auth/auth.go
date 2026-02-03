@@ -29,7 +29,7 @@ import (
 func Auth(db *mongo.Database) {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "10001"
+		port = "10004"
 		log.Printf("Defaulting to port %s", port)
 	}
 
